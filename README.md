@@ -1,2 +1,2 @@
 # splicing-pipelines-nf
-Repository for the splicing pipeline 
+Repository for the Nextflow splicing pipeline 
