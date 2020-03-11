@@ -12,6 +12,7 @@
  * Olga Anczukow
  */
 
+// TODO: update logging & help message when pipeline is finished
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Reads                 : ${params.reads}"
@@ -25,7 +26,7 @@ def helpMessage() {
     The typical command for running the pipeline is as follows:
     nextflow run jacksonlabs/splicing-pipelines-nf --reads '*_R{1,2}.fastq.gz' -profile docker
     Mandatory arguments:
-       --reads                       Path to input data (must be surrounded with quotes)
+      --reads                       Path to input data (must be surrounded with quotes)
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
@@ -38,6 +39,9 @@ def helpMessage() {
 /*--------------------------------------------------
   Channel setup
 ---------------------------------------------------*/
+
+params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
+params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 if (params.readPaths) {
   Channel
@@ -53,8 +57,16 @@ if (params.readPaths) {
 }
 Channel
   .fromPath(params.adapter)
-  .ifEmpty { exit 1, "Cannot find adapter sequence for trimming : ${params.adapter}" }
+  .ifEmpty { exit 1, "Cannot find adapter sequence for trimming: ${params.adapter}" }
   .set { adapter }
+Channel
+  .fromPath(params.gtf)
+  .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
+  .set { gtf }
+Channel
+  .fromPath(params.star_index)
+  .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+  .set { star_index }
 
 /*--------------------------------------------------
   Run FastQC for quality control of input reads
@@ -89,12 +101,12 @@ process trimmomatic {
   each file(adapter) from adapter
 
   output:
-  file "*.fastq" into trimmed_reads
+  set val(name), file("*.fastq.gz") into trimmed_reads
 
   script:
   mode = params.singleEnd ? 'SE' : 'PE'
   adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
-  out = params.singleEnd ? "${name}_trimmed.fastq" : "${name}_paired_R1.fastq ${name}_unpaired_R1.fastq ${name}_paired_R2.fastq ${name}_unpaired_R2.fastq"
+  out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_paired_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_paired_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
   """
   trimmomatic \
     $mode \
@@ -107,5 +119,63 @@ process trimmomatic {
     SLIDINGWINDOW:4:15 \
     MINLEN:${params.readlength} \
     CROP:${params.readlength} $adapter_flag
+  """
+}
+
+/*--------------------------------------------------
+  Align trimmed reads with STAR 
+---------------------------------------------------*/
+
+process star {
+  tag "$name"
+  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+
+  input:
+  set val(name), file(reads) from trimmed_reads
+  each file(index) from star_index
+  each file(gtf) from gtf
+
+  output:
+  set file("*Log.final.out"), file ('*.bam') into star_aligned
+  file "*.out" into alignment_logs
+  file "*SJ.out.tab"
+  file "*Log.out" into star_log
+  file "*Unmapped*" optional true
+
+  script:
+  // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only
+  // TODO: test pipeline with paired-end data to ensure STAR has only two FASTQs to map
+  // TODO: find a better solution to needing to use `chmod` & index BAM file?
+  out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+  overhang = params.overhang ? params.overhang : params.readlength - 1
+  """
+  # Decompress STAR index if compressed
+  if [[ $index == *.tar.gz ]]; then
+    tar -xvzf $index
+  fi
+
+  STAR \
+    --genomeDir ${index.toString().minus('.tar.gz')} \
+    --readFilesIn $reads \
+    --readMatesLengthsIn NotEqual \
+    --outFileNamePrefix $name \
+    --runThreadN $task.cpus \
+    --readFilesCommand zcat \
+    --sjdbGTFfile $gtf \
+    --sjdbOverhang $overhang \
+     --alignSJoverhangMin 8 $out_filter_intron_motifs \
+    --outFilterMismatchNmax $params.mismatch \
+    --outFilterMultimapNmax 20 \
+    --alignMatesGapMax 1000000 \
+    --outSAMattributes All \
+    --outSAMtype BAM SortedByCoordinate \
+    --limitBAMsortRAM 100000000000 \
+    --outBAMsortingThreadN $task.cpus \
+    --outFilterType BySJout \
+    --twopassMode Basic \
+    --alignEndsType EndToEnd \
+    --outWigType wiggle
+
+  chmod a+rw $name*
   """
 }
