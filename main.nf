@@ -101,12 +101,13 @@ process trimmomatic {
   each file(adapter) from adapter
 
   output:
-  set val(name), file("*.fastq.gz") into trimmed_reads
+  set val(name), file(output_filename) into trimmed_reads
 
   script:
   mode = params.singleEnd ? 'SE' : 'PE'
   adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
-  out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_paired_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_paired_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
+  out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
+  output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
   """
   trimmomatic \
     $mode \
