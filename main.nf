@@ -62,7 +62,7 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
@@ -143,7 +143,8 @@ process star {
   file "*Unmapped*" optional true
 
   script:
-  // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only
+  // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
+  // TODO: check if `bw` file is in publishDir
   // TODO: test pipeline with paired-end data to ensure STAR has only two FASTQs to map
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
@@ -203,5 +204,26 @@ process stringtie {
   """
   stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
   stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
+  """
+}
+
+/*--------------------------------------------------
+  Stringtie merge GTF files
+---------------------------------------------------*/
+
+process stringtie_merge {
+  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+
+  input:
+  file('*.gtf') from stringtie_gtf.collect()
+  file(gtf) from gtf_stringtie_merge
+
+  output:
+  file "stringtie_merged.gtf" into merged_gtf
+
+  script:
+  """
+  ls -1 *.gtf > assembly_gtf_list.txt
+  stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
   """
 }
