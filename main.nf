@@ -62,14 +62,14 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .set { gtf }
+  .into { gtf_star ; gtf_stringtie }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
 
 /*--------------------------------------------------
-  Run FastQC for quality control of input reads
+  FastQC for quality control of input reads
 ---------------------------------------------------*/
 
 process fastqc {
@@ -89,7 +89,7 @@ process fastqc {
 }
 
 /*--------------------------------------------------
-  Run Trimmomatic to trim input reads
+  Trimmomatic to trim input reads
 ---------------------------------------------------*/
 
 process trimmomatic {
@@ -123,7 +123,7 @@ process trimmomatic {
 }
 
 /*--------------------------------------------------
-  Align trimmed reads with STAR 
+  STAR to align trimmed reads
 ---------------------------------------------------*/
 
 process star {
@@ -133,10 +133,10 @@ process star {
   input:
   set val(name), file(reads) from trimmed_reads
   each file(index) from star_index
-  each file(gtf) from gtf
+  each file(gtf) from gtf_star
 
   output:
-  set file("*Log.final.out"), file ('*.bam') into star_aligned
+  set val(name), file("${name}Aligned.sortedByCoord.out.bam"), file("${name}Aligned.sortedByCoord.out.bam.bai") into indexed_bam
   file "*.out" into alignment_logs
   file "*SJ.out.tab"
   file "*Log.out" into star_log
@@ -145,7 +145,7 @@ process star {
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only
   // TODO: test pipeline with paired-end data to ensure STAR has only two FASTQs to map
-  // TODO: find a better solution to needing to use `chmod` & index BAM file?
+  // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   overhang = params.overhang ? params.overhang : params.readlength - 1
   """
@@ -177,5 +177,31 @@ process star {
     --outWigType wiggle
 
   chmod a+rw $name*
+  samtools index ${name}Aligned.sortedByCoord.out.bam
+  bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
+  """
+}
+
+/*--------------------------------------------------
+  Stringtie for transcript assembly and quantification 
+---------------------------------------------------*/
+
+process stringtie {
+  tag "$name"
+  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+
+  input:
+  set val(name), file(bam), file(bam_index) from indexed_bam
+  each file(gtf) from gtf_stringtie
+
+  output:
+  file "${name}.gtf" into stringtie_gtf
+  file "${name}_for_DGE.gtf" into stringtie_deg_gtf
+
+  script: 
+  rf = params.stranded ? '--rf' : ''
+  """
+  stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
+  stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
   """
 }
