@@ -43,16 +43,20 @@ def helpMessage() {
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
-if (params.readPaths) {
+if (params.singleEnd) {
   Channel
-    .from(params.readPaths)
-    .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-    .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+    .fromPath(params.reads)
+    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+    .splitCsv(skip:1)
+    .map { sample_id, fastq -> [sample_id, file(fastq)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
-} else {
+} 
+if (!params.singleEnd) {
   Channel
-    .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
+    .fromPath(params.reads)
+    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+    .splitCsv(skip:1)
+    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
 Channel
