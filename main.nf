@@ -35,20 +35,35 @@ log.info "Max time              : ${params.max_time}"
 log.info ""
 log.info "\n"
 
-// TODO: update help message
 def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads '*_R{1,2}.fastq.gz' -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads '*_R{1,2}.fastq.gz' --genome GRCh38 -profile docker
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
+      --singleEnd                   Specifies that the input is single-end reads
+      --genome                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
-    Generic:
+    Reads:
       --singleEnd                   Specifies that the input is single-end reads
       --outdir                      The output directory where the results will be saved
+      --gtf                         Path to GTF file
+      --star_index                  Path to STAR index
+      --stranded                    Specifies that the input is stranded
+      --adapter                     Path to adapter file
+      --readlength                  Read length (default = 48)
+      --overhang                    Overhang (default = readlength - 1)
+      --mismatch                    Mismatch (default = 2)
+
+    Other:
+      --max_cpus                    Maximum number of CPUs
+      --max_memory                  Maximum memory
+      --max_time                    Maximum time
+      --outdir                      The output directory where the results will be saved
+      --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
     """.stripIndent()
 }
 
