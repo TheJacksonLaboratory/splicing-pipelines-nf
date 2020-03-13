@@ -29,6 +29,10 @@ log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Outdir                : ${params.outdir}"
 log.info "iGenomes base         : ${params.igenomes_base}"
+log.info "Max CPUs              : ${params.max_cpus}"
+log.info "Max memory            : ${params.max_memory}"
+log.info "Max time              : ${params.max_time}"
+log.info ""
 log.info "\n"
 
 // TODO: update help message
@@ -87,6 +91,7 @@ Channel
 
 process fastqc {
   tag "$name"
+  label 'process_medium'
   publishDir "${params.outdir}/QC_raw", mode: 'copy'
 
   input:
@@ -107,6 +112,7 @@ process fastqc {
 
 process trimmomatic {
   tag "$name"
+  label 'low_memory'
   publishDir "${params.outdir}/trimmed", mode: 'copy'
 
   input:
@@ -142,6 +148,7 @@ process trimmomatic {
 
 process star {
   tag "$name"
+  label 'high_memory'
   publishDir "${params.outdir}/star_mapped", mode: 'copy'
 
   input:
@@ -203,6 +210,7 @@ process star {
 
 process stringtie {
   tag "$name"
+  label 'process_medium'
   publishDir "${params.outdir}/star_mapped", mode: 'copy'
 
   input:
@@ -226,6 +234,7 @@ process stringtie {
 ---------------------------------------------------*/
 
 process stringtie_merge {
+  label 'process_medium'
   publishDir "${params.outdir}/star_mapped", mode: 'copy'
 
   input:
