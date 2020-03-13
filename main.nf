@@ -12,14 +12,26 @@
  * Olga Anczukow
  */
 
-// TODO: update logging & help message when pipeline is finished
+params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
+params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
+
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Reads                 : ${params.reads}"
 log.info "Single-end            : ${params.singleEnd}"
+log.info "Genome                : ${params.genome}"
+log.info "GTF                   : ${params.gtf}"
+log.info "STAR index            : ${params.star_index}"
+log.info "Stranded              : ${params.stranded}"
+log.info "Adapter               : ${params.adapter ? params.adapter : 'Not provided'}"
+log.info "Read Length           : ${params.readlength}"
+log.info "Overhang              : ${params.overhang}"
+log.info "Mismatch              : ${params.mismatch}"
 log.info "Outdir                : ${params.outdir}"
+log.info "iGenomes base         : ${params.igenomes_base}"
 log.info "\n"
 
+// TODO: update help message
 def helpMessage() {
     log.info """
     Usage:
@@ -39,9 +51,6 @@ def helpMessage() {
 /*--------------------------------------------------
   Channel setup
 ---------------------------------------------------*/
-
-params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
-params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 if (params.singleEnd) {
   Channel
