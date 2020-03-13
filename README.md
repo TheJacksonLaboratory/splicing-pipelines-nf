@@ -15,7 +15,7 @@ nextflow run main.nf --reads examples/splicing_pipeline_testdata/single_end_read
 
 ## All parameters
 ```
-Mandatory arguments:
+Main arguments:
   --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
   --singleEnd                   Specifies that the input is single-end reads
   --genome                      Name of iGenomes reference

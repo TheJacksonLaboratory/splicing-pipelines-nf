@@ -40,7 +40,7 @@ def helpMessage() {
     Usage:
     The typical command for running the pipeline is as follows:
     nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --genome GRCh38 -profile docker
-    Mandatory arguments:
+    Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --singleEnd                   Specifies that the input is single-end reads
       --genome                      Name of iGenomes reference
