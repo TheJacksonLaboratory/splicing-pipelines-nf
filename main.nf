@@ -39,19 +39,19 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads '*_R{1,2}.fastq.gz' --genome GRCh38 -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --genome GRCh38 -profile docker
     Mandatory arguments:
-      --reads                       Path to input data (must be surrounded with quotes)
+      --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --singleEnd                   Specifies that the input is single-end reads
       --genome                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
-    Reads:
-      --singleEnd                   Specifies that the input is single-end reads
-      --outdir                      The output directory where the results will be saved
+    References:
       --gtf                         Path to GTF file
       --star_index                  Path to STAR index
+    
+    Reads:
       --stranded                    Specifies that the input is stranded
       --adapter                     Path to adapter file
       --readlength                  Read length (default = 48)
