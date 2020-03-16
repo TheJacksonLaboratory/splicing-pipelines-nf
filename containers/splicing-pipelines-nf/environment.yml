@@ -10,3 +10,4 @@ dependencies:
   - samtools=1.10
   - deeptools=3.4.0
   - stringtie=2.1.1
+  - multiqc=1.8

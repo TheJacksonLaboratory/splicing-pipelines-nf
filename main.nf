@@ -181,7 +181,6 @@ process star {
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
   // TODO: check if `bw` file is in publishDir
-  // TODO: test pipeline with paired-end data to ensure STAR has only two FASTQs to map
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   overhang = params.overhang ? params.overhang : params.readlength - 1
@@ -263,5 +262,29 @@ process stringtie_merge {
   """
   ls -1 *.gtf > assembly_gtf_list.txt
   stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
+  """
+}
+
+/*--------------------------------------------------
+  MultiQC to generate a QC HTML report
+---------------------------------------------------*/
+
+process multiqc {
+  publishDir "${params.outdir}/MultiQC", mode: 'copy'
+
+  when:
+  !params.skipMultiQC
+
+  input:
+  file (fastqc:'fastqc/*') from fastqc_results.collect().ifEmpty([])
+  file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+
+  output:
+  file "*multiqc_report.html" into multiqc_report
+  file "*_data"
+
+  script:
+  """
+  multiqc . -m fastqc -m star
   """
 }
