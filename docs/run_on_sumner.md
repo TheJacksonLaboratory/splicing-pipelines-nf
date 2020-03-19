@@ -1,11 +1,11 @@
 # Steps needed to run a NextFlow workflow on JAX internal HPC Sumner
 1) Login to sumner
 ```bash
-ssh adeslat@login.sumner.jax.org
+ssh myjaxuser@login.sumner.jax.org
 ```
 2) Change to a directory where you can checkout the code on github
 ```bash
-cd /projects/adeslat
+cd /projects/myjaxuser
 ```
 3) Clone the repository required
 ```bash
@@ -25,11 +25,11 @@ curl -fsSL get.nextflow.io | bash
 ```
 
 ## Troubleshooting
-1) Log into an interactive node
+1) If Nextflow is unable to launch processes from the head node you can log into an interactive node
 ```bash
 srun -n 1 --mem 1000 --pty /bin/bash
 ```
-2) Load the singularity module
+2) Once in the head node, if Nextflow is unable to load Singularity you can load the singularity module
 ```bash
 module load singularity
 ```
