@@ -13,6 +13,8 @@ Start running your own analysis:
 nextflow run main.nf --reads examples/splicing_pipeline_testdata/single_end_reads.csv --genome GRCh38 -profile <docker/sumner>
 ```
 
+For more info see how to [run pipelines on the Sumner HPC](docs/run_on_sumner.md)
+
 ## All parameters
 ```
 Main arguments:
