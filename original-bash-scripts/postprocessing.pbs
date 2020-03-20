@@ -1,0 +1,351 @@
+#!/bin/bash
+#PBS -q batch
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=4:00:00
+
+# use script: qsub -d . -v config="/projects/anczukow-lab/yuriem/test_rMATS/merged/test_config.txt" /projects/anczukow-lab/splicing_pipeline/postprocessing.pbs
+#
+# config format:
+# two space or tab separated columns, the first column names have to be identical to this example:
+#
+# |fasta /projects/anczukow-lab/reference_genomes/human/Gencode/GRCh38.primary_assembly.genome.fa
+# |genome hg38
+# |gtf /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.annotation.gtf
+# 
+# or see /projects/anczukow-lab/splicing_pipeline/config_examples/config_for_postprocessing.txt
+
+
+module load gcc
+module load bedtools
+
+fasta=$(cat $config | awk '$1=="fasta"{print $2}')
+genome=$(cat $config | awk '$1=="genome"{print $2}')
+gtf=$(cat $config | awk '$1=="gtf"{print $2}')
+
+mypwd=$(pwd)
+
+mydate=$(date "+%Y-%m-%d-%T" | sed 's/:/_/g')
+
+prefix=$(echo $mypwd | rev | cut -d / -f1 | rev)
+
+prefix_time=$(echo $prefix "_" $mydate | sed 's/ //g')
+
+echo "My path: " $mypwd > postprocessing_log_${prefix_time}.txt
+echo "Prefix and time: " $prefix_time >> postprocessing_log_${prefix_time}.txt
+echo "Fasta file: " $fasta >> postprocessing_log_${prefix_time}.txt
+echo "gtf file: " $gtf >> postprocessing_log_${prefix_time}.txt
+echo "Genome: " $genome >> postprocessing_log_${prefix_time}.txt
+
+
+# get mICs mSCs PSIs
+
+for event in SE RI A5SS A3SS
+do
+
+awk '{print $13}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.mIC1.tmp
+
+awk '{print $14}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.mSC1.tmp
+
+awk '{print $15}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.mIC2.tmp
+
+awk '{print $16}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.mSC2.tmp
+
+awk '{print $(NF-2)}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | sed 's/NA//g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.PSI1.tmp
+
+awk '{print $(NF-1)}' ${event}.MATS.JCEC.txt | sed 's/,/\t/g' | sed 's/NA//g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > ${event}.PSI2.tmp
+
+done
+
+# MXE
+
+awk '{print $15}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.mIC1.tmp
+
+awk '{print $16}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.mSC1.tmp
+
+awk '{print $17}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.mIC2.tmp
+
+awk '{print $18}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.mSC2.tmp
+
+awk '{print $(NF-2)}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | sed 's/NA//g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.PSI1.tmp
+
+awk '{print $(NF-1)}' MXE.MATS.JCEC.txt | sed 's/,/\t/g' | sed 's/NA//g' | awk '{s=0; for (i=1;i<=NF;i++)s+=$i; print s/NF;}' | sed '1d' > MXE.PSI2.tmp
+
+# generate short and long IDs
+
+#SE
+
+awk '{print "SE_" $1 "\t" "SE;" $4 ";" $5 ";" $9 ";" $6 ";" $7 ";" $10 "\t" "SE;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)}' SE.MATS.JCEC.txt | sed '1d' > SE.tmp
+
+#RI
+
+awk '{print "RI_" $1 "\t" "RI;" $4 ";" $5 ";" $9 ";" $10 "\t" "RI;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)}' RI.MATS.JCEC.txt | sed '1d' > RI.tmp
+
+#MXE
+
+awk '{print "MXE_" $1 "\t" "MXE;" $4 ";" $5 ";" $11 ";" $6 ";" $7 ";" $8 ";" $9 ";" $12 "\t" "MXE;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 ";" $12 ";" $13 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $15 "\t" $16 "\t" $17 "\t" $18 "\t" $(NF-2) "\t" $(NF-1)}' MXE.MATS.JCEC.txt | sed '1d' > MXE.tmp
+
+#A3SS
+
+awk '{if($5=="-"){print "A3SS_" $1 "\tA3SS;" $4 ";" $5 ";" $7 ";" $10 ";" $9 ";" $10 "\tA3SS;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)} else { print "A3SS_" $1 "\tA3SS;" $4 ";" $5 ";" $11 ";" $6 ";" $11 ";" $8 "\tA3SS;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)}}' A3SS.MATS.JCEC.txt | sed '1d' > A3SS.tmp
+
+#A5SS
+
+awk '{if($5=="-"){print "A5SS_" $1 "\tA5SS;" $4 ";" $5 ";" $11 ";" $6 ";" $11 ";" $8 "\tA5SS;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)} else { print "A5SS_" $1 "\tA5SS;" $4 ";" $5 ";" $7 ";" $10 ";" $9 ";" $10 "\tA5SS;" $4 ";" $5 ";" $6 ";" $7 ";" $8 ";" $9 ";" $10 ";" $11 "\t" $2 "\t" $3 "\t" $5 "\t" $(NF-4) "\t" $(NF-3) "\t" $13 "\t" $14 "\t" $15 "\t" $16 "\t" $(NF-2) "\t" $(NF-1)}}' A5SS.MATS.JCEC.txt | sed '1d' > A5SS.tmp
+
+#merge the output in one, get the exons coord
+
+for events in SE RI MXE A3SS A5SS
+do
+
+paste ${events}.tmp ${events}.mIC1.tmp ${events}.mSC1.tmp ${events}.mIC2.tmp ${events}.mSC2.tmp ${events}.PSI1.tmp ${events}.PSI2.tmp | awk '{$4=$5=""; print $0 "\t" $NF - $(NF-1)}' > ${events}2.tmp
+
+done
+
+#SE
+
+awk '{if($5=="-"){print $4 "\t" $10 "\t" $11 } else {print $4 "\t" $8 "\t" $9}}' SE.MATS.JCEC.txt | sed '1d' > SE.seq1.tmp
+
+awk '{print $4 "\t" $6 "\t" $7 }' SE.MATS.JCEC.txt | sed '1d' > SE.seq2.tmp
+
+awk '{if($5=="-"){print  $4 "\t" $8 "\t" $9 } else {print $4 "\t" $10 "\t" $11}}' SE.MATS.JCEC.txt | sed '1d' > SE.seq3.tmp
+
+
+#RI
+
+awk '{if($5=="-"){print $4 "\t" $10 "\t" $11 } else {print $4 "\t" $8 "\t" $9}}' RI.MATS.JCEC.txt | sed '1d' > RI.seq1.tmp
+
+awk '{print $4 "\t" $9 "\t" $10}' RI.MATS.JCEC.txt | sed '1d' > RI.seq2.tmp
+
+awk '{if($5=="-"){print  $4 "\t" $8 "\t" $9 } else {print $4 "\t" $10 "\t" $11}}' RI.MATS.JCEC.txt | sed '1d' > RI.seq3.tmp
+
+#MXE
+
+awk '{if($5=="-"){print $4 "\t" $12 "\t" $13 } else {print $4 "\t" $10 "\t" $11}}' MXE.MATS.JCEC.txt | sed '1d' > MXE.seq1.tmp
+
+awk '{if($5=="-"){print $4 "\t" $8 "\t" $9} else {print $4 "\t" $6 "\t" $7}}' MXE.MATS.JCEC.txt | sed '1d' > MXE.seq2.tmp
+
+awk '{if($5=="-"){print $4 "\t" $6 "\t" $7 } else {print $4 "\t" $8 "\t" $9}}' MXE.MATS.JCEC.txt | sed '1d' > MXE.seq3.tmp
+
+awk '{if($5=="-"){print $4 "\t" $10 "\t" $11} else {print $4 "\t" $12 "\t" $13}}' MXE.MATS.JCEC.txt | sed '1d' > MXE.seq4.tmp
+
+#A3SS
+
+awk '{if($5=="-"){print $4 "\t" $8 "\t" $9} else {print $4 "\t" $10 "\t" $11}}' A3SS.MATS.JCEC.txt | sed '1d' > A3SS.seq1.tmp
+
+awk '{if($5=="-"){print $4 "\t" $9 "\t" $7} else {print $4 "\t" $6 "\t" $8}}' A3SS.MATS.JCEC.txt | sed '1d' > A3SS.seq2.tmp
+
+awk '{if($5=="-"){print $4 "\t" $10 "\t" $11} else {print $4 "\t" $8 "\t" $9}}' A3SS.MATS.JCEC.txt | sed '1d' > A3SS.seq3.tmp
+
+#A5SS
+
+awk '{if($5=="-"){print $4 "\t" $10 "\t" $11} else {print $4 "\t" $8 "\t" $9}}' A5SS.MATS.JCEC.txt | sed '1d' > A5SS.seq1.tmp
+
+awk '{if($5=="-"){print $4 "\t" $6 "\t" $8} else {print $4 "\t" $9 "\t" $7}}' A5SS.MATS.JCEC.txt | sed '1d' > A5SS.seq2.tmp
+
+awk '{if($5=="-"){print $4 "\t" $8 "\t" $9} else {print $4 "\t" $10 "\t" $11}}' A5SS.MATS.JCEC.txt | sed '1d' > A5SS.seq3.tmp
+
+awk '{print $1}' $gtf | uniq | grep -v -e "chr" -e "#" > change_chr.tmp
+
+sed 's/chr//g' change_chr.tmp > new_chr.tmp
+
+for seq in *seq*.tmp
+do
+
+while read line
+do
+sed -i -e "s/chr${line}/$line/g" $seq
+done < new_chr.tmp
+
+done
+
+# get exon coord
+
+for events in SE MXE RI A3SS A5SS
+do
+sed 's/:/\t/g' ${events}.seq1.tmp | awk '{print $1 ":" $2 +1 "-" $3}' > ${events}.E1.tmp
+sed 's/:/\t/g' ${events}.seq2.tmp | awk '{print $1 ":" $2 +1 "-" $3}' > ${events}.E2.tmp
+sed 's/:/\t/g' ${events}.seq3.tmp | awk '{print $1 ":" $2 +1 "-" $3}' > ${events}.E3.tmp
+
+done 
+
+sed 's/:/\t/g' MXE.seq4.tmp | awk '{print $1 ":" $2 +1 "-" $3}' > MXE.E4.tmp
+
+# get gene names:
+
+for events in SE MXE RI A3SS A5SS
+do
+
+paste ${events}.E1.tmp ${events}.tmp | awk '{print $1 "\t" $2 "\t.\t" $7 "\t" $4 "\t" $5 "\t" $6}' | awk '{gsub(":", "\t", $1)}1' | awk '{gsub("-", "\t", $2)}1' | sed 's/"//g' | sed 's/ /\t/g' > ${events}.E1.tmp.bed 
+paste ${events}.E2.tmp ${events}.tmp | awk '{print $1 "\t" $2 "\t.\t" $7 "\t" $4 "\t" $5 "\t" $6}' | awk '{gsub(":", "\t", $1)}1' | awk '{gsub("-", "\t", $2)}1' | sed 's/"//g' | sed 's/ /\t/g' > ${events}.E2.tmp.bed
+paste ${events}.E3.tmp ${events}.tmp | awk '{print $1 "\t" $2 "\t.\t" $7 "\t" $4 "\t" $5 "\t" $6}' | awk '{gsub(":", "\t", $1)}1' | awk '{gsub("-", "\t", $2)}1' | sed 's/"//g' | sed 's/ /\t/g' > ${events}.E3.tmp.bed
+
+done
+
+paste MXE.E4.tmp MXE.tmp | awk '{print $1 "\t" $2 "\t.\t" $7 "\t" $4 "\t" $5 "\t" $6}' | awk '{gsub(":", "\t", $1)}1' | awk '{gsub("-", "\t", $2)}1' | sed 's/"//g' | sed 's/ /\t/g' > MXE.E4.tmp.bed
+
+# get the gene IDs from Gencode gtf:
+
+grep -v "^#" $gtf | awk -F "\t" '$3=="gene"' | grep -v "readthrough" > gtf.tmp
+
+for events in SE MXE RI A3SS A5SS
+do
+
+bedtools intersect -f 1 -wao -s -a ${events}.E1.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $8 "\t" $19}' | sed 's/";//g' | sed 's/"//g' | awk '{if($2~/MSTR/){print $1 " NA " $3} else {print $0}}' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' | awk '{if($2=="0"){print $1 " NA"} else {print $0}}' > ${events}.E1.geneID.tmp
+
+bedtools intersect -f 1 -wao -s -a ${events}.E2.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $8 "\t" $19}' | sed 's/";//g' | sed 's/"//g' | awk '{if($2~/MSTR/){print $1 " NA " $3} else {print $0}}' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' | awk '{if($2=="0"){print $1 " NA"} else {print $0}}' > ${events}.E2.geneID.tmp
+
+bedtools intersect -f 1 -wao -s -a ${events}.E3.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $8 "\t" $19}' | sed 's/";//g' | sed 's/"//g' | awk '{if($2~/MSTR/){print $1 " NA " $3} else {print $0}}' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' | awk '{if($2=="0"){print $1 " NA"} else {print $0}}' > ${events}.E3.geneID.tmp
+
+done
+
+bedtools intersect -f 1 -wao -s -a MXE.E4.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $8 "\t" $19}' | sed 's/";//g' | sed 's/"//g' | awk '{if($2~/MSTR/){print $1 " NA " $3} else {print $0}}' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' | awk '{if($2=="0"){print $1 " NA"} else {print $0}}' > MXE.E4.geneID.tmp
+
+# combine gene IDs from all the exons
+
+for events in SE RI A3SS A5SS
+do
+
+join -j 1 <(join -j 1 <(sort -k1,1 ${events}.E1.geneID.tmp) <(sort -k1,1 ${events}.E2.geneID.tmp)) <(sort -k1,1 ${events}.E3.geneID.tmp) | awk '{ while(++i<=NF) printf (!a[$i]++) ? $i FS : ""; i=split("",a); print ""}' | awk ' {for (i=2; i<NF; i++) printf $i ";"; print $NF "\t" $1}' | awk '{print $2 "\t" $1}' > ${events}.join.geneID.tmp
+
+done
+
+join -j 1 <(sort -k1,1 <(join -j 1 <(join -j 1 <(sort -k1,1 MXE.E1.geneID.tmp) <(sort -k1,1 MXE.E2.geneID.tmp)) <(sort -k1,1 MXE.E3.geneID.tmp))) <(sort -k1,1 MXE.E4.geneID.tmp) | awk '{ while(++i<=NF) printf (!a[$i]++) ? $i FS : ""; i=split("",a); print ""}' | awk ' {for (i=2; i<NF; i++) printf $i ";"; print $NF "\t" $1}' | awk '{print $2 "\t" $1}' > MXE.join.geneID.tmp
+
+
+# get the gene names from Gencode gtf:
+
+for events in SE MXE RI A3SS A5SS
+do
+
+bedtools intersect -f 1 -wao -s -a ${events}.E1.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $9 "\t" $23}' | sed 's/";//g' | sed 's/"//g' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' > ${events}.E1.genename.tmp
+
+bedtools intersect -f 1 -wao -s -a ${events}.E2.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $9 "\t" $23}' | sed 's/";//g' | sed 's/"//g' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' > ${events}.E2.genename.tmp
+
+bedtools intersect -f 1 -wao -s -a ${events}.E3.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $9 "\t" $23}' | sed 's/";//g' | sed 's/"//g' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' > ${events}.E3.genename.tmp
+
+done
+
+bedtools intersect -f 1 -wao -s -a MXE.E4.tmp.bed -b gtf.tmp | awk '{print $7 "\t" $9 "\t" $23}' | sed 's/";//g' | sed 's/"//g' | awk '{idx=$1}{a[idx]=(idx in a)?a[idx]" "$NF:$NF}END{for(i in a) print i,a[i]}' > MXE.E4.genename.tmp
+
+# combine gene names from all the exons
+
+for events in SE RI A3SS A5SS
+do
+
+join -j 1 <(join -j 1 <(sort -k1,1 ${events}.E1.genename.tmp) <(sort -k1,1 ${events}.E2.genename.tmp)) <(sort -k1,1 ${events}.E3.genename.tmp) | awk '{ while(++i<=NF) printf (!a[$i]++) ? $i FS : ""; i=split("",a); print ""}' | awk ' {for (i=2; i<NF; i++) printf $i ";"; print $NF "\t" $1}' | awk '{print $2 "\t" $1}' > ${events}.join.genename.tmp
+
+done
+
+join -j 1 <(sort -k1,1 <(join -j 1 <(join -j 1 <(sort -k1,1 MXE.E1.genename.tmp) <(sort -k1,1 MXE.E2.genename.tmp)) <(sort -k1,1 MXE.E3.genename.tmp))) <(sort -k1,1 MXE.E4.genename.tmp) | awk '{ while(++i<=NF) printf (!a[$i]++) ? $i FS : ""; i=split("",a); print ""}' | awk ' {for (i=2; i<NF; i++) printf $i ";"; print $NF "\t" $1}' | awk '{print $2 "\t" $1}' > MXE.join.genename.tmp
+
+# put geneIDs and gene names together
+
+for events in SE MXE RI A3SS A5SS MXE
+do
+
+join -j 1 <(sort -k1,1 ${events}.join.geneID.tmp) <(sort -k1,1 ${events}.join.genename.tmp) | sed 's/;NA//g' | sed 's/NA;//g' > ${events}.geneID.genename.tmp
+
+done
+
+# get exon sequences 
+
+for events in SE RI MXE A3SS A5SS
+do
+
+bedtools getfasta -s -fi $fasta -bed ${events}.seq1.tmp | grep -v ">" | awk ' {print $0}' > ${events}.S1.tmp
+
+bedtools getfasta -s -fi $fasta -bed ${events}.seq2.tmp | grep -v ">" | awk ' {print $0}' > ${events}.S2.tmp
+
+bedtools getfasta -s -fi $fasta -bed ${events}.seq3.tmp | grep -v ">" | awk ' {print $0}' > ${events}.S3.tmp
+
+done
+
+bedtools getfasta -s -fi $fasta -bed MXE.seq4.tmp | grep -v ">" | awk ' {print $0}' > MXE.S4.tmp
+
+
+# combine all the columns in the final event file
+
+# SE RI A3SS A5SS
+
+for events in SE RI A3SS A5SS
+do
+
+paste ${events}2.tmp ${events}.E1.tmp ${events}.E2.tmp ${events}.E3.tmp | awk '{print $0 "\tNA"}' > ${events}3.tmp
+paste ${events}3.tmp ${events}.S1.tmp ${events}.S2.tmp ${events}.S3.tmp | awk -v genome=$genome '{print $0 "\tNA\t" genome}' > ${events}4.txt
+
+done
+
+# MXE
+
+paste MXE2.tmp MXE.E1.tmp MXE.E2.tmp MXE.E3.tmp MXE.E4.tmp > MXE3.tmp
+paste MXE3.tmp MXE.S1.tmp MXE.S2.tmp MXE.S3.tmp MXE.S4.tmp | awk -v genome=$genome '{print $0 "\t" genome}' > MXE4.txt
+
+for events in SE RI A3SS A5SS MXE
+do
+
+join -1 3 -2 1 <(sort -k3,3 ${events}4.txt) <(sort -k1,1 ${events}.geneID.genename.tmp) | awk '{print $2 " " $3 " " $1 " " $(NF-1) " " $NF " " $0}' | awk '{$6=$7=$8=$(NF-1)=$NF=""; print $0}' | sed 's/   //g' | sed 's/  //g' | sed 's/ /\t/g' > ${events}5.txt
+
+done
+
+#generate the final output
+
+cat SE5.txt RI5.txt MXE5.txt A*SS5.txt | sort -k8,8nr | awk 'NR==1{print "Event_ID\tshort_ID\tlong_ID\tGene_ID\tGene_name\tstrand\tPValue\tFDR\tIC1\tSC1\tIC2\tSC2\tPSI1\tPSI2\tmIC1\tmSC1\tmIC2\tmSC2\tmPSI1\tmPSI2\tdPSI_2_minus_1\tE1\tE2\tE3\tE4\tS1\tS2\tS3\tS4\tGenome"} {print $0}' > all_events_postprocessing_NO_filter_${prefix_time}.txt
+
+
+# filter the results on PSI and the number of reads
+# min_read = 5 # min  average read per group
+
+cat SE5.txt RI5.txt MXE5.txt A*SS5.txt | awk '(($15 >=5 || $17 >=5)&&($16 >=5 || $18 >=5)) {print $0}' | sort -k8,8nr | awk 'NR==1{print "Event_ID\tshort_ID\tlong_ID\tGene_ID\tGene_name\tstrand\tPValue\tFDR\tIC1\tSC1\tIC2\tSC2\tPSI1\tPSI2\tmIC1\tmSC1\tmIC2\tmSC2\tmPSI1\tmPSI2\tdPSI_2_minus_1\tE1\tE2\tE3\tE4\tS1\tS2\tS3\tS4\tGenome"} {print $0}' > all_events_postprocessing_filter_on_reads_${prefix_time}.txt
+
+# filter the results on PSI and the number of reads
+# fdr = 0.05 # fdr cut off
+# dpsi = 0.099 # dpsi cut off
+# min_read = 5 # min  average read per group
+
+cat SE5.txt RI5.txt MXE5.txt A*SS5.txt | awk ' ($21 <= -0.099 || $21 >= 0.099) &&($8 <= 0.05) {print $0}' | awk '(($15 >=5 || $17 >=5)&&($16 >=5 || $18 >=5)) {print $0}' | sort -k8,8nr | awk 'NR==1{print "Event_ID\tshort_ID\tlong_ID\tGene_ID\tGene_name\tstrand\tPValue\tFDR\tIC1\tSC1\tIC2\tSC2\tPSI1\tPSI2\tmIC1\tmSC1\tmIC2\tmSC2\tmPSI1\tmPSI2\tdPSI_2_minus_1\tE1\tE2\tE3\tE4\tS1\tS2\tS3\tS4\tGenome"} {print $0}' > all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt
+
+# create summary file
+
+SE_all=$(awk '$1~/SE/{print $0}' all_events_postprocessing_NO_filter_${prefix_time}.txt | wc -l)
+MXE_all=$(awk '$1~/MXE/{print $0}' all_events_postprocessing_NO_filter_${prefix_time}.txt | wc -l)
+RI_all=$(awk '$1~/RI/{print $0}' all_events_postprocessing_NO_filter_${prefix_time}.txt | wc -l)
+A3SS_all=$(awk '$1~/A3SS/{print $0}' all_events_postprocessing_NO_filter_${prefix_time}.txt | wc -l)
+A5SS_all=$(awk '$1~/A5SS/{print $0}' all_events_postprocessing_NO_filter_${prefix_time}.txt | wc -l)
+
+SE_reads=$(awk '$1~/SE/{print $0}' all_events_postprocessing_filter_on_reads_${prefix_time}.txt | wc -l)
+MXE_reads=$(awk '$1~/MXE/{print $0}' all_events_postprocessing_filter_on_reads_${prefix_time}.txt | wc -l)
+RI_reads=$(awk '$1~/RI/{print $0}' all_events_postprocessing_filter_on_reads_${prefix_time}.txt | wc -l)
+A3SS_reads=$(awk '$1~/A3SS/{print $0}' all_events_postprocessing_filter_on_reads_${prefix_time}.txt | wc -l)
+A5SS_reads=$(awk '$1~/A5SS/{print $0}' all_events_postprocessing_filter_on_reads_${prefix_time}.txt | wc -l)
+
+SE_filter=$(awk '$1~/SE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | wc -l)
+MXE_filter=$(awk '$1~/MXE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | wc -l)
+RI_filter=$(awk '$1~/RI/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | wc -l)
+A3SS_filter=$(awk '$1~/A3SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | wc -l)
+A5SS_filter=$(awk '$1~/A5SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | wc -l)
+
+SE_PSI_plus=$(awk '$1~/SE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)>0{print $0}' | wc -l)
+MXE_PSI_plus=$(awk '$1~/MXE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)>0{print $0}' | wc -l)
+RI_PSI_plus=$(awk '$1~/RI/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)>0{print $0}' | wc -l)
+A3SS_PSI_plus=$(awk '$1~/A3SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)>0{print $0}' | wc -l)
+A5SS_PSI_plus=$(awk '$1~/A5SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)>0{print $0}' | wc -l)
+
+SE_PSI_minus=$(awk '$1~/SE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)<0{print $0}' | wc -l)
+MXE_PSI_minus=$(awk '$1~/MXE/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)<0{print $0}' | wc -l)
+RI_PSI_minus=$(awk '$1~/RI/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)<0{print $0}' | wc -l)
+A3SS_PSI_minus=$(awk '$1~/A3SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)<0{print $0}' | wc -l)
+A5SS_PSI_minus=$(awk '$1~/A5SS/{print $0}' all_events_postprocessing_filter_dPSI_FDR_reads_${prefix_time}.txt | awk '$(NF-9)<0{print $0}' | wc -l)
+
+echo -e "SE\t$SE_all\t$SE_reads\t$SE_filter\t$SE_PSI_plus\t$SE_PSI_minus" > results_summary_of_events_${prefix_time}.txt
+echo -e "MXE\t$MXE_all\t$MXE_reads\t$MXE_filter\t$MXE_PSI_plus\t$MXE_PSI_minus" >> results_summary_of_events_${prefix_time}.txt
+echo -e "RI\t$RI_all\t$RI_reads\t$RI_filter\t$RI_PSI_plus\t$RI_PSI_minus" >> results_summary_of_events_${prefix_time}.txt
+echo -e "A3SS\t$A3SS_all\t$A3SS_reads\t$A3SS_filter\t$A3SS_PSI_plus\t$A3SS_PSI_minus" >> results_summary_of_events_${prefix_time}.txt
+echo -e "A5SS\t$A5SS_all\t$A5SS_reads\t$A5SS_filter\t$A5SS_PSI_plus\t$A5SS_PSI_minus" >> results_summary_of_events_${prefix_time}.txt
+awk 'NR==1{print "Event\tDetected\tFiltered_on_reads\tFiltered_on_reads_PSI_FDR\tPSI(+)\tPSI(-)"} {print $0}' results_summary_of_events_${prefix_time}.txt > tmp && mv tmp results_summary_of_events_${prefix_time}.txt
+
+
+
+# remove intermediate data
+
+rm SE[45].txt RI[45].txt MXE[45].txt A*SS[45].txt 
+rm *.tmp*
