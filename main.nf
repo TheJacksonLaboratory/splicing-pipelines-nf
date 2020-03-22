@@ -295,8 +295,11 @@ process rmats {
   file "*"
 
   script:
+  mode = params.singleEnd ? 'single' : 'paired'
   """
-  rmats.py --b1 $bam1 --b2 $bam2 --gtf $gtf --od . -t paired --nthread $task.cpus --readLength ${params.readlength}
+  ls $bam1 > b1.txt
+  ls $bam2 > b2.txt
+  rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
   """
 }
 
