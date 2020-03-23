@@ -62,6 +62,7 @@ def helpMessage() {
       --max_cpus                    Maximum number of CPUs
       --max_memory                  Maximum memory
       --max_time                    Maximum time
+      --skiprMATS                   Skip rMATS
       --skipMultiQC                 Skip MultiQC
       --outdir                      The output directory where the results will be saved
       --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
@@ -95,7 +96,7 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
@@ -139,6 +140,7 @@ process trimmomatic {
   set val(name), file(output_filename) into trimmed_reads
 
   script:
+  // TODO: replace `no_adapter.txt` with `NO_FILE`
   mode = params.singleEnd ? 'SE' : 'PE'
   adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
@@ -173,7 +175,7 @@ process star {
   each file(gtf) from gtf_star
 
   output:
-  set val(name), file("${name}Aligned.sortedByCoord.out.bam"), file("${name}Aligned.sortedByCoord.out.bam.bai") into indexed_bam
+  set val(name), file("${name}Aligned.sortedByCoord.out.bam"), file("${name}Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
   file "*.out" into alignment_logs
   file "*SJ.out.tab"
   file "*Log.out" into star_log
@@ -234,7 +236,7 @@ process stringtie {
 
   output:
   file "${name}.gtf" into stringtie_gtf
-  file "${name}_for_DGE.gtf" into stringtie_deg_gtf
+  file "${name}_for_DGE.gtf" into stringtie_dge_gtf
 
   script: 
   rf = params.stranded ? '--rf' : ''
@@ -263,6 +265,41 @@ process stringtie_merge {
   """
   ls -1 *.gtf > assembly_gtf_list.txt
   stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
+  """
+}
+
+/*--------------------------------------------------
+  rMATS to detect alternative splicing events
+---------------------------------------------------*/
+
+indexed_bam_rmats
+  .map { name, bam,  bai -> [name, bam] }
+  .toSortedList { entry -> entry[0] }
+  .flatten()
+  .collate(4, false)
+  .set { paired_samples }
+
+process rmats {
+  tag "$name1 $name2"
+  label 'high_memory'
+  publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+
+  when:
+  !params.skiprMATS
+
+  input:
+  set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
+  file (gtf) from gtf_rmats
+
+  output:
+  file "*"
+
+  script:
+  mode = params.singleEnd ? 'single' : 'paired'
+  """
+  ls $bam1 > b1.txt
+  ls $bam2 > b2.txt
+  rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
   """
 }
 
