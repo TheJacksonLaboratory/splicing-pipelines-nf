@@ -1,0 +1,7 @@
+name: rmats4
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - rmats=4.0.2
