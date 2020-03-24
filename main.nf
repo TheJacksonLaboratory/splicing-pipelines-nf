@@ -180,10 +180,10 @@ process star {
   file "*SJ.out.tab"
   file "*Log.out" into star_log
   file "*Unmapped*" optional true
+  file "${name}_old.bw"
 
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
-  // TODO: check if `bw` file is in publishDir
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   overhang = params.overhang ? params.overhang : params.readlength - 1
