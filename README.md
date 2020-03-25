@@ -39,6 +39,7 @@ Other:
   --max_cpus                    Maximum number of CPUs
   --max_memory                  Maximum memory
   --max_time                    Maximum time
+  --skiprMATS                   Skip rMATS
   --skipMultiQC                 Skip MultiQC
   --outdir                      The output directory where the results will be saved
   --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
