@@ -23,7 +23,9 @@ log.info "Genome                : ${params.genome}"
 log.info "GTF                   : ${params.gtf}"
 log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
-log.info "Adapter               : ${params.adapter ? params.adapter : 'Not provided'}"
+log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
+log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
+log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
@@ -53,6 +55,8 @@ def helpMessage() {
     
     Reads:
       --stranded                    Specifies that the input is stranded
+      --b1                          Path to rMATs b1 file containing sample names
+      --b2                          Path to rMATs b2 file containing sample names
       --adapter                     Path to adapter file
       --readlength                  Read length (default = 48)
       --overhang                    Overhang (default = readlength - 1)
@@ -101,6 +105,18 @@ Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
+if (params.b1 && params.b2) {
+  add_suffix(file(params.b1), 'b1.txt', 'Aligned.sortedByCoord.out.bam')
+  add_suffix(file(params.b2), 'b2.txt', 'Aligned.sortedByCoord.out.bam')
+  Channel
+    .fromPath('b1.txt')
+    .ifEmpty { exit 1, "Cannot find rMATS b1 file: ${params.b1}" }
+    .set { b1 }
+  Channel
+    .fromPath('b2.txt')
+    .ifEmpty { exit 1, "Cannot find rMATS b2 file: ${params.b2}" }
+    .set { b2 }
+}
 
 /*--------------------------------------------------
   FastQC for quality control of input reads
@@ -272,35 +288,67 @@ process stringtie_merge {
   rMATS to detect alternative splicing events
 ---------------------------------------------------*/
 
-indexed_bam_rmats
-  .map { name, bam,  bai -> [name, bam] }
-  .toSortedList { entry -> entry[0] }
-  .flatten()
-  .collate(4, false)
-  .set { paired_samples }
+if (params.b1 && params.b2) {
 
-process rmats {
-  tag "$name1 $name2"
-  label 'high_memory'
-  publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+  indexed_bam_rmats
+    .map { name, bam, bai -> bam }
+    .set { bam }
 
-  when:
-  !params.skiprMATS
+  process rmats {
+    label 'high_memory'
+    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
 
-  input:
-  set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
-  file (gtf) from gtf_rmats
+    when:
+    !params.skiprMATS
 
-  output:
-  file "*"
+    input:
+    file(bam) from bam.collect()
+    file(gtf) from gtf_rmats
+    file(b1) from b1
+    file(b2) from b2
 
-  script:
-  mode = params.singleEnd ? 'single' : 'paired'
-  """
-  ls $bam1 > b1.txt
-  ls $bam2 > b2.txt
-  rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
-  """
+    output:
+    file "*"
+
+    script:
+    mode = params.singleEnd ? 'single' : 'paired'
+    """
+    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    """
+  }
+
+} else {
+
+  indexed_bam_rmats
+    .map { name, bam, bai -> [name, bam] }
+    .toSortedList { entry -> entry[0] }
+    .flatten()
+    .collate(4, false)
+    .set { paired_samples }
+
+  process paired_rmats {
+    tag "$name1 $name2"
+    label 'high_memory'
+    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+
+    when:
+    !params.skiprMATS
+
+    input:
+    set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
+    file (gtf) from gtf_rmats
+
+    output:
+    file "*"
+
+    script:
+    mode = params.singleEnd ? 'single' : 'paired'
+    """
+    ls $bam1 > b1.txt
+    ls $bam2 > b2.txt
+    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    """
+  }
 }
 
 /*--------------------------------------------------
@@ -325,4 +373,22 @@ process multiqc {
   """
   multiqc . -m fastqc -m star
   """
+}
+
+// Define helper function
+def add_suffix(b_file, output_filename, suffix) {
+  def b_file_bams = []
+  b_file.eachLine { row ->
+      def sample_ids = row.split(',')
+      def bams = []
+      for (String sample_id : sample_ids) {
+          bams.add("${sample_id}${suffix}")
+      }
+      b_file_bams.add(bams)
+  }
+  if (file(output_filename).exists()) { file(output_filename).delete() }
+  File out_b_file = new File(output_filename)
+  b_file_bams.each { row ->
+      out_b_file.append("${row.join(',')}\n")
+  }
 }
