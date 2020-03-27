@@ -1,8 +1,8 @@
 sample_id,fastq1,fastq2
-MYC_MCF10A_0h_rep1,g3://anczukow-bucket/LIB11-MCF-10A-3D-1-0h_GT17-09469_GCCAAT_S12_L004_R1_001.fastq.gz,g3://anczukow-bucket/LIB11-MCF-10A-3D-1-0h_GT17-09469_GCCAAT_S12_L004_R2_001.fastq.gz
-MYC_MCF10A_0h_rep2,g3://anczukow-bucket/LIB14-MCF-10A-3D-2-0h_GT17-09472_GCCAAT_S14_L005_R1_001.fastq.gz,g3://anczukow-bucket/LIB14-MCF-10A-3D-2-0h_GT17-09472_GCCAAT_S14_L005_R2_001.fastq.gz
-MYC_MCF10A_0h_rep3,g3://anczukow-bucket/LIB17-MCF-10A-3D-3-0h_GT17-09475_GCCAAT_S16_L006_R1_001.fastq.gz,g3://anczukow-bucket/LIB17-MCF-10A-3D-3-0h_GT17-09475_GCCAAT_S16_L006_R2_001.fastq.gz
-MYC_MCF10A_8h_rep1,g3://anczukow-bucket/LIB12-MCF-10A-3D-1-8h_GT17-09470_ATGTCA_S11_L004_R1_001.fastq.gz,g3://anczukow-bucket/LIB12-MCF-10A-3D-1-8h_GT17-09470_ATGTCA_S11_L004_R2_001.fastq.gz
-MYC_MCF10A_8h_rep2,g3://anczukow-bucket/LIB15-MCF-10A-3D-2-8h_GT17-09473_ATGTCA_S13_L005_R1_001.fastq.gz,g3://anczukow-bucket/LIB15-MCF-10A-3D-2-8h_GT17-09473_ATGTCA_S13_L005_R2_001.fastq.gz
-MYC_MCF10A_8h_rep3,g3://anczukow-bucket/LIB18-MCF-10A-3D-3-8h_GT17-09476_ATGTCA_S18_L006_R1_001.fastq.gz,g3://anczukow-bucket/LIB18-MCF-10A-3D-3-8h_GT17-09476_ATGTCA_S18_L006_R2_001.fastq.gz
+MYC_MCF10A_0h_rep1,gs://anczukow-bucket/LIB11-MCF-10A-3D-1-0h_GT17-09469_GCCAAT_S12_L004_R1_001.fastq.gz,gs://anczukow-bucket/LIB11-MCF-10A-3D-1-0h_GT17-09469_GCCAAT_S12_L004_R2_001.fastq.gz
+MYC_MCF10A_0h_rep2,gs://anczukow-bucket/LIB14-MCF-10A-3D-2-0h_GT17-09472_GCCAAT_S14_L005_R1_001.fastq.gz,gs://anczukow-bucket/LIB14-MCF-10A-3D-2-0h_GT17-09472_GCCAAT_S14_L005_R2_001.fastq.gz
+MYC_MCF10A_0h_rep3,gs://anczukow-bucket/LIB17-MCF-10A-3D-3-0h_GT17-09475_GCCAAT_S16_L006_R1_001.fastq.gz,gs://anczukow-bucket/LIB17-MCF-10A-3D-3-0h_GT17-09475_GCCAAT_S16_L006_R2_001.fastq.gz
+MYC_MCF10A_8h_rep1,gs://anczukow-bucket/LIB12-MCF-10A-3D-1-8h_GT17-09470_ATGTCA_S11_L004_R1_001.fastq.gz,gs://anczukow-bucket/LIB12-MCF-10A-3D-1-8h_GT17-09470_ATGTCA_S11_L004_R2_001.fastq.gz
+MYC_MCF10A_8h_rep2,gs://anczukow-bucket/LIB15-MCF-10A-3D-2-8h_GT17-09473_ATGTCA_S13_L005_R1_001.fastq.gz,gs://anczukow-bucket/LIB15-MCF-10A-3D-2-8h_GT17-09473_ATGTCA_S13_L005_R2_001.fastq.gz
+MYC_MCF10A_8h_rep3,gs://anczukow-bucket/LIB18-MCF-10A-3D-3-8h_GT17-09476_ATGTCA_S18_L006_R1_001.fastq.gz,gs://anczukow-bucket/LIB18-MCF-10A-3D-3-8h_GT17-09476_ATGTCA_S18_L006_R2_001.fastq.gz
 
