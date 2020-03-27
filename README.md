@@ -30,6 +30,8 @@ References:
 
 Reads:
   --stranded                    Specifies that the input is stranded
+  --b1                          Path to rMATs b1 file containing sample names
+  --b2                          Path to rMATs b2 file containing sample names
   --adapter                     Path to adapter file
   --readlength                  Read length (default = 48)
   --overhang                    Overhang (default = readlength - 1)
