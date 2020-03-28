@@ -1,14 +1,45 @@
 # splicing-pipelines-nf
 Repository for the Nextflow splicing pipeline
 
-## Test the pipeline
+## NextFlow Config Order
+
+For the splicing pipeline we have:
+
+### nextflow.config
+
+* `nextflow.config` is the main config file found at the `root directory`. It includes defaults for all parameters, containers & links to other configs/profiles
+* `base.config` to specify resources
+* `igenomes.config` specifying the path to the igenomes resources available
+    To mirror the setup on the CloudOS Universal Research Platform, adopting this standard setup.
+    * Currently in `/projects/adeslat/igenomes/` GRCh38 has been downloaded
+    * `STARIndex` downloaded from the AWS S3 Budget Amazon has donated to host these standards
+    
+* `MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`
+    This file contains the configuration for the `Anczukow-lab` samples comparing MYC_MCF10A_0h triplicate samples with the MYC_MCF10A_8h triplicate samples.  As a convention, all the analyses are kept in `analyses` subdirectory.  Each config for comparison should contain 3 parameters
+        * `reads` a `csv` file containing for paired read analysis
+           * `sample_id`
+           * `fastq1` left read
+           * `fastq2` right read
+        * `b1` the `txt` file a comma separated file containing 1 to many replicates used by the `rmats` program
+        * `b2` the `txt` file a comma separated file containing 1 to many replicates used by the `rmats` program
+    * examples directory
+    * executors directory
+        * sumner.conf - specifies the setup for HPC sumner
+        *
+igenomes.config to specify path to files for a given reference genome
+test.config for using the test profile
+user-defined configs eg the one you made for a specific analysis. This can be used to store a set of parameters and will be applied over the ones above if you use the -c option
+finally there's command line arguments
+
+## 
 Download the pipeline and test it on a minimal dataset with a single command:
 ```bash
 nextflow run jacksonlabs/splicing-pipelines-nf -profile test,<docker/sumner>
 ```
 
-## Example usage
-Start running your own analysis:
+## Sumner Execution
+
+
 ```bash
 nextflow run main.nf --reads examples/splicing_pipeline_testdata/single_end_reads.csv --genome GRCh38 -profile <docker/sumner>
 ```
