@@ -25,6 +25,7 @@ log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
+log.info "rMATS gtf file        : ${params.gencode_gtf}"
 log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
@@ -100,7 +101,14 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge }
+//
+// when specifying only one channel, Nextflow requires using `set` rather than `into`
+//
+Channel
+  .fromPath(params.gencode_gtf)
+  .ifEmpty { exit 1, "Cannot find gencode GTF file: ${params.gencode_gtf}" }
+  .set { gtf_rmats }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
