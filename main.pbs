@@ -13,4 +13,4 @@ date;hostname;pwd
 
 module load singularity
 curl -fsSL get.nextflow.io | bash
-./nextflow run main.nf -c conf/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config -profile sumner
+./nextflow run main.nf -profile sumner,MYC_MCF10A_0h_vs_MYC_MCF10A_8h
