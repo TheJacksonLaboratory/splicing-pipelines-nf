@@ -1,5 +1,5 @@
 # splicing-pipelines-nf
-Anczukow-lab repository for the Nextflow splicing pipeline with rMATS 4.0.2.
+Anczukow-lab repository for the Nextflow splicing pipeline with `rMATS 4.0.2`.
 
 ## Sumner (JAX HPC) execution
 
@@ -57,8 +57,8 @@ For the splicing pipeline we have:
 * `base.config` to specify resources
 * `igenomes.config` specifying the path to the igenomes resources available
     To mirror the setup on the CloudOS Universal Research Platform, adopting this standard setup.
-    * Currently in `/projects/adeslat/igenomes/` GRCh38 has been downloaded
-    * `STARIndex` downloaded from the AWS S3 Budget Amazon has donated to host these standards
+    * Currently in `/projects/adeslat/igenomes/` `GRCh38` has been downloaded
+    * `STARIndex` downloaded from the `AWS S3 Budget` Amazon has donated to host these standards
 * `igenomes.config` to specify path to files for a given reference genome
 
 ## All parameters
