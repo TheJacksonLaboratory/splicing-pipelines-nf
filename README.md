@@ -31,7 +31,7 @@ tail -f splicing.[jobnumber].out
 The `main.pbs` executes an analysis comparing `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
 
-All the analyses are kept in `analyses` subdirectory (by convention).   Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`.
+All the analyses are kept in `analyses` subdirectory (by convention).   Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
 
 These files can be specified via command line or via a config file.
 
