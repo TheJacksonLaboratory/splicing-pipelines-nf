@@ -73,6 +73,7 @@ Main arguments:
 References:
   --gtf                         Path to GTF file
   --star_index                  Path to STAR index
+  --gencode_gtf                 Path to gencode file (annotation gtf)
 
 Reads:
   --stranded                    Specifies that the input is stranded
