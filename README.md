@@ -37,14 +37,14 @@ These files can be specified via command line or via a config file.
 
 To specify via command line:
 
-* `--reads analysis/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.csv`
+* `--reads examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv`
     This file contains the `sample_id` a short name uniquely defines the sample within this comparsion
     comma seperated with the complete path for the `left` and `right` `fastqs`.   
     
-* `--b1 analysis/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_b1.txt`
+* `--b1 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt`
     This is a comma separated file containing 1 to many replicates for the `case` in the example.
     
-* `--b2 analysis/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_b2.txt`
+* `--b2 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt`
     This is a comma separated file containing 1 to many replicates for the `control` in the example.
 
 ## NextFlow Config Order
