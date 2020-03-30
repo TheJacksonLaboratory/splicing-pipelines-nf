@@ -13,4 +13,4 @@ date;hostname;pwd
 
 module load singularity
 curl -fsSL get.nextflow.io | bash
-./nextflow run main.nf -config conf/test_sumner.config -profile sumner -resume
+./nextflow run main.nf -config conf/test/test_sumner.config -profile sumner -resume
