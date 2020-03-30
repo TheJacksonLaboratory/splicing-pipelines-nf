@@ -1,5 +1,0 @@
-sample_id,fastq
-SRR4238351,examples/testdata/SRR4238351_subsamp.fastq.gz
-SRR4238355,examples/testdata/SRR4238355_subsamp.fastq.gz
-SRR4238359,examples/testdata/SRR4238359_subsamp.fastq.gz
-SRR4238379,examples/testdata/SRR4238379_subsamp.fastq.gz
