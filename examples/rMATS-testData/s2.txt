@@ -1,1 +1,0 @@
-231EV.25K.rep-1.R1.fastq:231EV.25K.rep-1.R2.fastq,231EV.25K.rep-2.R1.fastq:231EV.25K.rep-2.R2.fastq
