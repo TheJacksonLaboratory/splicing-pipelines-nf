@@ -101,7 +101,7 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
 //
 // when specifying only one channel, Nextflow requires using `set` rather than `into`
 //
@@ -109,6 +109,7 @@ Channel
   .fromPath(params.gencode_gtf)
   .ifEmpty { exit 1, "Cannot find gencode GTF file: ${params.gencode_gtf}" }
   .set { gtf_rmats }
+
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
