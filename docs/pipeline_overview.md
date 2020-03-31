@@ -1,5 +1,7 @@
 # Pipeline overview
 
+You can read more about what the pipeline does [here](../README.md#introduction)
+
 The pipeline contains the following files/folders of interest:
 
 - `main.nf` the main Nextflow script
