@@ -1,6 +1,6 @@
 ## Test the pipeline
 
-See [here](../README.md##quick-start-on-sumner-jax-hpc-execution)
+See [here](../README.md#quick-start-on-sumner-jax-hpc-execution)
 
 ## Running your own analysis
 
