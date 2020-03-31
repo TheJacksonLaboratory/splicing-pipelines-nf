@@ -45,9 +45,6 @@ tail -f splicing.[jobnumber].out
 Documentation about the pipeline, found in the docs/ directory:
 
 1. [Pipeline overview](docs/pipeline_overview.md)
-2. Pipeline configuration
-    * [Adding your own system config](https://nf-co.re/usage/adding_own_config)
-    * [Reference genomes](https://nf-co.re/usage/reference_genomes)
-3. [Running the pipeline](docs/usage.md)
+2. [Running the pipeline](docs/usage.md)
     * [Running on Sumner](docs/run_on_sumner.md)
     * [Running on CloudOS](docs/run_on_cloudos.md)

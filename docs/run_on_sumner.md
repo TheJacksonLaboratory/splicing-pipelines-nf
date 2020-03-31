@@ -4,6 +4,16 @@ See [here](../README.md#quick-start-on-sumner-jax-hpc-execution)
 
 ## Running your own analysis
 
+### 1. Setup your own configuration file
+
+Here you will be [adding your own system config](https://nf-co.re/usage/adding_own_config)
+
+You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes)
+
+### 2. Create input files
+
+### 3. Run the pipeline
+
 The `main.pbs` executes an analysis comparing `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
 
