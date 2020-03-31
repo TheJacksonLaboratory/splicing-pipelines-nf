@@ -1,5 +1,0 @@
-sample_id,fastq1,fastq2
-ERR188273,examples/testdata/paired_end/ERR188273_chrX_reduced_1.fastq.gz,examples/testdata/paired_end/ERR188273_chrX_reduced_2.fastq.gz
-ERR188383,examples/testdata/paired_end/ERR188383_chrX_reduced_1.fastq.gz,examples/testdata/paired_end/ERR188383_chrX_reduced_2.fastq.gz
-ERR188428,examples/testdata/paired_end/ERR188428_chrX_reduced_1.fastq.gz,examples/testdata/paired_end/ERR188428_chrX_reduced_2.fastq.gz
-ERR188454,examples/testdata/paired_end/ERR188454_chrX_reduced_1.fastq.gz,examples/testdata/paired_end/ERR188454_chrX_reduced_2.fastq.gz
