@@ -4,20 +4,42 @@ See [here](../README.md#quick-start-on-sumner-jax-hpc-execution)
 
 ## Running your own analysis
 
-### 1. Setup your own configuration file
+### 1. Create input files
 
-Here you will be [adding your own system config](https://nf-co.re/usage/adding_own_config)
+1) Create `reads` input CSV file
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](examples/testdata/single_end/reads.csv) and [paired-end](examples/testdata/paired_end/reads.csv) data
+2) Optional: create the `b1` and `b2` text files used by rMATS.
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](examples/testdata/paired_end/reads.csv) file. See example [`b1.txt`](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/examples/testdata/single_end/b1.txt) and [`b2.txt`](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/examples/testdata/single_end/b2.txt)
 
-You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes)
+### 2. Setup your own configuration file
 
-### 2. Create input files
+Here you will be [adding your own custom config](https://nf-co.re/usage/configuration#custom-configuration-files)
 
-### 3. Run the pipeline
+The config file will likely be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
 
-The `main.pbs` executes an analysis comparing `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
+To create your own custom config (to specify your input parameters) you can copy and edit this [`example.config`](../conf/examples/example.config) file.
+
+The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [`example.config`](../conf/examples/example.config).
+
+You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes) to make it easier to specify all of the files for a given references genome (eg `star_index` and `gtf`) with a single flag (`genome`).
+
+### 3. Run the pipeline
+
+Once you have created the input files and config then you can run the Nextflow pipeline using the [`main.pbs`](../main.pbs) script. You will need to modify the `main.pbs` script so that it runs the pipeline with your config profile and the `sumner` profile, for example:
+```
+./nextflow run main.nf -config conf/examples/example.config -profile sumner -resume
+```
+
+Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jax-hpc-execution) to submit jobs to the cluster.
+
+### Examples
+
+See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](..conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
+
+The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
 
-All the analyses are kept in `analyses` subdirectory (by convention).   Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
+All the analyses can be kept in `analyses` subdirectory (by convention). Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
 
 These files can be specified via command line or via a config file.
 
