@@ -26,7 +26,7 @@ log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
 log.info "rMATS gtf file        : ${params.gencode_gtf}"
-log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
+log.info "Adapter               : ${params.adapter.endsWith('NO_FILE') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
@@ -94,10 +94,8 @@ if (!params.singleEnd) {
     .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
-Channel
-  .fromPath(params.adapter)
-  .ifEmpty { exit 1, "Cannot find adapter sequence for trimming: ${params.adapter}" }
-  .set { adapter }
+// Loaded as a file rather than a channel incase params.adapter is undefined
+adapter = file(params.adapter)
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }

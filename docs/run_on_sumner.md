@@ -1,39 +1,34 @@
-# Steps needed to run a NextFlow workflow on JAX internal HPC Sumner
-1) Login to sumner
-```bash
-ssh myjaxuser@login.sumner.jax.org
-```
-2) Change to a directory where you can checkout the code on github
-```bash
-cd /projects/myjaxuser
-```
-3) Clone the repository required
-```bash
-git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
-```
-4) Change into the cloned repository
-```bash
-cd splicing-pipelines-nf
-```
-5) Download or use your already downloaded nextflow process
-```bash
-curl -fsSL get.nextflow.io | bash
-```
-6) Execute the nextflow pipeline.
-```bash
-./nextflow run main.nf -profile test,sumner 
-```
+## Test the pipeline
 
-## Troubleshooting
-1) If Nextflow is unable to launch processes from the head node you can log into an interactive node
-```bash
-srun -n 1 --mem 1000 --pty /bin/bash
-```
-2) Once in the head node, if Nextflow is unable to load Singularity you can load the singularity module
-```bash
-module load singularity
-```
-3) Execute the nextflow pipeline.
-```bash
-./nextflow run main.nf -profile test,sumner 
-```
+See [here](../README.md#quick-start-on-sumner-jax-hpc-execution)
+
+## Running your own analysis
+
+### 1. Setup your own configuration file
+
+Here you will be [adding your own system config](https://nf-co.re/usage/adding_own_config)
+
+You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes)
+
+### 2. Create input files
+
+### 3. Run the pipeline
+
+The `main.pbs` executes an analysis comparing `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
+The details of what needs to be configured to do this comparison analysis are found in three files:
+
+All the analyses are kept in `analyses` subdirectory (by convention).   Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
+
+These files can be specified via command line or via a config file.
+
+To specify via command line:
+
+* `--reads examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv`
+    This file contains the `sample_id` a short name uniquely defines the sample within this comparsion
+    comma seperated with the complete path for the `left` and `right` `fastqs`.   
+    
+* `--b1 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt`
+    This is a comma separated file containing 1 to many replicates for the `case` in the example.
+    
+* `--b2 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt`
+    This is a comma separated file containing 1 to many replicates for the `control` in the example.
