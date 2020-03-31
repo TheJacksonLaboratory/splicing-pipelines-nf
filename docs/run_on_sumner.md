@@ -1,15 +1,15 @@
 ## Test the pipeline
 
-See [here](../README.md#quick-start-on-sumner-jax-hpc-execution)
+See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 ## Running your own analysis
 
 ### 1. Create input files
 
 1) Create `reads` input CSV file
-    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](examples/testdata/single_end/reads.csv) and [paired-end](examples/testdata/paired_end/reads.csv) data
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/reads.csv) and [paired-end](../examples/testdata/paired_end/reads.csv) data
 2) Optional: create the `b1` and `b2` text files used by rMATS.
-    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](examples/testdata/paired_end/reads.csv) file. See example [`b1.txt`](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/examples/testdata/single_end/b1.txt) and [`b2.txt`](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/examples/testdata/single_end/b2.txt)
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/paired_end/reads.csv) file. See example [`b1.txt`](../examples/testdata/single_end/b1.txt) and [`b2.txt`](../examples/testdata/single_end/b2.txt)
 
 ### 2. Setup your own configuration file
 
@@ -19,7 +19,7 @@ The config file will likely be specific to your user and analysis. **You do not 
 
 To create your own custom config (to specify your input parameters) you can copy and edit this [`example.config`](../conf/examples/example.config) file.
 
-The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [`example.config`](../conf/examples/example.config).
+The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md#all-available-parameters). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [`example.config`](../conf/examples/example.config).
 
 You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes) to make it easier to specify all of the files for a given references genome (eg `star_index` and `gtf`) with a single flag (`genome`).
 
@@ -30,11 +30,11 @@ Once you have created the input files and config then you can run the Nextflow p
 ./nextflow run main.nf -config conf/examples/example.config -profile sumner -resume
 ```
 
-Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jax-hpc-execution) to submit jobs to the cluster.
+Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jaxs-hpc) to submit jobs to the cluster.
 
 ### Examples
 
-See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](..conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
+See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
 
 The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
