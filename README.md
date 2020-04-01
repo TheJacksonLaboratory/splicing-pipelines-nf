@@ -48,3 +48,6 @@ Documentation about the pipeline, found in the docs/ directory:
 2. [Running the pipeline](docs/usage.md)
     * [Running on Sumner](docs/run_on_sumner.md)
     * [Running on CloudOS](docs/run_on_cloudos.md)
+
+## Pipeline DAG
+![splicing_pip_dag](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/splicing_pip_dag.png)
