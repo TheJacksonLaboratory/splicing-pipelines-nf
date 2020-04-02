@@ -100,13 +100,6 @@ Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
-//
-// when specifying only one channel, Nextflow requires using `set` rather than `into`
-//
-Channel
-  .fromPath(params.gencode_gtf)
-  .ifEmpty { exit 1, "Cannot find gencode GTF file: ${params.gencode_gtf}" }
-  .set { gtf_rmats }
 
 Channel
   .fromPath(params.star_index)
@@ -320,7 +313,7 @@ if (params.b1 && params.b2) {
     script:
     mode = params.singleEnd ? 'single' : 'paired'
     """
-    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
     """
   }
 
@@ -353,7 +346,7 @@ if (params.b1 && params.b2) {
     """
     ls $bam1 > b1.txt
     ls $bam2 > b2.txt
-    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
     """
   }
 }
