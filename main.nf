@@ -9,11 +9,9 @@
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
+ * Anne Deslattes Mays <adeslatt@gmail.com>
  * Olga Anczukow
  */
-
-params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
-params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
