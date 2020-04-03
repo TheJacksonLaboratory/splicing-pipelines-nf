@@ -14,7 +14,16 @@ date;hostname;pwd
 module load singularity
 curl -fsSL get.nextflow.io | bash
 # test a small data set on sumner
-./nextflow run main.nf -config conf/examples/test_pe.config -profile base,sumner -resume
+#./nextflow run main.nf -config conf/examples/test_pe.config -profile base,sumner -resume
 
 # test a real analysis set on sumner for the Anczukow lab
 #./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_sumner.config  -profile base,sumner -resume
+./nextflow run main.nf --b1         examples/testdata/human_test/b1.txt \
+                       --b2         examples/testdata/human_test/b2.txt \
+                       --reads      examples/testdata/human_test/human_test_reps.csv \
+                       --star_index /projects/adeslat/igenomes/Homo_sapiens/NCBI/GRCh38/Sequence/STARIndex/ \
+                       --gtf        /projects/adeslat/igenomes/Homo_sapiens/Gencode/gencode.v32.primary_assembly.annotation.gtf \
+                       --overhang   100 \
+                       --readlength 48 \
+                       --outdir     'human_test' \
+                       -profile     base,sumner -resume
