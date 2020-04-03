@@ -9,29 +9,25 @@
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
+ * Anne Deslattes Mays <adeslatt@gmail.com>
  * Olga Anczukow
  */
-
-params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
-params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Reads                 : ${params.reads}"
 log.info "Single-end            : ${params.singleEnd}"
-log.info "Genome                : ${params.genome}"
 log.info "GTF                   : ${params.gtf}"
 log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
-log.info "rMATS gtf file        : ${params.gencode_gtf}"
+log.info "rMATS gtf file        : ${params.gtf}"
 log.info "Adapter               : ${params.adapter.endsWith('NO_FILE') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Outdir                : ${params.outdir}"
-log.info "iGenomes base         : ${params.igenomes_base}"
 log.info "Max CPUs              : ${params.max_cpus}"
 log.info "Max memory            : ${params.max_memory}"
 log.info "Max time              : ${params.max_time}"
@@ -42,7 +38,7 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --genome GRCh38 -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv -profile docker
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --singleEnd                   Specifies that the input is single-end reads
@@ -100,13 +96,6 @@ Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
-//
-// when specifying only one channel, Nextflow requires using `set` rather than `into`
-//
-Channel
-  .fromPath(params.gencode_gtf)
-  .ifEmpty { exit 1, "Cannot find gencode GTF file: ${params.gencode_gtf}" }
-  .set { gtf_rmats }
 
 Channel
   .fromPath(params.star_index)
@@ -320,7 +309,7 @@ if (params.b1 && params.b2) {
     script:
     mode = params.singleEnd ? 'single' : 'paired'
     """
-    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
     """
   }
 
@@ -353,7 +342,7 @@ if (params.b1 && params.b2) {
     """
     ls $bam1 > b1.txt
     ls $bam2 > b2.txt
-    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} --statoff
+    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
     """
   }
 }
