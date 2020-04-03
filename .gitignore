@@ -1,8 +1,10 @@
 .nextflow.log*
 nextflow
 .nextflow/
-results/
-work/
+results*/
+work*/
 b1.txt
 b2.txt
 splicing.*
+*.gz
+*.fastq

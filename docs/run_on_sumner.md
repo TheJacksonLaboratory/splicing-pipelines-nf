@@ -1,39 +1,56 @@
-# Steps needed to run a NextFlow workflow on JAX internal HPC Sumner
-1) Login to sumner
-```bash
-ssh myjaxuser@login.sumner.jax.org
+## Test the pipeline
+
+See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
+
+## Running your own analysis
+
+### 1. Create input files
+
+1) Create `reads` input CSV file
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/reads.csv) and [paired-end](../examples/testdata/paired_end/reads.csv) data
+2) Optional: create the `b1` and `b2` text files used by rMATS.
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/paired_end/reads.csv) file. See example [`b1.txt`](../examples/testdata/single_end/b1.txt) and [`b2.txt`](../examples/testdata/single_end/b2.txt)
+
+### 2. Setup your own configuration file
+
+Here you will be [adding your own custom config](https://nf-co.re/usage/configuration#custom-configuration-files)
+
+The config file will likely be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
+
+To create your own custom config (to specify your input parameters) you can copy and edit this [`example.config`](../conf/examples/example.config) file.
+
+The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md#all-available-parameters). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [`example.config`](../conf/examples/example.config).
+
+You can optionally add your own [reference genome bundle](https://nf-co.re/usage/reference_genomes) to make it easier to specify all of the files for a given references genome (eg `star_index` and `gtf`) with a single flag (`genome`).
+
+### 3. Run the pipeline
+
+Once you have created the input files and config then you can run the Nextflow pipeline using the [`main.pbs`](../main.pbs) script. You will need to modify the `main.pbs` script so that it runs the pipeline with your config profile and the `sumner` profile, for example:
 ```
-2) Change to a directory where you can checkout the code on github
-```bash
-cd /projects/myjaxuser
-```
-3) Clone the repository required
-```bash
-git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
-```
-4) Change into the cloned repository
-```bash
-cd splicing-pipelines-nf
-```
-5) Download or use your already downloaded nextflow process
-```bash
-curl -fsSL get.nextflow.io | bash
-```
-6) Execute the nextflow pipeline.
-```bash
-./nextflow run main.nf -profile test,sumner 
+./nextflow run main.nf -config conf/examples/example.config -profile sumner -resume
 ```
 
-## Troubleshooting
-1) If Nextflow is unable to launch processes from the head node you can log into an interactive node
-```bash
-srun -n 1 --mem 1000 --pty /bin/bash
-```
-2) Once in the head node, if Nextflow is unable to load Singularity you can load the singularity module
-```bash
-module load singularity
-```
-3) Execute the nextflow pipeline.
-```bash
-./nextflow run main.nf -profile test,sumner 
-```
+Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jaxs-hpc) to submit jobs to the cluster.
+
+### Examples
+
+See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
+
+The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
+The details of what needs to be configured to do this comparison analysis are found in three files:
+
+All the analyses can be kept in `analyses` subdirectory (by convention). Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
+
+These files can be specified via command line or via a config file.
+
+To specify via command line:
+
+* `--reads examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv`
+    This file contains the `sample_id` a short name uniquely defines the sample within this comparsion
+    comma seperated with the complete path for the `left` and `right` `fastqs`.   
+    
+* `--b1 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt`
+    This is a comma separated file containing 1 to many replicates for the `case` in the example.
+    
+* `--b2 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt`
+    This is a comma separated file containing 1 to many replicates for the `control` in the example.
