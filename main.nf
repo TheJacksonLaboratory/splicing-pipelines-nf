@@ -17,19 +17,17 @@ log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Reads                 : ${params.reads}"
 log.info "Single-end            : ${params.singleEnd}"
-log.info "Genome                : ${params.genome}"
 log.info "GTF                   : ${params.gtf}"
 log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
-log.info "rMATS gtf file        : ${params.gencode_gtf}"
+log.info "rMATS gtf file        : ${params.gtf}"
 log.info "Adapter               : ${params.adapter.endsWith('NO_FILE') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Outdir                : ${params.outdir}"
-log.info "iGenomes base         : ${params.igenomes_base}"
 log.info "Max CPUs              : ${params.max_cpus}"
 log.info "Max memory            : ${params.max_memory}"
 log.info "Max time              : ${params.max_time}"
@@ -40,7 +38,7 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --genome GRCh38 -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv -profile docker
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --singleEnd                   Specifies that the input is single-end reads
