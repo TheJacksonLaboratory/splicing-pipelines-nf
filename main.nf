@@ -87,7 +87,7 @@ if (!params.singleEnd) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
+    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
 // Loaded as a file rather than a channel incase params.adapter is undefined
