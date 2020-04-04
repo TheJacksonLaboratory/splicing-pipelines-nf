@@ -375,7 +375,7 @@ process multiqc {
 def add_suffix(b_file, output_filename, suffix) {
   def b_file_bams = []
   b_file.eachLine { row ->
-      def sample_ids = row.split(',')
+      def sample_ids = row.split(',') - ''
       def bams = []
       for (String sample_id : sample_ids) {
           bams.add("${sample_id}${suffix}")
