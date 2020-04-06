@@ -1,7 +1,7 @@
 # Run on CloudOS
 
 ## 0) Create an account & join a team
-[Sign-up to CloudOS](https://deploit.lifebit.ai/register) if you haven't alreday and join your team workspace. (While you don't have to join a team it is import to have you cloud account linked. Joining a your team means that you won't need to do this and can colloborate with colleagues).
+[Sign-up to CloudOS](https://deploit.lifebit.ai/register) if you haven't already and join your team workspace. (While you don't have to join a team it is important to have your cloud account linked. Joining your team means that you won't need to do this and can collaborate with colleagues).
 
 ## 1) Import the pipeline
 

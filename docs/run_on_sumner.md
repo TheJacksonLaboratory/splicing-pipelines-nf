@@ -44,7 +44,7 @@ These files can be specified via command line or via a config file.
 To specify via command line:
 
 * `--reads examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv`
-    This file contains the `sample_id` a short name uniquely defines the sample within this comparsion
+    This file contains the `sample_id` a short name uniquely defines the sample within this comparison
     comma seperated with the complete path for the `left` and `right` `fastqs`.   
     
 * `--b1 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt`
