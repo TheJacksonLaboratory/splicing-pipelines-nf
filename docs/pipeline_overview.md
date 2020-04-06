@@ -18,7 +18,7 @@ The pipeline contains the following files/folders in rough order of importance:
     - [`executors`](../conf/executors) configuration files for different infrastructure (eg for running on Sumner & over Google Cloud)
 - [`examples`](../examples) contains examples data files
     - [`analyses`](../examples/analyses) examples data files for specific analyses
-    - [`testdata`](../examples/testdata) example data file for testing
+    - [`testdata`](../examples/testdata) example data files for testing
 - [`containers`](../containers) contains `Dockerfile`s (instructions) to build the Docker images
 - [`original_scripts`](../original_scripts) contains the original Bash & Nextflow scripts
 - [`.gitignore`](../.gitignore) contains a list of files for git to ignore (not to commit to the repository)
