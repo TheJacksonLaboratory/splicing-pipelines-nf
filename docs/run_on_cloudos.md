@@ -39,16 +39,12 @@ Next we want to link to data & add parameters. You can navigate/import data on C
 
 For example, for this pipeline you may want to add the following parameters and example data:
 ```
-nextflow run https://github.com/PhilPalmer/splicing-pipelines-nf
---reads 'https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/pipelines/rmats/reads/replicates/paired_end_reads_replicates.csv'
---genome GRCh38
---b1 'https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/pipelines/rmats/reads/replicates/b1.txt'
---b2 'https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/pipelines/rmats/reads/replicates/b2.txt'
---overhang 100
---igenomes_base 's3://ngi-igenomes/igenomes/'
---gencode_gtf 'https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/references/GRCh38/gencode.v32.annotation.gtf'
---max_cpus 16
---max_memory '120.GB'
+nextflow run https://github.com/lifebit-ai/splicing-pipelines-nf
+--reads 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads_google_cloud.csv'
+--b1 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt'
+--b2 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt'
+--star_index 'gs://cloudosinputdata/inputs/splicing-pipelines-nf/references/Homo_sapiens/NCBI/GRCh38/Sequence/STARIndex'
+--gtf 'gs://cloudosinputdata/inputs/splicing-pipelines-nf/gencode.v32.primary_assembly.annotation.gtf'
 ```
 
 ![run_splicing_pip](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/run_splicing_pip.gif)
@@ -68,5 +64,5 @@ To monitor jobs you can click on the row for any given job. Immediately after ru
 
 Once on the job monitor page, you can see the progress of the job update in real time. Information such as the resources i.e. memory & CPUs is displayed. Once the job has finished the results can be found in the results tab as well as any reports for select pipelines.
 
-This page is completely sharable, for example, you can view a successfully completed example job [here](https://cloudos.lifebit.ai/public/jobs/5e831015e7d1990104cb8090) 
+This page is completely sharable, for example, you can view a successfully completed example job [here](https://cloudos.lifebit.ai/public/jobs/5e87ef928079200103b0a0b8) 
 ![splicing_pip_job_page](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/splicing_pip_job_page.png)
