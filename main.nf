@@ -23,7 +23,7 @@ log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
 log.info "rMATS gtf file        : ${params.gtf}"
-log.info "Adapter               : ${params.adapter.endsWith('NO_FILE') ? 'Not provided' : params.adapter}"
+log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
@@ -152,7 +152,6 @@ process trimmomatic {
   set val(name), file(output_filename) into trimmed_reads
 
   script:
-  // TODO: replace `no_adapter.txt` with `NO_FILE`
   mode = params.singleEnd ? 'SE' : 'PE'
   adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
