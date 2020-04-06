@@ -74,13 +74,13 @@ The file structure looks as follows:
 ├── main.nf
 ├── main.pbs
 ├── nextflow.config
-├── original_scripts
-│   ├── bash
-│   │   ├── pipeline_splicing_with_arguments_parallel_part1.pbs
-│   │   ├── pipeline_splicing_with_arguments_parallel_part2.pbs
-│   │   ├── postprocessing.pbs
-│   │   └── run_pipeline_Olga_job1.sh
-│   └── nextflow
-│       ├── main.nf
-│       └── rMATS_pipeline_samtools.nf
+└── original_scripts
+    ├── bash
+    │   ├── pipeline_splicing_with_arguments_parallel_part1.pbs
+    │   ├── pipeline_splicing_with_arguments_parallel_part2.pbs
+    │   ├── postprocessing.pbs
+    │   └── run_pipeline_Olga_job1.sh
+    └── nextflow
+        ├── main.nf
+        └── rMATS_pipeline_samtools.nf
 ```
