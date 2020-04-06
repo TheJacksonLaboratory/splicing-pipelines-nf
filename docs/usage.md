@@ -10,20 +10,16 @@ See [here](run_on_cloudos.md)
 ```
 Main arguments:
   --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
-  --singleEnd                   Specifies that the input is single-end reads
-  --genome                      Name of iGenomes reference
+  --gtf                         Path to GTF file
+  --star_index                  Path to STAR index
   -profile                      Configuration profile to use. Can use multiple (comma separated)
                                 Available: docker, test and more.
 
-References:
-  --gtf                         Path to GTF file
-  --star_index                  Path to STAR index
-  --gencode_gtf                 Path to gencode file (annotation gtf)
-
 Reads:
+  --b1                          Path to rMATS b1 file containing sample names
+  --b2                          Path to rMATS b2 file containing sample names
+  --singleEnd                   Specifies that the input is single-end reads
   --stranded                    Specifies that the input is stranded
-  --b1                          Path to rMATs b1 file containing sample names
-  --b2                          Path to rMATs b2 file containing sample names
   --adapter                     Path to adapter file
   --readlength                  Read length (default = 48)
   --overhang                    Overhang (default = readlength - 1)
@@ -36,5 +32,4 @@ Other:
   --skiprMATS                   Skip rMATS
   --skipMultiQC                 Skip MultiQC
   --outdir                      The output directory where the results will be saved
-  --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
 ```
