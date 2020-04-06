@@ -42,7 +42,6 @@ def helpMessage() {
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --singleEnd                   Specifies that the input is single-end reads
-      --genome                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
@@ -66,7 +65,6 @@ def helpMessage() {
       --skiprMATS                   Skip rMATS
       --skipMultiQC                 Skip MultiQC
       --outdir                      The output directory where the results will be saved
-      --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
     """.stripIndent()
 }
 
