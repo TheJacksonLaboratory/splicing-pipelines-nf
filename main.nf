@@ -22,7 +22,6 @@ log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
-log.info "rMATS gtf file        : ${params.gtf}"
 log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
@@ -38,21 +37,20 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile docker
+    
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
-      --singleEnd                   Specifies that the input is single-end reads
+      --gtf                         Path to GTF file
+      --star_index                  Path to STAR index
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
-    References:
-      --gtf                         Path to GTF file
-      --star_index                  Path to STAR index
-    
     Reads:
+      --b1                          Path to rMATS b1 file containing sample names
+      --b2                          Path to rMATS b2 file containing sample names
+      --singleEnd                   Specifies that the input is single-end reads
       --stranded                    Specifies that the input is stranded
-      --b1                          Path to rMATs b1 file containing sample names
-      --b2                          Path to rMATs b2 file containing sample names
       --adapter                     Path to adapter file
       --readlength                  Read length (default = 48)
       --overhang                    Overhang (default = readlength - 1)
