@@ -7,7 +7,7 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 ### 1. Create input files
 
 1) Create `reads` input CSV file
-    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/reads.csv) and [paired-end](../../examples/testdata/paired_end/paired_end_reads_replicates.csv) data
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/reads.csv) and [paired-end](../examples/testdata/paired_end/paired_end_reads_replicates.csv) data
 2) Optional: create the `b1` and `b2` text files used by rMATS.
     - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/paired_end/paired_end_reads_replicates.csv) file. See example [`b1.txt`](../examples/testdata/single_end/b1.txt) and [`b2.txt`](../examples/testdata/single_end/b2.txt)
 
@@ -37,7 +37,7 @@ See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_
 The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
 
-All the analyses can be kept in `examples/analyses` subdirectory (by convention). Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
+All the analyses can be kept in [`examples/analyses`](../examples/analyses) subdirectory (by convention). Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
 
 These files can be specified via command line or via a config file.
 
