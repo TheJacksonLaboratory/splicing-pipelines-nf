@@ -22,8 +22,7 @@ log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
-log.info "rMATS gtf file        : ${params.gtf}"
-log.info "Adapter               : ${params.adapter.endsWith('NO_FILE') ? 'Not provided' : params.adapter}"
+log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
@@ -38,22 +37,20 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile docker
+    
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
-      --singleEnd                   Specifies that the input is single-end reads
-      --genome                      Name of iGenomes reference
+      --gtf                         Path to GTF file
+      --star_index                  Path to STAR index
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: docker, test and more.
 
-    References:
-      --gtf                         Path to GTF file
-      --star_index                  Path to STAR index
-    
     Reads:
+      --b1                          Path to rMATS b1 file containing sample names
+      --b2                          Path to rMATS b2 file containing sample names
+      --singleEnd                   Specifies that the input is single-end reads
       --stranded                    Specifies that the input is stranded
-      --b1                          Path to rMATs b1 file containing sample names
-      --b2                          Path to rMATs b2 file containing sample names
       --adapter                     Path to adapter file
       --readlength                  Read length (default = 48)
       --overhang                    Overhang (default = readlength - 1)
@@ -66,7 +63,6 @@ def helpMessage() {
       --skiprMATS                   Skip rMATS
       --skipMultiQC                 Skip MultiQC
       --outdir                      The output directory where the results will be saved
-      --igenomes_base               Path to iGenomes base directory (default = 's3://ngi-igenomes/igenomes/')
     """.stripIndent()
 }
 
@@ -152,7 +148,6 @@ process trimmomatic {
   set val(name), file(output_filename) into trimmed_reads
 
   script:
-  // TODO: replace `no_adapter.txt` with `NO_FILE`
   mode = params.singleEnd ? 'SE' : 'PE'
   adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"

@@ -17,9 +17,9 @@ Here you will be [adding your own custom config](https://nf-co.re/usage/configur
 
 The config file will likely be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
 
-To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_sumner.config) file.
+To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
-The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md#all-available-parameters). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_sumner.config).
+The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md#all-available-parameters). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config).
 
 ### 3. Run the pipeline
 
@@ -32,7 +32,7 @@ Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jaxs-hpc) to
 
 ### Examples
 
-See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_sumner.config) for an example analysis comparing the 0h and 8h timepoints
+See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
 
 The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
 The details of what needs to be configured to do this comparison analysis are found in three files:
