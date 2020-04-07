@@ -13,8 +13,21 @@ date;hostname;pwd
 
 module load singularity
 curl -fsSL get.nextflow.io | bash
-# test a small data set on sumner
-./nextflow run main.nf -config conf/examples/test_pe.config -profile base,sumner -resume
-
-# test a real analysis set on sumner for the Anczukow lab
-#./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h_sumner.config  -profile base,sumner -resume
+#
+# After cloning the repository, good practice to run a test or two
+#  two tests have been set up, their configuration files are found here:
+#       conf/examples/human_test.config (a paired_end test)
+#       conf/examples/test.config (a single_end test)
+#
+# 4/7/2020 - ADM on Sumner, tested config conf/examples/human_test.config outdir human_test
+#  
+#./nextflow run main.nf -config conf/examples/human_test.config -profile base,sumner -resume
+#
+# 4/7/2020 - ADM on Sumner, tested config conf/examples/test.config outdir test_single_end
+#
+#./nextflow run main.nf -config conf/examples/test.config -profile base,sumner -resume
+#
+# 4/7/2020 - ADM on Sumner, tested config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config 
+#            outdir /projects/anczukow-lab/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h
+#
+./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  -profile base,sumner -resume
