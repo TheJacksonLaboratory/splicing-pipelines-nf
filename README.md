@@ -22,7 +22,7 @@ git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
 cd splicing-pipelines-nf
 ```
 
-2) Then to execute on sumner, a user does the following bash script with the `slurm` `sbatch` command:
+2) Then to execute on sumner, inspect the `main.pbs` script and edit or uncomment the specific `nextflow` run you would like to run.  To run the bash script using the `slurm` `sbatch` command:
 
 ```bash
 sbatch main.pbs
