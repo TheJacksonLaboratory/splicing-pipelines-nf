@@ -17,13 +17,9 @@ curl -fsSL get.nextflow.io | bash
 #./nextflow run main.nf -config conf/examples/test_pe.config -profile base,sumner -resume
 
 # test a real analysis set on sumner for the Anczukow lab
+#
+# pre-requisite for testing the human_test configuraiton is that the data are downloaded
+#
 #./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  -profile base,sumner -resume
-./nextflow run main.nf --b1         examples/testdata/human_test/b1.txt \
-                       --b2         examples/testdata/human_test/b2.txt \
-                       --reads      examples/testdata/human_test/human_test_reps.csv \
-                       --star_index /projects/anczukow-lab/igenomes/Homo_sapiens/NCBI/GRCh38/Sequence/STARIndex/ \
-                       --gtf        /projects/anczukow-lab/igenomes/Homo_sapiens/Gencode/gencode.v32.primary_assembly.annotation.gtf \
-                       --overhang   100 \
-                       --readlength 48 \
-                       --outdir     'human_test' \
-                       -profile     base,sumner -resume
+./nextflow run main.nf -config conf/examples/human_test.config -profile base,sumner -resume
+
