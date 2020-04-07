@@ -8,3 +8,6 @@ b2.txt
 splicing.*
 *.gz
 *.fastq
+test_pe
+test_single_end
+human_test
