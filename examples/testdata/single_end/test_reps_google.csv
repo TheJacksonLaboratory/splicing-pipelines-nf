@@ -1,0 +1,7 @@
+sample_id,fastq
+SRR1039513,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039513_1.fastq.gz
+SRR1039509,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039509_1.fastq.gz
+SRR1039517,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039517_1.fastq.gz
+SRR1039508,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039508_1.fastq.gz
+SRR1039512,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039512_1.fastq.gz
+SRR1039516,gs://cloudosinputdata/inputs/splicing-pipelines-nf/samples/SRR1039516_1.fastq.gz

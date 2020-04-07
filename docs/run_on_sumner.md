@@ -7,9 +7,9 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 ### 1. Create input files
 
 1) Create `reads` input CSV file
-    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/reads.csv) and [paired-end](../examples/testdata/paired_end/paired_end_reads_replicates.csv) data
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/testdata/human_test/human_test_reps.csv) data
 2) Optional: create the `b1` and `b2` text files used by rMATS.
-    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/paired_end/paired_end_reads_replicates.csv) file. See example [`b1.txt`](../examples/testdata/single_end/b1.txt) and [`b2.txt`](../examples/testdata/single_end/b2.txt)
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`b1.txt`](../examples/testdata/human_test/b1.txt) and [`b2.txt`](../examples/testdata/human_test/b2.txt)
 
 ### 2. Setup your own configuration file
 
