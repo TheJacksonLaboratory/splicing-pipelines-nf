@@ -1,8 +1,8 @@
 sample_id,fastq1,fastq2
-SRR1039513,/projects/anczukow-lab/igenomes/human_testSRR1039513_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039513_2.fastq.gz
-SRR1039509,/projects/anczukow-lab/igenomes/human_testSRR1039509_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039509_2.fastq.gz
-SRR1039517,/projects/anczukow-lab/igenomes/human_testSRR1039517_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039517_2.fastq.gz
-SRR1039508,/projects/anczukow-lab/igenomes/human_testSRR1039508_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039508_2.fastq.gz
-SRR1039512,/projects/anczukow-lab/igenomes/human_testSRR1039512_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039512_2.fastq.gz
-SRR1039516,/projects/anczukow-lab/igenomes/human_testSRR1039516_1.fastq.gz,/projects/anczukow-lab/igenomes/human_testSRR1039516_2.fastq.gz
+SRR1039513,/projects/anczukow-lab/igenomes/human_test/SRR1039513_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039513_2.fastq.gz
+SRR1039509,/projects/anczukow-lab/igenomes/human_test/SRR1039509_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039509_2.fastq.gz
+SRR1039517,/projects/anczukow-lab/igenomes/human_test/SRR1039517_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039517_2.fastq.gz
+SRR1039508,/projects/anczukow-lab/igenomes/human_test/SRR1039508_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039508_2.fastq.gz
+SRR1039512,/projects/anczukow-lab/igenomes/human_test/SRR1039512_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039512_2.fastq.gz
+SRR1039516,/projects/anczukow-lab/igenomes/human_test/SRR1039516_1.fastq.gz,/projects/anczukow-lab/igenomes/human_test/SRR1039516_2.fastq.gz
 
