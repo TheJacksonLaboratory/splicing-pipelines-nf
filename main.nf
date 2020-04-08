@@ -195,6 +195,7 @@ process star {
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
   overhang = params.overhang ? params.overhang : params.readlength - 1
+  xs_tag_cmd = params.stranded ? "samtools view -h ${name}Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
   if [[ $index == *.tar.gz ]]; then
@@ -228,6 +229,8 @@ process star {
   chmod a+rw $name*
   samtools index ${name}Aligned.sortedByCoord.out.bam
   bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
+
+  $xs_tag_cmd
   """
 }
 

@@ -5,3 +5,6 @@ LABEL authors="phil@lifebit.ai" \
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
 ENV PATH /opt/conda/envs/splicing-pipelines-nf/bin:$PATH
+
+COPY ./tagXSstrandedData.awk /usr/local/bin/
+RUN chmod +x /usr/local/bin/tagXSstrandedData.awk
