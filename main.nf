@@ -221,6 +221,8 @@ process star {
     --outFilterType BySJout \
     --twopassMode Basic \
     --alignEndsType EndToEnd \
+    --alignIntronMax 1000000 \
+    --outReadsUnmapped Fastx \
     --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
 
   chmod a+rw $name*
