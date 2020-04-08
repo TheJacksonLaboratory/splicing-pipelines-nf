@@ -64,9 +64,10 @@ git push
 
 ![git_cmds](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/git_cmds.gif)
 
-## To push your local branch onto master
+## To push your new local branch to GitHub
 
 ```bash
-git push https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git [name of your branch]
+git push --set-upstream origin [name of your branch]
 ```
- 
+
+You can then [open a pull request](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/compare?expand=1) from your branch into master. This allows everyone to be able to see and review the changes you've made. Once you're happy with the changes (and ideally once the changes have been reviewed by at least one other person) you can then click merge to merge your changes into the `master` branch for everyone to use! :tada:
