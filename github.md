@@ -32,11 +32,11 @@ Remember to not stay on a branch long, so your changes do not get too far out of
 git checkout -b [name of your branch]
 ```
 
-Once you are on your own branch you can then make changes, for example, edit `file1.md` and `file2.md` using the text editor
+Once you are on your own branch you can then make changes, for example, edit `README.md` using the text editor
 
 ## To show the status of changes
 
-Changes are shown as either untracked, modified, or staged
+Changes are shown as either untracked, modified, or staged. It will also show you what branch you're on
 
 ```bash
 git status
@@ -45,7 +45,7 @@ git status
 ## To add, commit and push your changes.
 
 ### add
-Stage the changed files eg `git add file1.md file2.md`
+Stage the changed files eg `git add README.md`
 ```bash
 git add [whatever you have added]
 ```
@@ -61,6 +61,8 @@ Push changes to github
 ```bash
 git push
 ```
+
+![git_cmds](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/git_cmds.gif)
 
 ## To push your local branch onto master
 
