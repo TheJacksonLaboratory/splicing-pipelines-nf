@@ -20,11 +20,19 @@ genome_version <- strsplit(ref_genome, "[.]")[[1]][1]
 
 if(genome_version == "GRCh38"){
   print("Loading human genome, hg38")
+
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+
   library(BSgenome.Hsapiens.UCSC.hg38)
   genome <- BSgenome.Hsapiens.UCSC.hg38
 }
 if(genome_version == "GRCm38"){
   print("Loading mouse genome, mm10")
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
   library(BSgenome.Mmusculus.UCSC.mm10)
   genome <- BSgenome.Mmusculus.UCSC.mm10
 }
@@ -73,7 +81,7 @@ get_postprocessing_table <- function(df){
   print(sprintf("Processing %s....", event_type))
   print("Table of number of events per chromosome")
   print(table(df$chr))
-  print("NOTE: We removes caffolds, assembly patches and alternate loci (haplotypes). These were needed for mapping purposes.")
+  print("NOTE: We remove scaffolds, assembly patches and alternate loci (haplotypes). These were needed for mapping purposes.")
   df <- subset(df, chr %in% chr_list)
   df$Event_type <-event_type
   #add 1 to coordinates that are zero base
