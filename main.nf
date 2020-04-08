@@ -192,7 +192,6 @@ process star {
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
   // TODO: find a better solution to needing to use `chmod`
-  out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   overhang = params.overhang ? params.overhang : params.readlength - 1
   """
   # Decompress STAR index if compressed
@@ -200,28 +199,71 @@ process star {
     tar -xvzf $index
   fi
 
-  STAR \
-    --genomeDir ${index.toString().minus('.tar.gz')} \
-    --readFilesIn $reads \
-    --readMatesLengthsIn NotEqual \
-    --outFileNamePrefix $name \
-    --runThreadN $task.cpus \
-    --readFilesCommand zcat \
-    --sjdbGTFfile $gtf \
-    --sjdbOverhang $overhang \
-     --alignSJoverhangMin 8 $out_filter_intron_motifs \
-    --outFilterMismatchNmax $params.mismatch \
-    --outFilterMultimapNmax 20 \
-    --alignMatesGapMax 1000000 \
-    --outSAMattributes All \
-    --outSAMtype BAM SortedByCoordinate \
-    --limitBAMsortRAM 100000000000 \
-    --outBAMsortingThreadN $task.cpus \
-    --outFilterType BySJout \
-    --twopassMode Basic \
-    --alignEndsType EndToEnd \
-    --outWigType wiggle
+  // --- comment to be removed after testing and code revew ---
+  //
+  //  ADM 2020 April 8 removed this setting:
+  //     since additional functions were requested
+  //     for star strand specific and unstranded specific
+  //
+  // this parameter was optionally set if the input data was unstranded 
+  //
+  // out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+  // 
+  //-----------------------------------------------------------
 
+  if (params.stranded) {
+
+    STAR \
+      --genomeDir ${index.toString().minus('.tar.gz')} \
+      --readFilesIn $reads \
+      --readMatesLengthsIn NotEqual \
+      --outFileNamePrefix $name \
+      --runThreadN $task.cpus \
+      --readFilesCommand zcat \
+      --sjdbGTFfile $gtf \
+      --sjdbOverhang $overhang \
+      --alignSJoverhangMin 8 \
+      --outFilterMismatchNmax $params.mismatch \
+      --outFilterMultimapNmax 20 \
+      --alignMatesGapMax 1000000 \
+      --alignIntronMax   1000000 \
+      --outReadsUnmapped Fastx \
+      --outSAMattributes All \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 100000000000 \
+      --outBAMsortingThreadN $task.cpus \
+      --outFilterType BySJout \
+      --twopassMode Basic \
+      --alignEndsType EndToEnd \
+      --outWigType wiggle
+  }
+  else {
+    STAR \
+      --genomeDir ${index.toString().minus('.tar.gz')} \
+      --readFilesIn $reads \
+      --readMatesLengthsIn NotEqual \
+      --outFileNamePrefix $name \
+      --runThreadN $task.cpus \
+      --readFilesCommand zcat \
+      --sjdbGTFfile $gtf \
+      --sjdbOverhang $overhang \
+      --alignSJoverhangMin 8 \
+      --outFilterIntronMotifs RemoveNoncanonicalUnannotated \
+      --outFilterMismatchNmax $params.mismatch \
+      --outFilterMultimapNmax 20 \
+      --alignMatesGapMax 1000000 \
+      --alignIntronMax   1000000 \
+      --outReadsUnmapped Fastx \
+      --outSAMattributes All \
+      --outSAMstrandField intronMotif \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 100000000000 \
+      --outBAMsortingThreadN $task.cpus \
+      --outFilterType BySJout \
+      --twopassMode Basic \
+      --alignEndsType EndToEnd \
+      --outWigType wiggle
+  }
   chmod a+rw $name*
   samtools index ${name}Aligned.sortedByCoord.out.bam
   bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
