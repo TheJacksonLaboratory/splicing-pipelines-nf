@@ -1,0 +1,8 @@
+b1              /projects/anczukow-lab/MYC_MCF10A/run17_LU_20200331/rmats/bam_lists/MYCER_00h.txt
+b2              /projects/anczukow-lab/MYC_MCF10A/run17_LU_20200331/rmats/bam_lists/MYCER_08h.txt
+rmats_gtf       /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.primary_assembly.annotation.gtf
+ref_gtf         /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.primary_assembly.annotation.gtf
+fasta           /projects/anczukow-lab/reference_genomes/human/Gencode/GRCh38.primary_assembly.genome.fa
+reads           paired
+readlen         120
+
