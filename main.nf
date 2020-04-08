@@ -193,6 +193,7 @@ process star {
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+  out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
   overhang = params.overhang ? params.overhang : params.readlength - 1
   """
   # Decompress STAR index if compressed
@@ -209,7 +210,7 @@ process star {
     --readFilesCommand zcat \
     --sjdbGTFfile $gtf \
     --sjdbOverhang $overhang \
-     --alignSJoverhangMin 8 $out_filter_intron_motifs \
+    --alignSJoverhangMin 8 \
     --outFilterMismatchNmax $params.mismatch \
     --outFilterMultimapNmax 20 \
     --alignMatesGapMax 1000000 \
@@ -220,7 +221,7 @@ process star {
     --outFilterType BySJout \
     --twopassMode Basic \
     --alignEndsType EndToEnd \
-    --outWigType wiggle
+    --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
 
   chmod a+rw $name*
   samtools index ${name}Aligned.sortedByCoord.out.bam
