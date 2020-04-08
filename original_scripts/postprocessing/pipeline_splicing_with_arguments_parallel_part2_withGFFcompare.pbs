@@ -1,0 +1,58 @@
+#!/bin/sh
+#PBS -q batch
+#PBS -l nodes=1:ppn=14
+#PBS -l walltime=24:00:00
+#PBS -m abe
+
+# use script: qsub -l nodes=1:ppn=14 -v config="config_for_splicing_pipeline_part2.txt"  /projects/anczukow-lab/splicing_pipeline/pipeline_splicing_with_arguments_parallel_part2_withGFFcompare.pbs
+
+cd $PBS_O_WORKDIR
+module load R/3.6.0
+
+# config format:
+# two space or tab separated columns, the first column names have to be identical to this example:
+#
+# reads PE
+# outdir /projects/anczukow-lab/yuriem/test_pipeline_parallel
+# threads 14
+# gtf /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.annotation.gtf
+# 
+# or see /projects/anczukow-lab/splicing_pipeline/config_examples/config_for_splicing_pipeline_part1.txt
+
+
+reads=$(awk '$1=="reads"{print $2}' $config)
+outdir=$PBS_O_WORKDIR
+threads=$(awk '$1=="threads"{print $2}' $config)
+gtf=$(awk '$1=="gtf"{print $2}' $config)
+
+
+if [ $reads == "PE" ]; then
+
+        grep -e "Started analysis of " -e "Both Surviving" run_pipeline_Olga_job1*.sh.e* | grep -v '_R2*.f' | tr '\n' '\t' | sed 's/Started analysis/\nStarted analysis/g' | awk '{print $4 "\t" $8 "\t" $11 " " $12 "\t" $16 " " $17 "\t" $21 " " $22 "\t" $24 " " $25}' | sed '/^[[:space:]]*$/d' | awk 'NR==1{print "sample\t# of reads\tBoth surviving\tForward only surviving\t Reverse only surviving\t Dropped"}{print $0}' > ${outdir}/trimming_stats.txt
+
+else
+        grep -e "Started analysis of " -e "Surviving" run_pipeline_Olga_job1*.sh.e* | tr '\n' '\t' | sed 's/Started analysis/\nStarted analysis/g' | awk '{print $4 "\t" $7 "\t" $9 " " $10 "\t" $12 " " $13}' | sed '/^[[:space:]]*$/d' | awk 'NR==1{print "sample\t# of reads\tBoth surviving\t\t Dropped"}{print $0}' > ${outdir}/trimming_stats.txt
+
+fi
+
+#Combine bam file for new gtf
+
+sample=$(ls ${outdir}/star_mapped/*Aligned.sortedByCoord.out.bam | sed 's/Aligned.sortedByCoord.out.bam/.gtf/g')
+
+ls ${sample} > assembly_gtf_list.txt
+
+#Stringtie merge
+
+/projects/anczukow-lab/tools/stringtie-2.0.6/stringtie --merge -G $gtf -o ${outdir}/star_mapped/stringtie_merged.gtf assembly_gtf_list.txt -p $threads
+
+# run GFF compare 
+/projects/anczukow-lab/tools/gffcompare/gffcompare -R -V -r ${gtf} ${outdir}/star_mapped/stringtie_merged.gtf
+
+mv gffcmp.* ${outdir}/star_mapped/
+
+# correct gene names with R script 
+cd  ${outdir}/star_mapped/
+Rscript /projects/anczukow-lab/splicing_pipeline/bin/correct_gene_names.R
+
+# convert to gtf
+/projects/anczukow-lab/tools/gffread/gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
