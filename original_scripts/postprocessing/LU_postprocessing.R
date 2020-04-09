@@ -247,12 +247,14 @@ get_postprocessing_table <- function(df){
     gsub(",", ";", x)
   })
   # calculate mean values
-  df$mIC1 <-  sapply(df$IJC_SAMPLE_1, function(x) calc_mean(x))
-  df$mSC1 <- sapply(df$SJC_SAMPLE_1, function(x) calc_mean(x))
-  df$mIC2 <- sapply(df$IJC_SAMPLE_2, function(x) calc_mean(x))
-  df$mSC2 <- sapply(df$SJC_SAMPLE_2, function(x) calc_mean(x))
-  df$mPSI1 <- sapply(df$IncLevel1, function(x) calc_mean(x))
-  df$mPSI2 <- sapply(df$IncLevel2, function(x) calc_mean(x))
+  df$mIC1  <-  sapply(df$IJC_SAMPLE_1, function(x) calc_mean(x))
+  df$mSC1  <-  sapply(df$SJC_SAMPLE_1, function(x) calc_mean(x))
+  df$mIC2  <-  sapply(df$IJC_SAMPLE_2, function(x) calc_mean(x))
+  df$mSC2  <-  sapply(df$SJC_SAMPLE_2, function(x) calc_mean(x))
+  df$mPSI1 <-  sapply(df$IncLevel1, function(x) calc_mean(x))
+  df$mPSI2 <-  sapply(df$IncLevel2, function(x) calc_mean(x))
+  df$IncLevelDifference <- df$IncLevelDifference*(-1)
+
   # reorder and rename columns, keeping only the ones we want
   final_df <- df[,c("Event_type", "short_ID", "long_ID", "geneSymbol", "GeneID", "strand", "IJC_SAMPLE_1", "SJC_SAMPLE_1", 
                     "IJC_SAMPLE_2", "SJC_SAMPLE_2", "IncLevel1", "IncLevel2", "mIC1", "mSC1", "mIC2", "mSC2", "mPSI1", "mPSI2",
