@@ -227,10 +227,9 @@ process star {
     --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
 
   chmod a+rw $name*
+  $xs_tag_cmd
   samtools index ${name}Aligned.sortedByCoord.out.bam
   bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
-
-  $xs_tag_cmd
   """
 }
 
