@@ -5,6 +5,7 @@
  *   This file is part of 'splicing-pipelines-nf' a pipeline repository to run Olga Anczukow's splicing pipeline.
  *
  * @authors
+ * Laura Urbanski <laura.urbanski@jax.org> first author of the Post-processing portion of the workflow!
  * Marina Yurieva <marina.yurieva@jax.org>
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
