@@ -58,6 +58,7 @@ def helpMessage() {
       --mismatch                    Mismatch (default = 2)
 
     Other:
+      --assembly_name               Genome assembly name
       --max_cpus                    Maximum number of CPUs
       --max_memory                  Maximum memory
       --max_time                    Maximum time
