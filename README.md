@@ -47,7 +47,7 @@ nextflow run main.nf --help
 
 ## Documentation
 
-Documentation about the pipeline, found in the docs/ directory:
+Documentation about the pipeline, found in the [`docs/`](docs) directory:
 
 1. [Intro to GitHub](docs/github.md)
 2. [Pipeline overview](docs/pipeline_overview.md)
