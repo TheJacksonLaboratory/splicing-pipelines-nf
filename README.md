@@ -40,6 +40,11 @@ or by tailing the output file:
 tail -f splicing.[jobnumber].out
 ```
 
+### To see the help message
+```
+nextflow run main.nf --help
+```
+
 ## Documentation
 
 Documentation about the pipeline, found in the docs/ directory:
