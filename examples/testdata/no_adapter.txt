@@ -1,3 +1,0 @@
-This is a dummy file
-If the `adapter` parameter is not set/changed this file will be loaded as input to the `trimmomatic` process so that Nextflow doesn't complain
-It will not be used in the analysis

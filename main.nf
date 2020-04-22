@@ -13,6 +13,9 @@
  * Olga Anczukow
  */
 
+// Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
+adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
+
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Reads                 : ${params.reads}"
@@ -22,7 +25,7 @@ log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
 log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
 log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
-log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
+log.info "Adapter               : ${adapter_file}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
 log.info "Mismatch              : ${params.mismatch}"
@@ -86,13 +89,14 @@ if (!params.singleEnd) {
     .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
-// Loaded as a file rather than a channel incase params.adapter is undefined
-adapter = file(params.adapter)
+Channel
+  .fromPath(adapter_file)
+  .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
+  .into { adapter }
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
-
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
@@ -149,7 +153,6 @@ process trimmomatic {
 
   script:
   mode = params.singleEnd ? 'SE' : 'PE'
-  adapter_flag = params.adapter.endsWith("no_adapter.txt") ? '' : "ILLUMINACLIP:${adapter}:2:30:10:8:true"
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
   output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
   """
@@ -163,7 +166,8 @@ process trimmomatic {
     TRAILING:3 \
     SLIDINGWINDOW:4:15 \
     MINLEN:${params.readlength} \
-    CROP:${params.readlength} $adapter_flag
+    CROP:${params.readlength} \
+    ILLUMINACLIP:${adapter}:2:30:10:8:true
   """
 }
 
