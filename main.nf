@@ -10,6 +10,7 @@
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
  * Anne Deslattes Mays <adeslatt@gmail.com>
+ * Laura Urbanski
  * Olga Anczukow
  */
 
@@ -37,14 +38,14 @@ def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile docker
+    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
     
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
       --gtf                         Path to GTF file
       --star_index                  Path to STAR index
       -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Available: docker, test and more.
+                                    Available: base, docker, sumner, test and more.
 
     Reads:
       --b1                          Path to rMATS b1 file containing sample names
@@ -64,6 +65,12 @@ def helpMessage() {
       --skipMultiQC                 Skip MultiQC
       --outdir                      The output directory where the results will be saved
     """.stripIndent()
+}
+
+// Show help message
+if (params.help) {
+    helpMessage()
+    exit 0
 }
 
 /*--------------------------------------------------
