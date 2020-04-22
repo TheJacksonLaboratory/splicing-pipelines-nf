@@ -10,6 +10,7 @@
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
  * Anne Deslattes Mays <adeslatt@gmail.com>
+ * Laura Urbanski
  * Olga Anczukow
  */
 
