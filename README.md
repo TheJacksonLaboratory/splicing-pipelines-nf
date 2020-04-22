@@ -49,7 +49,7 @@ nextflow run main.nf --help
 
 Documentation about the pipeline, found in the docs/ directory:
 
-1. [Intro to GitHub](github.md)
+1. [Intro to GitHub](docs/github.md)
 2. [Pipeline overview](docs/pipeline_overview.md)
 3. [Running the pipeline](docs/usage.md)
     * [Running on Sumner](docs/run_on_sumner.md)
