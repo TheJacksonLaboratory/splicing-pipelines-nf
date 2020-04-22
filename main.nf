@@ -200,7 +200,9 @@ process star {
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+  out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
   overhang = params.overhang ? params.overhang : params.readlength - 1
+  xs_tag_cmd = params.stranded ? "samtools view -h ${name}Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
   if [[ $index == *.tar.gz ]]; then
@@ -216,7 +218,7 @@ process star {
     --readFilesCommand zcat \
     --sjdbGTFfile $gtf \
     --sjdbOverhang $overhang \
-     --alignSJoverhangMin 8 $out_filter_intron_motifs \
+    --alignSJoverhangMin 8 \
     --outFilterMismatchNmax $params.mismatch \
     --outFilterMultimapNmax 20 \
     --alignMatesGapMax 1000000 \
@@ -227,9 +229,12 @@ process star {
     --outFilterType BySJout \
     --twopassMode Basic \
     --alignEndsType EndToEnd \
-    --outWigType wiggle
+    --alignIntronMax 1000000 \
+    --outReadsUnmapped Fastx \
+    --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
 
   chmod a+rw $name*
+  $xs_tag_cmd
   samtools index ${name}Aligned.sortedByCoord.out.bam
   bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
   """

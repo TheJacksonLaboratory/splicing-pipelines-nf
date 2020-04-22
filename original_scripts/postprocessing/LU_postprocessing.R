@@ -20,11 +20,19 @@ genome_version <- strsplit(ref_genome, "[.]")[[1]][1]
 
 if(genome_version == "GRCh38"){
   print("Loading human genome, hg38")
+
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+
   library(BSgenome.Hsapiens.UCSC.hg38)
   genome <- BSgenome.Hsapiens.UCSC.hg38
 }
 if(genome_version == "GRCm38"){
   print("Loading mouse genome, mm10")
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
   library(BSgenome.Mmusculus.UCSC.mm10)
   genome <- BSgenome.Mmusculus.UCSC.mm10
 }
@@ -73,7 +81,7 @@ get_postprocessing_table <- function(df){
   print(sprintf("Processing %s....", event_type))
   print("Table of number of events per chromosome")
   print(table(df$chr))
-  print("NOTE: We removes caffolds, assembly patches and alternate loci (haplotypes). These were needed for mapping purposes.")
+  print("NOTE: We remove scaffolds, assembly patches and alternate loci (haplotypes). These were needed for mapping purposes.")
   df <- subset(df, chr %in% chr_list)
   df$Event_type <-event_type
   #add 1 to coordinates that are zero base
@@ -239,12 +247,14 @@ get_postprocessing_table <- function(df){
     gsub(",", ";", x)
   })
   # calculate mean values
-  df$mIC1 <-  sapply(df$IJC_SAMPLE_1, function(x) calc_mean(x))
-  df$mSC1 <- sapply(df$SJC_SAMPLE_1, function(x) calc_mean(x))
-  df$mIC2 <- sapply(df$IJC_SAMPLE_2, function(x) calc_mean(x))
-  df$mSC2 <- sapply(df$SJC_SAMPLE_2, function(x) calc_mean(x))
-  df$mPSI1 <- sapply(df$IncLevel1, function(x) calc_mean(x))
-  df$mPSI2 <- sapply(df$IncLevel2, function(x) calc_mean(x))
+  df$mIC1  <-  sapply(df$IJC_SAMPLE_1, function(x) calc_mean(x))
+  df$mSC1  <-  sapply(df$SJC_SAMPLE_1, function(x) calc_mean(x))
+  df$mIC2  <-  sapply(df$IJC_SAMPLE_2, function(x) calc_mean(x))
+  df$mSC2  <-  sapply(df$SJC_SAMPLE_2, function(x) calc_mean(x))
+  df$mPSI1 <-  sapply(df$IncLevel1, function(x) calc_mean(x))
+  df$mPSI2 <-  sapply(df$IncLevel2, function(x) calc_mean(x))
+  df$IncLevelDifference <- df$IncLevelDifference*(-1)
+
   # reorder and rename columns, keeping only the ones we want
   final_df <- df[,c("Event_type", "short_ID", "long_ID", "geneSymbol", "GeneID", "strand", "IJC_SAMPLE_1", "SJC_SAMPLE_1", 
                     "IJC_SAMPLE_2", "SJC_SAMPLE_2", "IncLevel1", "IncLevel2", "mIC1", "mSC1", "mIC2", "mSC2", "mPSI1", "mPSI2",
