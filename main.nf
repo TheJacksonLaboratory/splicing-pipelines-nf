@@ -112,15 +112,15 @@ Channel
 if (params.rmats_pairs) {
   Channel
     .fromPath(params.rmats_pairs)
-    .ifEmpty { exit 1, "Cannot find RMATS pairs file : ${params.rmats_pairs}" }
+    .ifEmpty { exit 1, "Cannot find rMATS pairs file : ${params.rmats_pairs}" }
     .splitCsv(sep:' ')
     .map { row -> 
-      def treatment = row[0].toString().split(',')
-      def control = row[1].toString().split(',')
-      [ treatment + control]
+      def b1 = row[0].toString().split(',')
+      def b2 = row[1].toString().split(',')
+      [ b1 + b2]
     }
     .set { samples}
-}  
+}
 
 /*--------------------------------------------------
   FastQC for quality control of input reads
