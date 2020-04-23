@@ -5,6 +5,7 @@
  *   This file is part of 'splicing-pipelines-nf' a pipeline repository to run Olga Anczukow's splicing pipeline.
  *
  * @authors
+ * Laura Urbanski <laura.urbanski@jax.org> first author of the Post-processing portion of the workflow!
  * Marina Yurieva <marina.yurieva@jax.org>
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
@@ -16,6 +17,7 @@
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
+log.info "Assembly name         : ${params.assembly_name}"
 log.info "Reads                 : ${params.reads}"
 log.info "Single-end            : ${params.singleEnd}"
 log.info "GTF                   : ${params.gtf}"
@@ -58,6 +60,7 @@ def helpMessage() {
       --mismatch                    Mismatch (default = 2)
 
     Other:
+      --assembly_name               Genome assembly name
       --max_cpus                    Maximum number of CPUs
       --max_memory                  Maximum memory
       --max_time                    Maximum time
@@ -95,6 +98,11 @@ if (!params.singleEnd) {
 }
 // Loaded as a file rather than a channel incase params.adapter is undefined
 adapter = file(params.adapter)
+Channel
+  .from(params.assembly_name)
+  .ifEmpty { exit 1, "Genome assembly name not set"}
+  .set { assembly_name }
+
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
@@ -279,11 +287,15 @@ process stringtie_merge {
 
   output:
   file "stringtie_merged.gtf" into merged_gtf
+  file "gffcmp.*" into gffcmp
 
   script:
   """
   ls -1 *.gtf > assembly_gtf_list.txt
   stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
+  gffcompare -R -V -r $gtf stringtie_merged.gtf
+  correct_gene_names.R
+  gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
   """
 }
 
@@ -307,8 +319,11 @@ if (params.b1 && params.b2) {
     input:
     file(bam) from bam.collect()
     file(gtf) from gtf_rmats
+    file (gffcmp) from gffcmp
     file(b1) from b1
     file(b2) from b2
+    val(fasta) from assembly_name
+
 
     output:
     file "*"
@@ -317,6 +332,17 @@ if (params.b1 && params.b2) {
     mode = params.singleEnd ? 'single' : 'paired'
     """
     rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+    rmats_config="config_for_rmats_and_postprocessing.txt"
+    echo b1 b1.txt > \$rmats_config
+    echo b2 b2.txt >> \$rmats_config
+    echo rmats_gtf $gtf >> \$rmats_config
+    echo rmats_gtf       ${gtf} >> \$rmats_config
+    echo ref_gtf         ${gtf} >> \$rmats_config
+    echo fasta           ${params.fasta} >> \$rmats_config
+    echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
+    echo readlen         ${params.readlength} >> \$rmats_config
+    
+    LU_postprocessing.R
     """
   }
 
@@ -340,6 +366,7 @@ if (params.b1 && params.b2) {
     input:
     set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
     file (gtf) from gtf_rmats
+    file (gffcmp) from gffcmp
 
     output:
     file "*"
@@ -350,6 +377,18 @@ if (params.b1 && params.b2) {
     ls $bam1 > b1.txt
     ls $bam2 > b2.txt
     rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+
+    rmats_config="config_for_rmats_and_postprocessing.txt"
+    echo b1 b1.txt > \$rmats_config
+    echo b2 b2.txt >> \$rmats_config
+    echo rmats_gtf $gtf >> \$rmats_config
+    echo rmats_gtf       ${gtf} >> \$rmats_config
+    echo ref_gtf         ${gtf} >> \$rmats_config
+    echo fasta           ${params.fasta} >> \$rmats_config
+    echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
+    echo readlen         ${params.readlength} >> \$rmats_config
+    
+    LU_postprocessing.R
     """
   }
 }
