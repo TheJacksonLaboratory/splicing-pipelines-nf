@@ -69,8 +69,8 @@ def helpMessage() {
 
 // Show help message
 if (params.help) {
-    helpMessage()
-    exit 0
+  helpMessage()
+  exit 0
 }
 
 /*--------------------------------------------------
@@ -186,7 +186,7 @@ process trimmomatic {
 process star {
   tag "$name"
   label 'high_memory'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
   set val(name), file(reads) from trimmed_reads
@@ -199,7 +199,7 @@ process star {
   file "*SJ.out.tab"
   file "*Log.out" into star_log
   file "*Unmapped*" optional true
-  file "${name}_old.bw"
+  file "${name}.bw"
 
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
@@ -241,7 +241,7 @@ process star {
   chmod a+rw $name*
   $xs_tag_cmd
   samtools index ${name}.Aligned.sortedByCoord.out.bam
-  bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
+  bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
   """
 }
 
@@ -252,7 +252,7 @@ process star {
 process stringtie {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
   set val(name), file(bam), file(bam_index) from indexed_bam
