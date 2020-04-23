@@ -194,7 +194,7 @@ process star {
   each file(gtf) from gtf_star
 
   output:
-  set val(name), file("${name}Aligned.sortedByCoord.out.bam"), file("${name}Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
+  set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
   file "*.out" into alignment_logs
   file "*SJ.out.tab"
   file "*Log.out" into star_log
@@ -207,7 +207,7 @@ process star {
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
   overhang = params.overhang ? params.overhang : params.readlength - 1
-  xs_tag_cmd = params.stranded ? "samtools view -h ${name}Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}Aligned.sortedByCoord.out.bam" : ''
+  xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
   if [[ $index == *.tar.gz ]]; then
@@ -218,7 +218,7 @@ process star {
     --genomeDir ${index.toString().minus('.tar.gz')} \
     --readFilesIn $reads \
     --readMatesLengthsIn NotEqual \
-    --outFileNamePrefix $name \
+    --outFileNamePrefix ${name}. \
     --runThreadN $task.cpus \
     --readFilesCommand zcat \
     --sjdbGTFfile $gtf \
@@ -240,8 +240,8 @@ process star {
 
   chmod a+rw $name*
   $xs_tag_cmd
-  samtools index ${name}Aligned.sortedByCoord.out.bam
-  bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
+  samtools index ${name}.Aligned.sortedByCoord.out.bam
+  bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
   """
 }
 
