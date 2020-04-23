@@ -326,7 +326,8 @@ if (params.rmats_pairs) {
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+    publishDir "${params.outdir}/rMATS_out/${samples}", mode: 'copy'
+    tag "$samples"
 
     when:
     !params.skiprMATS
@@ -344,8 +345,11 @@ if (params.rmats_pairs) {
     n_samples_replicates = bams.size()
     n_replicates = n_samples_replicates.intdiv(2)
     bam_groups = bams.collate(n_replicates)
-    b1_bams = bam_groups[0].join(",")
-    b2_bams = bam_groups[1].join(",")
+    b1 = bam_groups[0]
+    b2 = bam_groups[1]
+    samples = "${b1.simpleName.join("_")}_vs_${b2.simpleName.join("_")}"
+    b1_bams = b1.join(",")
+    b2_bams = b2.join(",")
     """
     echo $b1_bams > b1.txt
     echo $b2_bams > b2.txt
