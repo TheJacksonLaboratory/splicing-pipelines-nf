@@ -303,7 +303,7 @@ process stringtie_merge {
 if (params.rmats_pairs) {
 
   indexed_bam_rmats
-    .map { name, bam, bai -> bam }
+    .map { name, bam, bai -> [name, bam] }
     .set { bam }
   
   // Group BAMs for each rMATS execution
