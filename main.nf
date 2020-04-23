@@ -333,10 +333,8 @@ if (params.rmats_pairs) {
 
     input:
     file(bams) from bams
-    file(gtf) from gtf_rmats
-    file (gffcmp) from gffcmp
-    val(fasta) from assembly_name
-
+    each file(gtf) from gtf_rmats
+    each file (gffcmp) from gffcmp
 
     output:
     file "*"
@@ -358,7 +356,7 @@ if (params.rmats_pairs) {
     echo rmats_gtf $gtf >> \$rmats_config
     echo rmats_gtf       ${gtf} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.fasta} >> \$rmats_config
+    echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
     
@@ -385,8 +383,8 @@ if (params.rmats_pairs) {
 
     input:
     set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
-    file (gtf) from gtf_rmats
-    file (gffcmp) from gffcmp
+    each file (gtf) from gtf_rmats
+    each file (gffcmp) from gffcmp
 
     output:
     file "*"
@@ -404,7 +402,7 @@ if (params.rmats_pairs) {
     echo rmats_gtf $gtf >> \$rmats_config
     echo rmats_gtf       ${gtf} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.fasta} >> \$rmats_config
+    echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
     
