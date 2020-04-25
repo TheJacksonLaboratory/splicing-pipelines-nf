@@ -2,9 +2,7 @@ name: rmats4
 channels:
   - conda-forge
   - bioconda
-  - r
   - defaults
 dependencies:
   - rmats=4.0.2
-  - r=3.6.0
   - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.1
