@@ -99,16 +99,15 @@ if (!params.singleEnd) {
 Channel
   .fromPath(adapter_file)
   .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
-  .into { adapter }
+  .set { adapter }
 Channel
   .from(params.assembly_name)
   .ifEmpty { exit 1, "Genome assembly name not set"}
   .set { assembly_name }
-
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
@@ -300,6 +299,9 @@ process stringtie_merge {
   """
 }
 
+// Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
+gtf_rmats = gtf_to_combine.combine(merged_gtf).flatten()
+
 /*--------------------------------------------------
   rMATS to detect alternative splicing events
 ---------------------------------------------------*/
@@ -330,8 +332,8 @@ if (params.rmats_pairs) {
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${samples}", mode: 'copy'
-    tag "$samples"
+    publishDir "${params.outdir}/rMATS_out/${samples}_${gtf.simpleName}", mode: 'copy'
+    tag "$samples ${gtf.simpleName}"
 
     when:
     !params.skiprMATS
@@ -383,7 +385,7 @@ if (params.rmats_pairs) {
   process paired_rmats {
     tag "$name1 $name2"
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+    publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
 
     when:
     !params.skiprMATS
