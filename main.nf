@@ -14,34 +14,11 @@
  * Olga Anczukow
  */
 
-// Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
-adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
-
-log.info "Splicing-pipelines - N F  ~  version 0.1"
-log.info "====================================="
-log.info "Assembly name         : ${params.assembly_name}"
-log.info "Reads                 : ${params.reads}"
-log.info "Single-end            : ${params.singleEnd}"
-log.info "GTF                   : ${params.gtf}"
-log.info "STAR index            : ${params.star_index}"
-log.info "Stranded              : ${params.stranded}"
-log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter               : ${adapter_file}"
-log.info "Read Length           : ${params.readlength}"
-log.info "Overhang              : ${params.overhang}"
-log.info "Mismatch              : ${params.mismatch}"
-log.info "Outdir                : ${params.outdir}"
-log.info "Max CPUs              : ${params.max_cpus}"
-log.info "Max memory            : ${params.max_memory}"
-log.info "Max time              : ${params.max_time}"
-log.info ""
-log.info "\n"
-
 def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
+    nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
     
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
@@ -75,6 +52,35 @@ if (params.help) {
   helpMessage()
   exit 0
 }
+
+// Check if read length is set
+if (!params.readlength) {
+  exit 1, "Read length not set, the provided value is '${params.readlength}'. Please specify a valid value for `--readlength`"
+}
+
+// Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
+adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
+overhang = params.overhang ? params.overhang : params.readlength - 1
+
+log.info "Splicing-pipelines - N F  ~  version 0.1"
+log.info "====================================="
+log.info "Assembly name         : ${params.assembly_name}"
+log.info "Reads                 : ${params.reads}"
+log.info "Single-end            : ${params.singleEnd}"
+log.info "GTF                   : ${params.gtf}"
+log.info "STAR index            : ${params.star_index}"
+log.info "Stranded              : ${params.stranded}"
+log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "Adapter               : ${adapter_file}"
+log.info "Read Length           : ${params.readlength}"
+log.info "Overhang              : ${overhang}"
+log.info "Mismatch              : ${params.mismatch}"
+log.info "Outdir                : ${params.outdir}"
+log.info "Max CPUs              : ${params.max_cpus}"
+log.info "Max memory            : ${params.max_memory}"
+log.info "Max time              : ${params.max_time}"
+log.info ""
+log.info "\n"
 
 /*--------------------------------------------------
   Channel setup
@@ -210,7 +216,6 @@ process star {
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-  overhang = params.overhang ? params.overhang : params.readlength - 1
   xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
