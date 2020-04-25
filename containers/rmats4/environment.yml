@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - rmats=4.0.2
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.1

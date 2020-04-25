@@ -16,8 +16,7 @@ Main arguments:
                                 Available: docker, test and more.
 
 Reads:
-  --b1                          Path to rMATS b1 file containing sample names
-  --b2                          Path to rMATS b2 file containing sample names
+  --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison
   --singleEnd                   Specifies that the input is single-end reads
   --stranded                    Specifies that the input is stranded
   --adapter                     Path to adapter file
@@ -26,6 +25,7 @@ Reads:
   --mismatch                    Mismatch (default = 2)
 
 Other:
+  --assembly_name               Genome assembly name
   --max_cpus                    Maximum number of CPUs
   --max_memory                  Maximum memory
   --max_time                    Maximum time

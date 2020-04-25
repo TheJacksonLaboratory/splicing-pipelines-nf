@@ -8,8 +8,29 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 1) Create `reads` input CSV file
     - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/testdata/human_test/human_test_reps.csv) data
-2) Optional: create the `b1` and `b2` text files used by rMATS.
-    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`b1.txt`](../examples/testdata/human_test/b1.txt) and [`b2.txt`](../examples/testdata/human_test/b2.txt)
+2) Optional: create `rmats_pairs` input file
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/testdata/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated.
+    <details>
+    <summary>See examples</summary>
+
+    #### Single sample pair:
+    ```
+    sample1[space]sample2
+    ```
+
+    #### Multiple sample pairs, no replicates:
+    ```
+    sample1[space]sample2
+    sample3[space]sample4
+    ```
+
+    #### Multiple sample pairs, with multiple replicates:
+    ```
+    sample1replicate1,sample1replicate2,sample1replicate3[space]sample2replicate1,sample2replicate2,sample2replicate3
+    sample3replicate1,sample3replicate2,sample3replicate3[space]sample4replicate1,sample4replicate1,sample4replicate1
+    ```
+    </details>
+
 
 ### 2. Setup your own configuration file
 
@@ -19,13 +40,13 @@ The config file will likely be specific to your user and analysis. **You do not 
 
 To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
-The file contains all available parameters with sensible defaults which you can find more information on [here](usage.md#all-available-parameters). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link as shown by the [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config).
+The file contains example parameters you can find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
 
 ### 3. Run the pipeline
 
 Once you have created the input files and config then you can run the Nextflow pipeline using the [`main.pbs`](../main.pbs) script. You will need to modify the `main.pbs` script so that it runs the pipeline with your config profile and the `sumner` profile, for example:
 ```
-./nextflow run main.nf -config /path/to/my_file.config -profile sumner -resume
+./nextflow run main.nf -config /path/to/my_file.config -profile base,sumner -resume
 ```
 
 Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jaxs-hpc) to submit jobs to the cluster.
@@ -47,8 +68,16 @@ To specify via command line:
     This file contains the `sample_id` a short name uniquely defines the sample within this comparison
     comma seperated with the complete path for the `left` and `right` `fastqs`.   
     
-* `--b1 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt`
-    This is a comma separated file containing 1 to many replicates for the `case` in the example.
-    
-* `--b2 examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt`
-    This is a comma separated file containing 1 to many replicates for the `control` in the example.
+* `--rmats_pairs examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/rmats_pairs.txt`
+    This is a space/comma separated file containing the a list of the rMATS comparisons you wish to perform.
+
+### Bonus: useful Nextflow options
+
+Whereas parameters are set on the command-line using double dash options eg `--reads`, parameters passed to Nextflow itself can be provided with single-dash options eg `-profile`.
+
+You can see some of these options [here](https://www.nextflow.io/docs/latest/tracing.html) in the Nextflow documentation.
+
+Some useful ones include:
+- `-resume` which will [resume](https://www.nextflow.io/docs/latest/getstarted.html?highlight=resume#modify-and-resume) any cached processes that have not been changed
+- `-with-trace` eg `-with-trace trace.txt` which gives a [trace report](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#trace-report) for resource consumption by the pipeline
+- `-with-dag` eg `-with-dag flowchart.png` which produces the [DAG visualisation](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#dag-visualisation) graph showing each of the different processes and the connections between them (the channels)
