@@ -22,8 +22,7 @@ log.info "Single-end            : ${params.singleEnd}"
 log.info "GTF                   : ${params.gtf}"
 log.info "STAR index            : ${params.star_index}"
 log.info "Stranded              : ${params.stranded}"
-log.info "rMATS b1 file         : ${params.b1 ? params.b1 : 'Not provided'}"
-log.info "rMATS b2 file         : ${params.b2 ? params.b2 : 'Not provided'}"
+log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter               : ${params.adapter.endsWith('no_adapter.txt') ? 'Not provided' : params.adapter}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${params.overhang}"
@@ -49,8 +48,7 @@ def helpMessage() {
                                     Available: base, docker, sumner, test and more.
 
     Reads:
-      --b1                          Path to rMATS b1 file containing sample names
-      --b2                          Path to rMATS b2 file containing sample names
+      --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison
       --singleEnd                   Specifies that the input is single-end reads
       --stranded                    Specifies that the input is stranded
       --adapter                     Path to adapter file
@@ -71,8 +69,8 @@ def helpMessage() {
 
 // Show help message
 if (params.help) {
-    helpMessage()
-    exit 0
+  helpMessage()
+  exit 0
 }
 
 /*--------------------------------------------------
@@ -111,17 +109,17 @@ Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
-if (params.b1 && params.b2) {
-  add_suffix(file(params.b1), 'b1.txt', 'Aligned.sortedByCoord.out.bam')
-  add_suffix(file(params.b2), 'b2.txt', 'Aligned.sortedByCoord.out.bam')
+if (params.rmats_pairs) {
   Channel
-    .fromPath('b1.txt')
-    .ifEmpty { exit 1, "Cannot find rMATS b1 file: ${params.b1}" }
-    .set { b1 }
-  Channel
-    .fromPath('b2.txt')
-    .ifEmpty { exit 1, "Cannot find rMATS b2 file: ${params.b2}" }
-    .set { b2 }
+    .fromPath(params.rmats_pairs)
+    .ifEmpty { exit 1, "Cannot find rMATS pairs file : ${params.rmats_pairs}" }
+    .splitCsv(sep:' ')
+    .map { row -> 
+      def b1 = row[0].toString().split(',')
+      def b2 = row[1].toString().split(',')
+      [ b1 + b2]
+    }
+    .set { samples}
 }
 
 /*--------------------------------------------------
@@ -188,7 +186,7 @@ process trimmomatic {
 process star {
   tag "$name"
   label 'high_memory'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
   set val(name), file(reads) from trimmed_reads
@@ -196,12 +194,12 @@ process star {
   each file(gtf) from gtf_star
 
   output:
-  set val(name), file("${name}Aligned.sortedByCoord.out.bam"), file("${name}Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
+  set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
   file "*.out" into alignment_logs
   file "*SJ.out.tab"
   file "*Log.out" into star_log
   file "*Unmapped*" optional true
-  file "${name}_old.bw"
+  file "${name}.bw"
 
   script:
   // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
@@ -209,7 +207,7 @@ process star {
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
   overhang = params.overhang ? params.overhang : params.readlength - 1
-  xs_tag_cmd = params.stranded ? "samtools view -h ${name}Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}Aligned.sortedByCoord.out.bam" : ''
+  xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
   if [[ $index == *.tar.gz ]]; then
@@ -220,7 +218,7 @@ process star {
     --genomeDir ${index.toString().minus('.tar.gz')} \
     --readFilesIn $reads \
     --readMatesLengthsIn NotEqual \
-    --outFileNamePrefix $name \
+    --outFileNamePrefix ${name}. \
     --runThreadN $task.cpus \
     --readFilesCommand zcat \
     --sjdbGTFfile $gtf \
@@ -242,8 +240,8 @@ process star {
 
   chmod a+rw $name*
   $xs_tag_cmd
-  samtools index ${name}Aligned.sortedByCoord.out.bam
-  bamCoverage -b ${name}Aligned.sortedByCoord.out.bam -o ${name}_old.bw 
+  samtools index ${name}.Aligned.sortedByCoord.out.bam
+  bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
   """
 }
 
@@ -254,7 +252,7 @@ process star {
 process stringtie {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
   set val(name), file(bam), file(bam_index) from indexed_bam
@@ -302,42 +300,66 @@ process stringtie_merge {
   rMATS to detect alternative splicing events
 ---------------------------------------------------*/
 
-if (params.b1 && params.b2) {
+if (params.rmats_pairs) {
 
   indexed_bam_rmats
-    .map { name, bam, bai -> bam }
+    .map { name, bam, bai -> [name, bam] }
     .set { bam }
+  
+  // Group BAMs for each rMATS execution
+  samples
+    .map { row -> 
+      // Create unique row id by joining all the sample names
+      def row_id = (row[0]).join(",").toString().replace(",", "")
+      def samples_id = []
+      row[0].each { sample ->
+        samples_id.add([sample, row_id])
+      }
+      samples_id
+    }
+    .flatMap()
+    .combine(bam, by:0)
+    .map { sample_id, row_id, bam -> [row_id, bam] }
+    .groupTuple()
+    .map { row_id, bams -> bams }
+    .set { bams }
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+    publishDir "${params.outdir}/rMATS_out/${samples}", mode: 'copy'
+    tag "$samples"
 
     when:
     !params.skiprMATS
 
     input:
-    file(bam) from bam.collect()
-    file(gtf) from gtf_rmats
-    file (gffcmp) from gffcmp
-    file(b1) from b1
-    file(b2) from b2
-    val(fasta) from assembly_name
-
+    file(bams) from bams
+    each file(gtf) from gtf_rmats
+    each file (gffcmp) from gffcmp
 
     output:
     file "*"
 
     script:
     mode = params.singleEnd ? 'single' : 'paired'
+    n_samples_replicates = bams.size()
+    n_replicates = n_samples_replicates.intdiv(2)
+    bam_groups = bams.collate(n_replicates)
+    b1 = bam_groups[0]
+    b2 = bam_groups[1]
+    samples = "${b1.simpleName.join("_")}_vs_${b2.simpleName.join("_")}"
+    b1_bams = b1.join(",")
+    b2_bams = b2.join(",")
     """
-    rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+    echo $b1_bams > b1.txt
+    echo $b2_bams > b2.txt
+    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
     rmats_config="config_for_rmats_and_postprocessing.txt"
     echo b1 b1.txt > \$rmats_config
     echo b2 b2.txt >> \$rmats_config
-    echo rmats_gtf $gtf >> \$rmats_config
     echo rmats_gtf       ${gtf} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.fasta} >> \$rmats_config
+    echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
     
@@ -364,8 +386,8 @@ if (params.b1 && params.b2) {
 
     input:
     set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
-    file (gtf) from gtf_rmats
-    file (gffcmp) from gffcmp
+    each file (gtf) from gtf_rmats
+    each file (gffcmp) from gffcmp
 
     output:
     file "*"
@@ -383,7 +405,7 @@ if (params.b1 && params.b2) {
     echo rmats_gtf $gtf >> \$rmats_config
     echo rmats_gtf       ${gtf} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.fasta} >> \$rmats_config
+    echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
     
@@ -414,22 +436,4 @@ process multiqc {
   """
   multiqc . -m fastqc -m star
   """
-}
-
-// Define helper function
-def add_suffix(b_file, output_filename, suffix) {
-  def b_file_bams = []
-  b_file.eachLine { row ->
-      def sample_ids = row.split(',') - ''
-      def bams = []
-      for (String sample_id : sample_ids) {
-          bams.add("${sample_id}${suffix}")
-      }
-      b_file_bams.add(bams)
-  }
-  if (file(output_filename).exists()) { file(output_filename).delete() }
-  File out_b_file = new File(output_filename)
-  b_file_bams.each { row ->
-      out_b_file.append("${row.join(',')}\n")
-  }
 }
