@@ -279,12 +279,37 @@ process stringtie {
 }
 
 /*--------------------------------------------------
+  Generate count matrix for all samples with prepDE.py
+---------------------------------------------------*/
+
+process prep_de {
+  label 'process_medium'
+  publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+
+  input:
+  file(gtf) from stringtie_dge_gtf.collect()
+
+  output:
+  file "sample_lst.txt"
+  file "gene_count_matrix.csv"
+  file "transcript_count_matrix.csv"
+
+  script: 
+  """
+  echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
+  echo "${gtf.join("\n")}" > gtfs.txt
+  paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
+  prepDE.py -i sample_lst.txt  -l $params.readlength
+  """
+} 
+
+/*--------------------------------------------------
   Stringtie merge GTF files
 ---------------------------------------------------*/
 
 process stringtie_merge {
   label 'process_medium'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
 
   input:
   file('*.gtf') from stringtie_gtf.collect()
