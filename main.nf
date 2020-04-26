@@ -14,34 +14,11 @@
  * Olga Anczukow
  */
 
-// Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
-adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/assets/TruSeq3-SE.fa" : "$baseDir/examples/assets/TruSeq3-PE.fa"
-
-log.info "Splicing-pipelines - N F  ~  version 0.1"
-log.info "====================================="
-log.info "Assembly name         : ${params.assembly_name}"
-log.info "Reads                 : ${params.reads}"
-log.info "Single-end            : ${params.singleEnd}"
-log.info "GTF                   : ${params.gtf}"
-log.info "STAR index            : ${params.star_index}"
-log.info "Stranded              : ${params.stranded}"
-log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter               : ${adapter_file}"
-log.info "Read Length           : ${params.readlength}"
-log.info "Overhang              : ${params.overhang}"
-log.info "Mismatch              : ${params.mismatch}"
-log.info "Outdir                : ${params.outdir}"
-log.info "Max CPUs              : ${params.max_cpus}"
-log.info "Max memory            : ${params.max_memory}"
-log.info "Max time              : ${params.max_time}"
-log.info ""
-log.info "\n"
-
 def helpMessage() {
     log.info """
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run jacksonlabs/splicing-pipelines-nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
+    nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
     
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
@@ -55,7 +32,7 @@ def helpMessage() {
       --singleEnd                   Specifies that the input is single-end reads
       --stranded                    Specifies that the input is stranded
       --adapter                     Path to adapter file
-      --readlength                  Read length (default = 48)
+      --readlength                  Read length
       --overhang                    Overhang (default = readlength - 1)
       --mismatch                    Mismatch (default = 2)
 
@@ -75,6 +52,35 @@ if (params.help) {
   helpMessage()
   exit 0
 }
+
+// Check if read length is set
+if (!params.readlength) {
+  exit 1, "Read length not set, the provided value is '${params.readlength}'. Please specify a valid value for `--readlength`"
+}
+
+// Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
+adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
+overhang = params.overhang ? params.overhang : params.readlength - 1
+
+log.info "Splicing-pipelines - N F  ~  version 0.1"
+log.info "====================================="
+log.info "Assembly name         : ${params.assembly_name}"
+log.info "Reads                 : ${params.reads}"
+log.info "Single-end            : ${params.singleEnd}"
+log.info "GTF                   : ${params.gtf}"
+log.info "STAR index            : ${params.star_index}"
+log.info "Stranded              : ${params.stranded}"
+log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "Adapter               : ${adapter_file}"
+log.info "Read Length           : ${params.readlength}"
+log.info "Overhang              : ${overhang}"
+log.info "Mismatch              : ${params.mismatch}"
+log.info "Outdir                : ${params.outdir}"
+log.info "Max CPUs              : ${params.max_cpus}"
+log.info "Max memory            : ${params.max_memory}"
+log.info "Max time              : ${params.max_time}"
+log.info ""
+log.info "\n"
 
 /*--------------------------------------------------
   Channel setup
@@ -99,16 +105,15 @@ if (!params.singleEnd) {
 Channel
   .fromPath(adapter_file)
   .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
-  .into { adapter }
+  .set { adapter }
 Channel
   .from(params.assembly_name)
   .ifEmpty { exit 1, "Genome assembly name not set"}
   .set { assembly_name }
-
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_rmats }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
@@ -239,7 +244,6 @@ process star {
   // TODO: find a better solution to needing to use `chmod`
   out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
   out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-  overhang = params.overhang ? params.overhang : params.readlength - 1
   xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
   """
   # Decompress STAR index if compressed
@@ -304,12 +308,37 @@ process stringtie {
 }
 
 /*--------------------------------------------------
+  Generate count matrix for all samples with prepDE.py
+---------------------------------------------------*/
+
+process prep_de {
+  label 'process_medium'
+  publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+
+  input:
+  file(gtf) from stringtie_dge_gtf.collect()
+
+  output:
+  file "sample_lst.txt"
+  file "gene_count_matrix.csv"
+  file "transcript_count_matrix.csv"
+
+  script: 
+  """
+  echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
+  echo "${gtf.join("\n")}" > gtfs.txt
+  paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
+  prepDE.py -i sample_lst.txt  -l $params.readlength
+  """
+} 
+
+/*--------------------------------------------------
   Stringtie merge GTF files
 ---------------------------------------------------*/
 
 process stringtie_merge {
   label 'process_medium'
-  publishDir "${params.outdir}/star_mapped", mode: 'copy'
+  publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
 
   input:
   file('*.gtf') from stringtie_gtf.collect()
@@ -328,6 +357,9 @@ process stringtie_merge {
   gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
   """
 }
+
+// Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
+gtf_rmats = gtf_to_combine.combine(merged_gtf).flatten()
 
 /*--------------------------------------------------
   rMATS to detect alternative splicing events
@@ -359,8 +391,8 @@ if (params.rmats_pairs) {
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${samples}", mode: 'copy'
-    tag "$samples"
+    publishDir "${params.outdir}/rMATS_out/${samples}_${gtf.simpleName}", mode: 'copy'
+    tag "$samples ${gtf.simpleName}"
 
     when:
     !params.skiprMATS
@@ -412,7 +444,7 @@ if (params.rmats_pairs) {
   process paired_rmats {
     tag "$name1 $name2"
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out", mode: 'copy'
+    publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
 
     when:
     !params.skiprMATS
