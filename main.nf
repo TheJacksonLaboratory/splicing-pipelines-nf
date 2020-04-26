@@ -291,7 +291,9 @@ process prep_de {
   file(gtf) from stringtie_dge_gtf.collect()
 
   output:
-  file "*" into counts_matrix
+  file "sample_lst.txt"
+  file "gene_count_matrix.csv"
+  file "transcript_count_matrix.csv"
 
   script: 
   """
