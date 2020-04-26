@@ -32,7 +32,7 @@ def helpMessage() {
       --singleEnd                   Specifies that the input is single-end reads
       --stranded                    Specifies that the input is stranded
       --adapter                     Path to adapter file
-      --readlength                  Read length (default = 48)
+      --readlength                  Read length
       --overhang                    Overhang (default = readlength - 1)
       --mismatch                    Mismatch (default = 2)
 
