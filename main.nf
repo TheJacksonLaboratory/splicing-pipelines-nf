@@ -200,7 +200,7 @@ process trimmomatic {
   FastQC for quality control of input reads
 ---------------------------------------------------*/
 
-process fastqc_post_trim {
+process fastqc_trimmed {
   tag "$name"
   label 'process_medium'
   publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
