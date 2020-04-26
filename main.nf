@@ -162,6 +162,7 @@ process trimmomatic {
 
   output:
   set val(name), file(output_filename) into trimmed_reads
+  file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
   script:
   mode = params.singleEnd ? 'SE' : 'PE'
@@ -180,6 +181,9 @@ process trimmomatic {
     MINLEN:${params.readlength} \
     CROP:${params.readlength} \
     ILLUMINACLIP:${adapter}:2:30:10:8:true
+
+  mkdir logs
+  cp .command.log logs/${name}_trimmomatic.log
   """
 }
 
