@@ -130,16 +130,16 @@ if (params.rmats_pairs) {
   FastQC for quality control of input reads
 ---------------------------------------------------*/
 
-process fastqc {
+process fastqc_pre_trim {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/QC_raw", mode: 'copy'
+  publishDir "${params.outdir}/QC_raw/pre_trim", mode: 'copy'
 
   input:
   set val(name), file(reads) from raw_reads_fastqc
 
   output:
-  file "*_fastqc.{zip,html}" into fastqc_results
+  file "*_fastqc.{zip,html}" into fastqc_results_pre_trim
 
   script:
   """
@@ -161,7 +161,7 @@ process trimmomatic {
   each file(adapter) from adapter
 
   output:
-  set val(name), file(output_filename) into trimmed_reads
+  set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
   file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
   script:
@@ -188,6 +188,27 @@ process trimmomatic {
 }
 
 /*--------------------------------------------------
+  FastQC for quality control of input reads
+---------------------------------------------------*/
+
+process fastqc_post_trim {
+  tag "$name"
+  label 'process_medium'
+  publishDir "${params.outdir}/QC_raw/post_trim", mode: 'copy'
+
+  input:
+  set val(name), file(reads) from trimmed_reads_fastqc
+
+  output:
+  file "*_fastqc.{zip,html}" into fastqc_results_post_trim
+
+  script:
+  """
+  fastqc --casava --threads $task.cpus $reads
+  """
+}
+
+/*--------------------------------------------------
   STAR to align trimmed reads
 ---------------------------------------------------*/
 
@@ -197,7 +218,7 @@ process star {
   publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
-  set val(name), file(reads) from trimmed_reads
+  set val(name), file(reads) from trimmed_reads_star
   each file(index) from star_index
   each file(gtf) from gtf_star
 
@@ -433,7 +454,7 @@ process multiqc {
   !params.skipMultiQC
 
   input:
-  file (fastqc:'fastqc/*') from fastqc_results.collect().ifEmpty([])
+  file (fastqc:'fastqc/*') from fastqc_results_pre_trim.collect().ifEmpty([])
   file ('alignment/*') from alignment_logs.collect().ifEmpty([])
 
   output:
