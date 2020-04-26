@@ -118,6 +118,10 @@ Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
+Channel
+  .fromPath(params.multiqc_config)
+  .ifEmpty { exit 1, "MultiQC config YAML file not found: ${params.multiqc_config}" }
+  .set { multiqc_config }
 if (params.rmats_pairs) {
   Channel
     .fromPath(params.rmats_pairs)
@@ -138,13 +142,13 @@ if (params.rmats_pairs) {
 process fastqc {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/QC_raw", mode: 'copy'
+  publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
   input:
   set val(name), file(reads) from raw_reads_fastqc
 
   output:
-  file "*_fastqc.{zip,html}" into fastqc_results
+  file "*_fastqc.{zip,html}" into fastqc_results_raw
 
   script:
   """
@@ -166,7 +170,8 @@ process trimmomatic {
   each file(adapter) from adapter
 
   output:
-  set val(name), file(output_filename) into trimmed_reads
+  set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
+  file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
   script:
   mode = params.singleEnd ? 'SE' : 'PE'
@@ -185,6 +190,30 @@ process trimmomatic {
     MINLEN:${params.readlength} \
     CROP:${params.readlength} \
     ILLUMINACLIP:${adapter}:2:30:10:8:true
+
+  mkdir logs
+  cp .command.log logs/${name}_trimmomatic.log
+  """
+}
+
+/*--------------------------------------------------
+  FastQC for quality control of input reads
+---------------------------------------------------*/
+
+process fastqc_post_trim {
+  tag "$name"
+  label 'process_medium'
+  publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
+
+  input:
+  set val(name), file(reads) from trimmed_reads_fastqc
+
+  output:
+  file "*_fastqc.{zip,html}" into fastqc_results_trimmed
+
+  script:
+  """
+  fastqc --casava --threads $task.cpus $reads
   """
 }
 
@@ -198,7 +227,7 @@ process star {
   publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
   input:
-  set val(name), file(reads) from trimmed_reads
+  set val(name), file(reads) from trimmed_reads_star
   each file(index) from star_index
   each file(gtf) from gtf_star
 
@@ -461,8 +490,10 @@ process multiqc {
   !params.skipMultiQC
 
   input:
-  file (fastqc:'fastqc/*') from fastqc_results.collect().ifEmpty([])
+  file (fastqc:'fastqc/*') from fastqc_results_raw.collect().ifEmpty([])
+  file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
   file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+  file (multiqc_config) from multiqc_config
 
   output:
   file "*multiqc_report.html" into multiqc_report
@@ -470,6 +501,6 @@ process multiqc {
 
   script:
   """
-  multiqc . -m fastqc -m star
+  multiqc . --config $multiqc_config -m fastqc -m star
   """
 }
