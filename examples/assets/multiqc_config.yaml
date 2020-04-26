@@ -1,0 +1,12 @@
+module_order:
+    - fastqc:
+        name: 'FastQC (raw)'
+        path_filters:
+            - '*_1_fastqc.zip'
+    - fastqc:
+        name: 'FastQC (trimmed)'
+        info: 'This section of the report shows FastQC results after adapter trimming.'
+        target: ''
+        path_filters:
+            - '*_1_trimmed_fastqc.zip'
+    - star

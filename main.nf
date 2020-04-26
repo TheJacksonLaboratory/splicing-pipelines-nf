@@ -15,7 +15,7 @@
  */
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
-adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
+adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/assets/TruSeq3-SE.fa" : "$baseDir/examples/assets/TruSeq3-PE.fa"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
@@ -113,6 +113,10 @@ Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
+Channel
+  .fromPath(params.multiqc_config)
+  .ifEmpty { exit 1, "MultiQC config YAML file not found: ${params.multiqc_config}" }
+  .set { multiqc_config }
 if (params.rmats_pairs) {
   Channel
     .fromPath(params.rmats_pairs)
@@ -454,8 +458,10 @@ process multiqc {
   !params.skipMultiQC
 
   input:
-  file (fastqc:'fastqc/*') from fastqc_results_pre_trim.collect().ifEmpty([])
+  file (fastqc:'fastqc/pre_trim/*') from fastqc_results_pre_trim.collect().ifEmpty([])
+  file (fastqc:'fastqc/post_trim/*') from fastqc_results_post_trim.collect().ifEmpty([])
   file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+  file (multiqc_config) from multiqc_config
 
   output:
   file "*multiqc_report.html" into multiqc_report
@@ -463,6 +469,6 @@ process multiqc {
 
   script:
   """
-  multiqc . -m fastqc -m star
+  multiqc . --config $multiqc_config -m fastqc -m star
   """
 }
