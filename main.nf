@@ -134,16 +134,16 @@ if (params.rmats_pairs) {
   FastQC for quality control of input reads
 ---------------------------------------------------*/
 
-process fastqc_pre_trim {
+process fastqc {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/QC_raw/pre_trim", mode: 'copy'
+  publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
   input:
   set val(name), file(reads) from raw_reads_fastqc
 
   output:
-  file "*_fastqc.{zip,html}" into fastqc_results_pre_trim
+  file "*_fastqc.{zip,html}" into fastqc_results_raw
 
   script:
   """
@@ -198,13 +198,13 @@ process trimmomatic {
 process fastqc_post_trim {
   tag "$name"
   label 'process_medium'
-  publishDir "${params.outdir}/QC_raw/post_trim", mode: 'copy'
+  publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
   input:
   set val(name), file(reads) from trimmed_reads_fastqc
 
   output:
-  file "*_fastqc.{zip,html}" into fastqc_results_post_trim
+  file "*_fastqc.{zip,html}" into fastqc_results_trimmed
 
   script:
   """
@@ -458,8 +458,8 @@ process multiqc {
   !params.skipMultiQC
 
   input:
-  file (fastqc:'fastqc/pre_trim/*') from fastqc_results_pre_trim.collect().ifEmpty([])
-  file (fastqc:'fastqc/post_trim/*') from fastqc_results_post_trim.collect().ifEmpty([])
+  file (fastqc:'fastqc/*') from fastqc_results_raw.collect().ifEmpty([])
+  file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
   file ('alignment/*') from alignment_logs.collect().ifEmpty([])
   file (multiqc_config) from multiqc_config
 
