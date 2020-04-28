@@ -49,7 +49,7 @@ Parameters specified on the command-line take precedence over those specified in
 
 ### String 
 
-Strings can be specified using single or double quotes
+Strings can be specified using 'single' or "double quotes"
 
 #### Paths
 
