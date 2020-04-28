@@ -16,7 +16,7 @@ Nextflow parameters can be provided in one of two ways:
 <summary>For example, all of the following are equivalent:</summary>
 
 1) Config file
-```
+```groovy
 params.reads     = '/path/to/reads.csv'
 params.read      = 48
 params.singleEnd = true
@@ -24,7 +24,7 @@ params.singleEnd = true
 
 OR 
 
-```
+```groovy
 params {
   reads     = '/path/to/reads.csv'
   read      = 48
