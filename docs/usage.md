@@ -12,6 +12,35 @@ Nextflow parameters can be provided in one of two ways:
 1) They can be specified in configuration files
 2) They can be specified on the command-line
 
+<details>
+<summary>For example, all of the following are equivalent:</summary>
+
+1) Config file
+```
+params.reads     = '/path/to/reads.csv'
+params.read      = 48
+params.singleEnd = true
+```
+
+OR 
+
+```
+params {
+  reads     = '/path/to/reads.csv'
+  read      = 48
+  singleEnd = true
+}
+```
+
+See [configuration scopes](https://www.nextflow.io/docs/latest/config.html#config-scopes) for more information on this^
+
+2) Specifying parameters on the command-line
+```bash
+nextflow run main.nf --reads /path/to/reads.csv --readlength 48 --singleEnd true
+```
+
+</details>
+
 Parameters specified on the command-line take precedence over those specified in configuration files. It is generally best-practice to have your parameters saved in a configuration file as this makes your analysis more reproducible if you need to run it again.
 
 [Profiles](https://www.nextflow.io/docs/latest/en/latest/config.html#config-profiles) are configuration that can be included by specifying the profile name on the command-line. For example, `-profile sumner` to include configuration specific to JAX's HPC Sumner
@@ -37,15 +66,21 @@ Integers can be specified without using quotes both in the configuration files a
 
 Boolean parameters can be set to either `true` or `false`. Many of the parameters are initialised to `false` in [`nextflow.config`](../nextflow.config). You can set parameters to true on the command line just by using the flag. For example, just using `--singleEnd` will set the `singleEnd` parameter to true.
 
+<details>
+<summary>Side note:</summary>
+
 However, be careful doing this as `--singleEnd false` will actually set the `singleEnd` parameter to the string `'false'` not the boolean `false`. Counterintuively, as this is a string that is present it actually mean that `singleEnd` will evaluate to true :satisfied:
 
-This issue can be avoided by specifying parameters in the a configuration file rather than on the command-line
+This is another reason why it can be best to specify parameters in a confugration file rather than on the command-line
+</details>
 
 ### Other
 
 Memory units eg for `max_memory` can be specified in gigabytes eg `8.GB`
 
 Time units eg for `max_time` can be specified in hours eg `2.h`
+
+Both of these should be specified without quotes
 
 ## All available parameters
 ```
