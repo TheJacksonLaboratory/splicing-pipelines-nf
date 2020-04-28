@@ -17,18 +17,18 @@ Nextflow parameters can be provided in one of two ways:
 
 1) Config file
 ```groovy
-params.reads     = '/path/to/reads.csv'
-params.read      = 48
-params.singleEnd = true
+params.reads      = '/path/to/reads.csv'
+params.readlength = 48
+params.singleEnd  = true
 ```
 
 OR 
 
 ```groovy
 params {
-  reads     = '/path/to/reads.csv'
-  read      = 48
-  singleEnd = true
+  reads      = '/path/to/reads.csv'
+  readlength = 48
+  singleEnd  = true
 }
 ```
 
