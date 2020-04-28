@@ -27,11 +27,15 @@ The pipeline contains the following files/folders in rough order of importance:
 The file structure looks as follows:
 ```
 ├── README.md
+├── bin
+│   ├── LU_postprocessing.R
+│   ├── correct_gene_names.R
+│   └── prepDE.py
 ├── conf
 │   ├── examples
 │   │   ├── MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config
-│   │   ├── test.config
-│   │   └── test_pe.config
+│   │   ├── human_test.config
+│   │   └── test.config
 │   └── executors
 │       ├── base.config
 │       ├── google.config
@@ -42,8 +46,10 @@ The file structure looks as follows:
 │   │   └── environment.yml
 │   └── splicing-pipelines-nf
 │       ├── Dockerfile
-│       └── environment.yml
+│       ├── environment.yml
+│       └── tagXSstrandedData.awk
 ├── docs
+│   ├── github.md
 │   ├── pipeline_overview.md
 │   ├── run_on_cloudos.md
 │   ├── run_on_sumner.md
@@ -52,35 +58,43 @@ The file structure looks as follows:
 │   ├── analyses
 │   │   ├── MCF10_MYCER.datafiles.csv
 │   │   ├── MYC_MCF10A_0h_vs_MYC_MCF10A_8h
-│   │   │   ├── b1.txt
-│   │   │   ├── b2.txt
 │   │   │   ├── reads.csv
-│   │   │   └── reads_google_cloud.csv
+│   │   │   ├── reads_google_cloud.csv
+│   │   │   └── rmats_pairs.txt
 │   │   └── PRJNA453538.SraRunTable.txt
+│   ├── assets
+│   │   ├── TruSeq3-PE.fa
+│   │   ├── TruSeq3-SE.fa
+│   │   └── multiqc_config.yaml
 │   └── testdata
 │       ├── human_test
-│       │   ├── b1.txt
-│       │   ├── b2.txt
 │       │   ├── get_human_paired_end_replicates.sh
-│       │   └── human_test_reps.csv
-│       ├── paired_end
-│       │   ├── b1.txt
-│       │   ├── b2.txt
-│       │   └── paired_end_reads_replicates.csv
+│       │   ├── human_test_reps.csv
+│       │   ├── human_test_reps_google.csv
+│       │   └── rmats_pairs.txt
 │       └── single_end
-│           ├── b1.txt
-│           ├── b2.txt
-│           └── reads.csv
+│           ├── rmats_pairs.txt
+│           ├── test_reps.csv
+│           └── test_reps_google.csv
 ├── main.nf
 ├── main.pbs
 ├── nextflow.config
 └── original_scripts
-    ├── bash
-    │   ├── pipeline_splicing_with_arguments_parallel_part1.pbs
-    │   ├── pipeline_splicing_with_arguments_parallel_part2.pbs
-    │   ├── postprocessing.pbs
-    │   └── run_pipeline_Olga_job1.sh
-    └── nextflow
-        ├── main.nf
-        └── rMATS_pipeline_samtools.nf
+    ├── bash
+    │   ├── pipeline_splicing_with_arguments_parallel_part1.pbs
+    │   ├── pipeline_splicing_with_arguments_parallel_part2.pbs
+    │   ├── postprocessing.pbs
+    │   └── run_pipeline_Olga_job1.sh
+    ├── nextflow
+    │   ├── main.nf
+    │   └── rMATS_pipeline_samtools.nf
+    └── postprocessing
+        ├── LU_postprocessing.R
+        ├── README.md
+        ├── config_for_rmats_and_postprocessing.txt
+        ├── config_for_splicing_pipeline_part2.txt
+        ├── correct_gene_names.R
+        ├── pipeline_splicing_with_arguments_parallel_part2_withGFFcompare.pbs
+        ├── prepDE.py
+        └── rmats_and_postprocessing.pbs
 ```
