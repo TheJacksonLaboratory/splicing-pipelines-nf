@@ -21,29 +21,31 @@ def helpMessage() {
     nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
     
     Main arguments:
-      --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
-      --gtf                         Path to GTF file
-      --star_index                  Path to STAR index
-      -profile                      Configuration profile to use. Can use multiple (comma separated)
+      --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
+      --gtf                         Path to GTF file (path)
+      --star_index                  Path to STAR index (path)
+      -profile                      Configuration profile to use. Can use multiple (comma separated, string)
                                     Available: base, docker, sumner, test and more.
 
     Reads:
-      --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison
-      --singleEnd                   Specifies that the input is single-end reads
-      --stranded                    Specifies that the input is stranded
-      --adapter                     Path to adapter file
-      --readlength                  Read length
-      --overhang                    Overhang (default = readlength - 1)
-      --mismatch                    Mismatch (default = 2)
+      --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison (path)
+      --singleEnd                   Specifies that the input is single-end reads (bool)
+      --stranded                    Specifies that the input is stranded (bool)
+      --adapter                     Path to adapter file (path)
+      --readlength                  Read length (int)
+      --overhang                    Overhang (default = readlength - 1, int)
+      --mismatch                    Mismatch (default = 2, int)
 
     Other:
-      --assembly_name               Genome assembly name
-      --max_cpus                    Maximum number of CPUs
-      --max_memory                  Maximum memory
-      --max_time                    Maximum time
-      --skiprMATS                   Skip rMATS
-      --skipMultiQC                 Skip MultiQC
-      --outdir                      The output directory where the results will be saved
+      --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+      --max_cpus                    Maximum number of CPUs (int)
+      --max_memory                  Maximum memory (memory unit)
+      --max_time                    Maximum time (time unit)
+      --skiprMATS                   Skip rMATS (bool)
+      --skipMultiQC                 Skip MultiQC (bool)
+      --outdir                      The output directory where the results will be saved (string)
+
+    See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
 }
 
