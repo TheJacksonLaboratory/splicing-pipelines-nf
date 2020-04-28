@@ -40,7 +40,7 @@ The config file will likely be specific to your user and analysis. **You do not 
 
 To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
-The file contains example parameters you can find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). You will need to specify the path to your `reads` and `b1`/`b2` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
+The file contains example parameters you can find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
 
 ### 3. Run the pipeline
 
