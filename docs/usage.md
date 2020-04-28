@@ -20,7 +20,7 @@ Parameters specified on the command-line take precedence over those specified in
 
 ### String 
 
-String can be specified using single or double quotes
+Strings can be specified using single or double quotes
 
 #### Paths
 
@@ -31,41 +31,46 @@ File paths can be any one of the following:
 
 ### Int
 
-Integers can be specified without using quotes in the configuration files
+Integers can be specified without using quotes both in the configuration files and on the command-line
 
 ### Bool
 
-Boolean parameters can be set to either `true` or `false`. Many of the parameters are initialised to `false`. You can set parameters to true on the command line just by using the flag. For example, just using `--singleEnd` will set the `singleEnd` parameter to true.
+Boolean parameters can be set to either `true` or `false`. Many of the parameters are initialised to `false` in [`nextflow.config`](../nextflow.config). You can set parameters to true on the command line just by using the flag. For example, just using `--singleEnd` will set the `singleEnd` parameter to true.
+
+However, be careful doing this as `--singleEnd false` will actually set the `singleEnd` parameter to the string `'false'` not the boolean `false`. Counterintuively, as this is a string that is present it actually mean that `singleEnd` will evaluate to true :satisfied:
+
+This issue can be avoided by specifying parameters in the a configuration file rather than on the command-line
 
 ### Other
 
 Memory units eg for `max_memory` can be specified in gigabytes eg `8.GB`
+
 Time units eg for `max_time` can be specified in hours eg `2.h`
 
 ## All available parameters
 ```
 Main arguments:
-  --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files
-  --gtf                         Path to GTF file
-  --star_index                  Path to STAR index
-  -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                Available: docker, test and more.
+  --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
+  --gtf                         Path to GTF file (path)
+  --star_index                  Path to STAR index (path)
+  -profile                      Configuration profile to use. Can use multiple (comma separated, string)
+                                Available: base, docker, sumner, test and more.
 
 Reads:
-  --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison
-  --singleEnd                   Specifies that the input is single-end reads
-  --stranded                    Specifies that the input is stranded
-  --adapter                     Path to adapter file
-  --readlength                  Read length (default = 48)
-  --overhang                    Overhang (default = readlength - 1)
-  --mismatch                    Mismatch (default = 2)
+  --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison (path)
+  --singleEnd                   Specifies that the input is single-end reads (bool)
+  --stranded                    Specifies that the input is stranded (bool)
+  --adapter                     Path to adapter file (path)
+  --readlength                  Read length (int)
+  --overhang                    Overhang (default = readlength - 1, int)
+  --mismatch                    Mismatch (default = 2, int)
 
 Other:
-  --assembly_name               Genome assembly name
-  --max_cpus                    Maximum number of CPUs
-  --max_memory                  Maximum memory
-  --max_time                    Maximum time
-  --skiprMATS                   Skip rMATS
-  --skipMultiQC                 Skip MultiQC
-  --outdir                      The output directory where the results will be saved
+  --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+  --max_cpus                    Maximum number of CPUs (int)
+  --max_memory                  Maximum memory (memory unit)
+  --max_time                    Maximum time (time unit)
+  --skiprMATS                   Skip rMATS (bool)
+  --skipMultiQC                 Skip MultiQC (bool)
+  --outdir                      The output directory where the results will be saved (string)
 ```
