@@ -1,1 +1,0 @@
-MYC_MCF10A_8h_rep1,MYC_MCF10A_8h_rep2,MYC_MCF10A_8h_rep3
