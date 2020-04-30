@@ -130,9 +130,10 @@ if (params.rmats_pairs) {
     .ifEmpty { exit 1, "Cannot find rMATS pairs file : ${params.rmats_pairs}" }
     .splitCsv(sep:' ')
     .map { row -> 
-      def b1 = row[0].toString().split(',')
-      def b2 = row[1].toString().split(',')
-      [ b1 + b2]
+      def rmats_id = row[0]
+      def b1 = row[1].toString().split(',')
+      def b2 = row[2].toString().split(',')
+      [ rmats_id, b1, b2 ]
     }
     .set { samples}
 }
@@ -376,31 +377,30 @@ if (params.rmats_pairs) {
   // Group BAMs for each rMATS execution
   samples
     .map { row -> 
-      // Create unique row id by joining all the sample names
-      def row_id = (row[0]).join(",").toString().replace(",", "")
-      def samples_id = []
-      row[0].each { sample ->
-        samples_id.add([sample, row_id])
+      def samples_rmats_id = []
+      def rmats_id = row[0]
+      def samples = row[1] + row[2]
+      samples.each { sample ->
+        samples_rmats_id.add([sample, rmats_id])
       }
-      samples_id
+      samples_rmats_id
     }
     .flatMap()
     .combine(bam, by:0)
-    .map { sample_id, row_id, bam -> [row_id, bam] }
+    .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
     .groupTuple()
-    .map { row_id, bams -> bams }
     .set { bams }
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${samples}_${gtf.simpleName}", mode: 'copy'
-    tag "$samples ${gtf.simpleName}"
+    publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+    tag "$rmats_id ${gtf.simpleName}"
 
     when:
     !params.skiprMATS
 
     input:
-    file(bams) from bams
+    set val(rmats_id), file(bams) from bams
     each file(gtf) from gtf_rmats
     each file (gffcmp) from gffcmp
 
@@ -412,11 +412,8 @@ if (params.rmats_pairs) {
     n_samples_replicates = bams.size()
     n_replicates = n_samples_replicates.intdiv(2)
     bam_groups = bams.collate(n_replicates)
-    b1 = bam_groups[0]
-    b2 = bam_groups[1]
-    samples = "${b1.simpleName.join("_")}_vs_${b2.simpleName.join("_")}"
-    b1_bams = b1.join(",")
-    b2_bams = b2.join(",")
+    b1_bams = bam_groups[0].join(",")
+    b2_bams = bam_groups[1].join(",")
     """
     echo $b1_bams > b1.txt
     echo $b2_bams > b2.txt
@@ -429,6 +426,7 @@ if (params.rmats_pairs) {
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
+    echo rmats_id        ${rmats_id} >> \$rmats_config
     
     LU_postprocessing.R
     """
@@ -475,6 +473,7 @@ if (params.rmats_pairs) {
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
+    echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
     
     LU_postprocessing.R
     """
