@@ -389,19 +389,18 @@ if (params.rmats_pairs) {
     .combine(bams, by:0)
     .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
     .groupTuple()
-    .map { rmats_id, bams -> bams }
     .set { bams }
 
   process rmats {
     label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${samples}_${gtf.simpleName}", mode: 'copy'
-    tag "$samples ${gtf.simpleName}"
+    publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+    tag "$rmats_id ${gtf.simpleName}"
 
     when:
     !params.skiprMATS
 
     input:
-    file(bams) from bams
+    set val(rmats_id), file(bams) from bams
     each file(gtf) from gtf_rmats
     each file (gffcmp) from gffcmp
 
@@ -413,11 +412,8 @@ if (params.rmats_pairs) {
     n_samples_replicates = bams.size()
     n_replicates = n_samples_replicates.intdiv(2)
     bam_groups = bams.collate(n_replicates)
-    b1 = bam_groups[0]
-    b2 = bam_groups[1]
-    samples = "${b1.simpleName.join("_")}_vs_${b2.simpleName.join("_")}"
-    b1_bams = b1.join(",")
-    b2_bams = b2.join(",")
+    b1_bams = bam_groups[0].join(",")
+    b2_bams = bam_groups[1].join(",")
     """
     echo $b1_bams > b1.txt
     echo $b2_bams > b2.txt
