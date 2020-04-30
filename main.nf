@@ -426,6 +426,7 @@ if (params.rmats_pairs) {
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
+    echo rmats_id        ${rmats_id} >> \$rmats_config
     
     LU_postprocessing.R
     """
@@ -472,6 +473,7 @@ if (params.rmats_pairs) {
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
     echo readlen         ${params.readlength} >> \$rmats_config
+    echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
     
     LU_postprocessing.R
     """

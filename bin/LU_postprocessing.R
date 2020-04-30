@@ -55,6 +55,8 @@ b2 <- strsplit(b2, "[.]")[[1]][1]
 rmats_gtf <- basename(config[config$parameter == "rmats_gtf", "value"])
 orig_gtf <-  basename(config[config$parameter == "ref_gtf", "value"])
 
+# get rmats id
+rmats_id <-  basename(config[config$parameter == "rmats_id", "value"])
 
 # function used to calculate mean for Inc and PSI
 calc_mean <- function(val){
@@ -269,7 +271,7 @@ all_events$orig_gtf <- orig_gtf
 
 # write out file
 date <- Sys.Date()
-sample_prefix <- paste(b1, b2, sep="_vs_")
+sample_prefix <- rmats_id
 if(rmats_gtf=="gffcmp.annotated.corrected.gtf"){
   write.csv(all_events, paste0("Unfiltered_","mergedGTF_", sample_prefix, "_", date, ".csv"),row.names=FALSE)
 }
