@@ -30,4 +30,4 @@ curl -fsSL get.nextflow.io | bash
 # 4/7/2020 - ADM on Sumner, tested config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config 
 #            outdir /projects/anczukow-lab/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h
 #
-./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  -profile base,sumner -resume
+./nextflow run main.nf -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  -profile base,sumner -resume -with-report testing_MYC.html -with-timeline testing_timeline_MYC.html -with-dag testing_MYC_dag.png
