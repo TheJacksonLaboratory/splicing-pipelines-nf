@@ -9,25 +9,25 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 1) Create `reads` input CSV file
     - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/testdata/human_test/human_test_reps.csv) data
 2) Optional: create `rmats_pairs` input file
-    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/testdata/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated.
+    - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/testdata/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names). Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated.
     <details>
     <summary>See examples</summary>
 
     #### Single sample pair:
     ```
-    sample1[space]sample2
+    comparison_id[space]sample1[space]sample2
     ```
 
     #### Multiple sample pairs, no replicates:
     ```
-    sample1[space]sample2
-    sample3[space]sample4
+    comparison1_id[space]sample1[space]sample2
+    comparison2_id[space]sample3[space]sample4
     ```
 
     #### Multiple sample pairs, with multiple replicates:
     ```
-    sample1replicate1,sample1replicate2,sample1replicate3[space]sample2replicate1,sample2replicate2,sample2replicate3
-    sample3replicate1,sample3replicate2,sample3replicate3[space]sample4replicate1,sample4replicate1,sample4replicate1
+    comparison1_id[space]sample1replicate1,sample1replicate2,sample1replicate3[space]sample2replicate1,sample2replicate2,sample2replicate3
+    comparison2_id[space]sample3replicate1,sample3replicate2,sample3replicate3[space]sample4replicate1,sample4replicate1,sample4replicate1
     ```
     </details>
 
