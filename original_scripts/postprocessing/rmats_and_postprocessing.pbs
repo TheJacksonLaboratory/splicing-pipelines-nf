@@ -1,0 +1,38 @@
+#!/bin/bash
+#PBS -q batch
+#PBS -l nodes=1:ppn=14
+#PBS -l walltime=04:00:00
+#PBS -me
+
+cd $PBS_O_WORKDIR
+
+# use script: qsub -v config="config_for_rmats_and_postprocessing.txt" /projects/anczukow-lab/splicing_pipeline/rmats_and_postprocessing.pbs 
+
+## config format: !! must be called "config_for_rmats_and_postprocessing.txt"
+#b1              /projects/anczukow-lab/MYC_MCF10A/run17_LU_20200331/rmats/bam_lists/MYCER_00h.txt
+#b2              /projects/anczukow-lab/MYC_MCF10A/run17_LU_20200331/rmats/bam_lists/MYCER_08h.txt
+#rmats_gtf       /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.primary_assembly.annotation.gtf
+#ref_gtf         /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.primary_assembly.annotation.gtf
+#fasta           /projects/anczukow-lab/reference_genomes/human/Gencode/GRCh38.primary_assembly.genome.fa
+#reads           paired
+#readlen         120
+
+
+module unload python
+module load python/2.7.13
+module load gcc
+module load bedtools
+
+b1=$(awk '$1=="b1"{print $2}' $config)
+b2=$(awk '$1=="b2"{print $2}' $config)
+gtf=$(awk '$1=="rmats_gtf"{print $2}' $config)
+ref_gtf=$(awk '$1=="ref_gtf"{print $2}' $config)
+fasta=$(awk '$1=="fasta"{print $2}' $config)
+reads=$(awk '$1=="reads"{print $2}' $config)
+readlength=$(awk '$1=="readlen"{print $2}' $config)
+
+python /opt/compsci/rMATS/4.0.2/rmats.py --b1 $b1 --b2 $b2 --gtf $gtf --od ${PBS_O_WORKDIR} -t $reads --nthread 14 --readLength $readlength
+
+module load R/3.6.0
+
+Rscript /projects/anczukow-lab/splicing_pipeline/bin/LU_postprocessing.R

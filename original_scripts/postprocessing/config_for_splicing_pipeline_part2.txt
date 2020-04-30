@@ -1,0 +1,3 @@
+reads PE
+threads 14 
+gtf /projects/anczukow-lab/reference_genomes/human/Gencode/gencode.v32.annotation.gtf

@@ -22,7 +22,7 @@ git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
 cd splicing-pipelines-nf
 ```
 
-2) Then to execute on sumner, a user does the following bash script with the `slurm` `sbatch` command:
+2) Then to execute on sumner, inspect the `main.pbs` script and edit or uncomment the specific `nextflow` run you would like to run.  To run the bash script using the `slurm` `sbatch` command:
 
 ```bash
 sbatch main.pbs
@@ -40,12 +40,18 @@ or by tailing the output file:
 tail -f splicing.[jobnumber].out
 ```
 
+### To see the help message
+```
+nextflow run main.nf --help
+```
+
 ## Documentation
 
-Documentation about the pipeline, found in the docs/ directory:
+Documentation about the pipeline, found in the [`docs/`](docs) directory:
 
-1. [Pipeline overview](docs/pipeline_overview.md)
-2. [Running the pipeline](docs/usage.md)
+1. [Intro to GitHub](docs/github.md)
+2. [Pipeline overview](docs/pipeline_overview.md)
+3. [Running the pipeline](docs/usage.md)
     * [Running on Sumner](docs/run_on_sumner.md)
     * [Running on CloudOS](docs/run_on_cloudos.md)
 
