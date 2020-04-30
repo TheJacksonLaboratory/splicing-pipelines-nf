@@ -386,7 +386,7 @@ if (params.rmats_pairs) {
       samples_rmats_id
     }
     .flatMap()
-    .combine(bams, by:0)
+    .combine(bam, by:0)
     .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
     .groupTuple()
     .set { bams }
