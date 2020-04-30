@@ -421,7 +421,7 @@ if (params.rmats_pairs) {
     rmats_config="config_for_rmats_and_postprocessing.txt"
     echo b1 b1.txt > \$rmats_config
     echo b2 b2.txt >> \$rmats_config
-    echo rmats_gtf       ${gtf} >> \$rmats_config
+    echo rmats_gtf       ${gffcmp} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
@@ -468,7 +468,7 @@ if (params.rmats_pairs) {
     echo b1 b1.txt > \$rmats_config
     echo b2 b2.txt >> \$rmats_config
     echo rmats_gtf $gtf >> \$rmats_config
-    echo rmats_gtf       ${gtf} >> \$rmats_config
+    echo rmats_gtf       ${gffcmp} >> \$rmats_config
     echo ref_gtf         ${gtf} >> \$rmats_config
     echo fasta           ${params.assembly_name} >> \$rmats_config
     echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
