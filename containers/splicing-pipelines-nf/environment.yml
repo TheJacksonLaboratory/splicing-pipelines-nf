@@ -6,7 +6,7 @@ channels:
 dependencies:
   - fastqc=0.11.9
   - trimmomatic=0.39
-  - star=2.6.1d
+  - star=2.7.3
   - samtools=1.10
   - deeptools=3.4.0
   - stringtie=2.1.1
