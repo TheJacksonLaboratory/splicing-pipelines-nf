@@ -21,6 +21,10 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
 cd splicing-pipelines-nf
 ```
+
+If the pipeline has already been cloned, use `git pull` to ensure it is up to date
+    
+
 2) Run test example to ensure the pipeline is working properly. 
 
 EXAMPLE 1: Human test data
