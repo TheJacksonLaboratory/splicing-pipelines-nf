@@ -23,7 +23,8 @@ cd splicing-pipelines-nf
 ```
 2) Run test example to ensure the pipeline is working properly. 
 
-EXAMPLE 1: human test data
+EXAMPLE 1: Human test data
+
 To run: 
 ```bash
 sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/examples/human_test/human_test_main.pbs
