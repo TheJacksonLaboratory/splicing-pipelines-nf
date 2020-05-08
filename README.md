@@ -37,7 +37,7 @@ squeue | grep [username]
 or by tailing the output file:
 
 ```bash
-tail -f splicing.[jobnumber].out
+tail splicing.[jobnumber].out
 ```
 
 ### To see the help message
