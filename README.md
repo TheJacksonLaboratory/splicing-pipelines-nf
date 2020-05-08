@@ -21,14 +21,22 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
 cd splicing-pipelines-nf
 ```
+2) Run test example to ensure the pipeline is working properly. 
 
-2) Then to execute on sumner, inspect the `main.pbs` script and edit or uncomment the specific `nextflow` run you would like to run.  To run the bash script using the `slurm` `sbatch` command:
+EXAMPLE 1: Human test data
+
+To run: 
+```bash
+sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/examples/human_test/human_test_main.pbs
+```
+
+3) Then to execute on sumner, inspect the `main.pbs` script and edit or uncomment the specific `nextflow` run you would like to run.  To run the bash script using the `slurm` `sbatch` command:
 
 ```bash
 sbatch main.pbs
 ```
 
-3) Progress can be checked using:
+4) Progress can be checked using:
 
 ```bash
 squeue | grep [username]
