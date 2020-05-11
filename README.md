@@ -31,14 +31,13 @@ If pipeline has not been downloaded you will need to clone it from `github`.
 
 ```bash
 git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
-cd splicing-pipelines-nf
 ```   
 
 ### Run test example to ensure the pipeline is working properly. 
 
 #### Human test
 
-1) Create new directory to run directory and `cd` into that folder
+1) Create new directory to run test and `cd` into that folder. Make this folder in individual's folder within `anczukow-lab`
 
 2) Run test: 
 
