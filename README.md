@@ -15,15 +15,24 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Quick start on Sumner (JAX's HPC)
 
-1) Check out the source code from `github`.
+### Download latest changes to pipeline 
+
+1) Go into splicing pipeline folder 
+```bash
+cd /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf
+```
+
+2) `pull` any new changes. Note: you will need your github username and password
+
+```bash
+git pull
+```
+If pipeline has not been downloaded you will need to clone it from `github`. 
 
 ```bash
 git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
 cd splicing-pipelines-nf
-```
-
-If the pipeline has already been cloned, use `git pull` to ensure it is up to date
-    
+```   
 
 2) Run test example to ensure the pipeline is working properly. 
 
