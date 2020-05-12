@@ -61,7 +61,7 @@ if (!params.readlength) {
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
-adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/testdata/TruSeq3-SE.fa" : "$baseDir/examples/testdata/TruSeq3-PE.fa"
+adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/examples/assets/TruSeq3-SE.fa" : "$baseDir/examples/assets/TruSeq3-PE.fa"
 overhang = params.overhang ? params.overhang : params.readlength - 1
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
