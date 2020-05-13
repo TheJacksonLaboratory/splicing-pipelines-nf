@@ -38,6 +38,7 @@ def helpMessage() {
 
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+      --test                        For running QC, trimming and STAR only (bool)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
       --max_time                    Maximum time (time unit)
@@ -77,6 +78,7 @@ log.info "Adapter               : ${adapter_file}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${overhang}"
 log.info "Mismatch              : ${params.mismatch}"
+log.info "Test                  : ${params.test}"
 log.info "Outdir                : ${params.outdir}"
 log.info "Max CPUs              : ${params.max_cpus}"
 log.info "Max memory            : ${params.max_memory}"
@@ -285,198 +287,201 @@ process star {
   """
 }
 
-/*--------------------------------------------------
-  Stringtie for transcript assembly and quantification 
----------------------------------------------------*/
+if (!params.test) {
 
-process stringtie {
-  tag "$name"
-  label 'process_medium'
-  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+  /*--------------------------------------------------
+    Stringtie for transcript assembly and quantification 
+  ---------------------------------------------------*/
 
-  input:
-  set val(name), file(bam), file(bam_index) from indexed_bam
-  each file(gtf) from gtf_stringtie
-
-  output:
-  file "${name}.gtf" into stringtie_gtf
-  file "${name}_for_DGE.gtf" into stringtie_dge_gtf
-
-  script: 
-  rf = params.stranded ? '--rf' : ''
-  """
-  stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
-  stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
-  """
-}
-
-/*--------------------------------------------------
-  Generate count matrix for all samples with prepDE.py
----------------------------------------------------*/
-
-process prep_de {
-  label 'process_medium'
-  publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
-
-  input:
-  file(gtf) from stringtie_dge_gtf.collect()
-
-  output:
-  file "sample_lst.txt"
-  file "gene_count_matrix.csv"
-  file "transcript_count_matrix.csv"
-
-  script: 
-  """
-  echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
-  echo "${gtf.join("\n")}" > gtfs.txt
-  paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
-  prepDE.py -i sample_lst.txt  -l $params.readlength
-  """
-} 
-
-/*--------------------------------------------------
-  Stringtie merge GTF files
----------------------------------------------------*/
-
-process stringtie_merge {
-  label 'process_medium'
-  publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
-
-  input:
-  file('*.gtf') from stringtie_gtf.collect()
-  file(gtf) from gtf_stringtie_merge
-
-  output:
-  file "stringtie_merged.gtf" into merged_gtf
-  file "gffcmp.*" into gffcmp
-
-  script:
-  """
-  ls -1 *.gtf > assembly_gtf_list.txt
-  stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
-  gffcompare -R -V -r $gtf stringtie_merged.gtf
-  correct_gene_names.R
-  gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
-  """
-}
-
-// Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
-gtf_rmats = gtf_to_combine.combine(merged_gtf).flatten()
-
-/*--------------------------------------------------
-  rMATS to detect alternative splicing events
----------------------------------------------------*/
-
-if (params.rmats_pairs) {
-
-  indexed_bam_rmats
-    .map { name, bam, bai -> [name, bam] }
-    .set { bam }
-  
-  // Group BAMs for each rMATS execution
-  samples
-    .map { row -> 
-      def samples_rmats_id = []
-      def rmats_id = row[0]
-      def samples = row[1] + row[2]
-      samples.each { sample ->
-        samples_rmats_id.add([sample, rmats_id])
-      }
-      samples_rmats_id
-    }
-    .flatMap()
-    .combine(bam, by:0)
-    .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
-    .groupTuple()
-    .set { bams }
-
-  process rmats {
-    label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
-    tag "$rmats_id ${gtf.simpleName}"
-
-    when:
-    !params.skiprMATS
+  process stringtie {
+    tag "$name"
+    label 'process_medium'
+    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
-    set val(rmats_id), file(bams) from bams
-    each file(gtf) from gtf_rmats
-    each file (gffcmp) from gffcmp
+    set val(name), file(bam), file(bam_index) from indexed_bam
+    each file(gtf) from gtf_stringtie
 
     output:
-    file "*"
+    file "${name}.gtf" into stringtie_gtf
+    file "${name}_for_DGE.gtf" into stringtie_dge_gtf
 
-    script:
-    mode = params.singleEnd ? 'single' : 'paired'
-    n_samples_replicates = bams.size()
-    n_replicates = n_samples_replicates.intdiv(2)
-    bam_groups = bams.collate(n_replicates)
-    b1_bams = bam_groups[0].join(",")
-    b2_bams = bam_groups[1].join(",")
+    script: 
+    rf = params.stranded ? '--rf' : ''
     """
-    echo $b1_bams > b1.txt
-    echo $b2_bams > b2.txt
-    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
-    rmats_config="config_for_rmats_and_postprocessing.txt"
-    echo b1 b1.txt > \$rmats_config
-    echo b2 b2.txt >> \$rmats_config
-    echo rmats_gtf       ${gtf} >> \$rmats_config
-    echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.assembly_name} >> \$rmats_config
-    echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
-    echo readlen         ${params.readlength} >> \$rmats_config
-    echo rmats_id        ${rmats_id} >> \$rmats_config
-    
-    LU_postprocessing.R
+    stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
+    stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
     """
   }
 
-} else {
+  /*--------------------------------------------------
+    Generate count matrix for all samples with prepDE.py
+  ---------------------------------------------------*/
 
-  indexed_bam_rmats
-    .map { name, bam, bai -> [name, bam] }
-    .toSortedList { entry -> entry[0] }
-    .flatten()
-    .collate(4, false)
-    .set { paired_samples }
-
-  process paired_rmats {
-    tag "$name1 $name2"
-    label 'high_memory'
-    publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
-
-    when:
-    !params.skiprMATS
+  process prep_de {
+    label 'process_medium'
+    publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
 
     input:
-    set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
-    each file (gtf) from gtf_rmats
-    each file (gffcmp) from gffcmp
+    file(gtf) from stringtie_dge_gtf.collect()
 
     output:
-    file "*"
+    file "sample_lst.txt"
+    file "gene_count_matrix.csv"
+    file "transcript_count_matrix.csv"
+
+    script: 
+    """
+    echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
+    echo "${gtf.join("\n")}" > gtfs.txt
+    paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
+    prepDE.py -i sample_lst.txt  -l $params.readlength
+    """
+  } 
+
+  /*--------------------------------------------------
+    Stringtie merge GTF files
+  ---------------------------------------------------*/
+
+  process stringtie_merge {
+    label 'process_medium'
+    publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
+
+    input:
+    file('*.gtf') from stringtie_gtf.collect()
+    file(gtf) from gtf_stringtie_merge
+
+    output:
+    file "stringtie_merged.gtf" into merged_gtf
+    file "gffcmp.*" into gffcmp
 
     script:
-    mode = params.singleEnd ? 'single' : 'paired'
     """
-    ls $bam1 > b1.txt
-    ls $bam2 > b2.txt
-    rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+    ls -1 *.gtf > assembly_gtf_list.txt
+    stringtie --merge -G $gtf -o stringtie_merged.gtf assembly_gtf_list.txt -p $task.cpus
+    gffcompare -R -V -r $gtf stringtie_merged.gtf
+    correct_gene_names.R
+    gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
+    """
+  }
 
-    rmats_config="config_for_rmats_and_postprocessing.txt"
-    echo b1 b1.txt > \$rmats_config
-    echo b2 b2.txt >> \$rmats_config
-    echo rmats_gtf $gtf >> \$rmats_config
-    echo rmats_gtf       ${gtf} >> \$rmats_config
-    echo ref_gtf         ${gtf} >> \$rmats_config
-    echo fasta           ${params.assembly_name} >> \$rmats_config
-    echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
-    echo readlen         ${params.readlength} >> \$rmats_config
-    echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
+  // Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
+  gtf_rmats = gtf_to_combine.combine(merged_gtf).flatten()
+
+  /*--------------------------------------------------
+    rMATS to detect alternative splicing events
+  ---------------------------------------------------*/
+
+  if (params.rmats_pairs) {
+
+    indexed_bam_rmats
+      .map { name, bam, bai -> [name, bam] }
+      .set { bam }
     
-    LU_postprocessing.R
-    """
+    // Group BAMs for each rMATS execution
+    samples
+      .map { row -> 
+        def samples_rmats_id = []
+        def rmats_id = row[0]
+        def samples = row[1] + row[2]
+        samples.each { sample ->
+          samples_rmats_id.add([sample, rmats_id])
+        }
+        samples_rmats_id
+      }
+      .flatMap()
+      .combine(bam, by:0)
+      .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
+      .groupTuple()
+      .set { bams }
+
+    process rmats {
+      label 'high_memory'
+      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      tag "$rmats_id ${gtf.simpleName}"
+
+      when:
+      !params.skiprMATS
+
+      input:
+      set val(rmats_id), file(bams) from bams
+      each file(gtf) from gtf_rmats
+      each file (gffcmp) from gffcmp
+
+      output:
+      file "*"
+
+      script:
+      mode = params.singleEnd ? 'single' : 'paired'
+      n_samples_replicates = bams.size()
+      n_replicates = n_samples_replicates.intdiv(2)
+      bam_groups = bams.collate(n_replicates)
+      b1_bams = bam_groups[0].join(",")
+      b2_bams = bam_groups[1].join(",")
+      """
+      echo $b1_bams > b1.txt
+      echo $b2_bams > b2.txt
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats_config="config_for_rmats_and_postprocessing.txt"
+      echo b1 b1.txt > \$rmats_config
+      echo b2 b2.txt >> \$rmats_config
+      echo rmats_gtf       ${gtf} >> \$rmats_config
+      echo ref_gtf         ${gtf} >> \$rmats_config
+      echo fasta           ${params.assembly_name} >> \$rmats_config
+      echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
+      echo readlen         ${params.readlength} >> \$rmats_config
+      echo rmats_id        ${rmats_id} >> \$rmats_config
+      
+      LU_postprocessing.R
+      """
+    }
+
+  } else {
+
+    indexed_bam_rmats
+      .map { name, bam, bai -> [name, bam] }
+      .toSortedList { entry -> entry[0] }
+      .flatten()
+      .collate(4, false)
+      .set { paired_samples }
+
+    process paired_rmats {
+      tag "$name1 $name2"
+      label 'high_memory'
+      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+
+      when:
+      !params.skiprMATS
+
+      input:
+      set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
+      each file (gtf) from gtf_rmats
+      each file (gffcmp) from gffcmp
+
+      output:
+      file "*"
+
+      script:
+      mode = params.singleEnd ? 'single' : 'paired'
+      """
+      ls $bam1 > b1.txt
+      ls $bam2 > b2.txt
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+
+      rmats_config="config_for_rmats_and_postprocessing.txt"
+      echo b1 b1.txt > \$rmats_config
+      echo b2 b2.txt >> \$rmats_config
+      echo rmats_gtf $gtf >> \$rmats_config
+      echo rmats_gtf       ${gtf} >> \$rmats_config
+      echo ref_gtf         ${gtf} >> \$rmats_config
+      echo fasta           ${params.assembly_name} >> \$rmats_config
+      echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
+      echo readlen         ${params.readlength} >> \$rmats_config
+      echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
+      
+      LU_postprocessing.R
+      """
+    }
   }
 }
 
