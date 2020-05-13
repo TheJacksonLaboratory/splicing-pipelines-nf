@@ -187,12 +187,12 @@ process trimmomatic {
     -phred33 \
     $reads \
     $out \
+    ILLUMINACLIP:${adapter}:2:30:10:8:true \
     LEADING:3 \
     TRAILING:3 \
     SLIDINGWINDOW:4:15 \
     MINLEN:${params.readlength} \
     CROP:${params.readlength} \
-    ILLUMINACLIP:${adapter}:2:30:10:8:true
 
   mkdir logs
   cp .command.log logs/${name}_trimmomatic.log
