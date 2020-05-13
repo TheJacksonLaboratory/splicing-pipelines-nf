@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH -o splicing.%j.out
+#SBATCH -e splicing.%j.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=$USER@jax.org
+#SBATCH -p compute
+#SBATCH -q batch
+#SBATCH -t 1-01:00:00
+ 
+ 
+cd $SLURM_SUBMIT_DIR
+date;hostname;pwd
+
+module load singularity
+curl -fsSL get.nextflow.io | bash
+
+readlengths="50 60 70"
+for readlength in $readlengths; do
+  ./nextflow run main.nf \
+    --readlength $readlength \
+    --outdir results_${readlength} \
+    -config conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  \
+    -profile base,sumner \
+    -resume \
+    -with-report testing_MYC.html \
+    -with-timeline testing_timeline_MYC.html \
+    -with-dag testing_MYC_dag.png
+done
