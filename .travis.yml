@@ -1,0 +1,23 @@
+sudo: required
+language: python
+jdk: openjdk8
+services: docker
+python: "3.6"
+cache: pip
+matrix:
+  fast_finish: true
+
+install:
+  # Install Nextflow
+  - mkdir /tmp/nextflow && cd /tmp/nextflow
+  - wget -qO- get.nextflow.io | bash
+  - sudo ln -s /tmp/nextflow/nextflow /usr/local/bin/nextflow
+  # Reset
+  - mkdir ${TRAVIS_BUILD_DIR}/tests && cd ${TRAVIS_BUILD_DIR}/tests
+
+env:
+  - NXF_VER='' # Get the latest NF version and check that it works
+
+script:
+  # Run the pipeline with the ultra_quick_test profile on every commit
+  - nextflow run ${TRAVIS_BUILD_DIR} -profile base,ultra_quick_test,docker
