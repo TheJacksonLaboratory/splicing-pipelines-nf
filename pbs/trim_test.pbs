@@ -19,6 +19,7 @@ for readlength in $readlengths; do
   ./nextflow run ../main.nf \
     --readlength $readlength \
     --outdir ../results_${readlength} \
+    --test \
     -config ../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  \
     -profile base,sumner \
     -resume \
