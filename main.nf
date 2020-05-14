@@ -383,16 +383,27 @@ if (!params.test) {
       .map { row -> 
         def samples_rmats_id = []
         def rmats_id = row[0]
-        def samples = row[1] + row[2]
-        samples.each { sample ->
-          samples_rmats_id.add([sample, rmats_id])
+        def b1_samples = row[1]
+        def b2_samples = row[2]
+        b1_samples.each { sample ->
+          samples_rmats_id.add([sample, 'b1', rmats_id])
+        }
+        b2_samples.each { sample ->
+          samples_rmats_id.add([sample, 'b2', rmats_id])
         }
         samples_rmats_id
       }
       .flatMap()
       .combine(bam, by:0)
-      .map { sample_id, rmats_id, bam -> [rmats_id, bam] }
+      .map { sample_id, b, rmats_id, bam -> [ rmats_id + b, rmats_id, bam] }
       .groupTuple()
+      .map { b, rmats_id, bams -> [rmats_id[0], [b, bams]] }
+      .groupTuple()
+      .map { rmats_id, bams -> 
+        def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
+        def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
+        [ rmats_id, b1_bams[1] + b2_bams[1] ]
+      }
       .set { bams }
 
     process rmats {
