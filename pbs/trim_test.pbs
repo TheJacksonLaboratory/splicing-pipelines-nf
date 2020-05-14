@@ -18,6 +18,7 @@ readlengths="50 60 70"
 for readlength in $readlengths; do
   ./nextflow run ../main.nf \
     --readlength $readlength \
+    --star_index /projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${readlength} \
     --outdir ../results_${readlength} \
     --test \
     -config ../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config  \
