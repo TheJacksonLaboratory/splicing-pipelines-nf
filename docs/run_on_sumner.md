@@ -9,16 +9,23 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 ### Create `reads` input CSV file
 
 * This file contains a `sample_id` and path to fastq files for each sample 
+
 * You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
+
 * These files must have the column names as in the above examples
+
 * The `sample_id` can be anything, however each must be unique
+
 * You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
 
 * Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt)
+
 * Each line in the file corresponds to a rMATS execution
+
 * The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
+
 * Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
     <details>
     <summary>See examples</summary>
@@ -44,13 +51,15 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 ## 2. Setup your own configuration file
 
-Here you will be [adding your own custom config](https://nf-co.re/usage/configuration#custom-configuration-files)
+Here you will be [adding your own custom config](https://nf-co.re/usage/configuration#custom-configuration-files). The config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
 
-The config file will likely be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
+* To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
-To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
+* **You must name your config file `NF_splicing_pipeline.config`**
 
-The file contains example parameters you can find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
+* Find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). **NOTE**: You do not need to specify all parameters if the default parameter is acceptable
+
+* You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
 
 ## 3. Run the pipeline
 
