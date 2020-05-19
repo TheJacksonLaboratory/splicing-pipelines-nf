@@ -17,6 +17,7 @@ curl -fsSL get.nextflow.io | bash
 
 ./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
 	-config /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/conf/examples/human_test.config  \
+	--outdir ${SLURM_SUBMIT_DIR} \
 	-profile base,sumner -resume \
 	-with-report human_test.html \
 	-with-timeline human_test_timeline.html \
