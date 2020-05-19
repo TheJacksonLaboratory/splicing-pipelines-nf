@@ -63,13 +63,18 @@ Here you will be [adding your own custom config](https://nf-co.re/usage/configur
 
 ## 3. Run the pipeline
 
-Once you have created the input files and config then you can run the Nextflow pipeline using the [`main.pbs`](../main.pbs) script. You will need to modify the `main.pbs` script so that it runs the pipeline with your config profile and the `sumner` profile, for example:
-```
-./nextflow run main.nf -config /path/to/my_file.config -profile base,sumner -resume
-```
+* If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`
 
-Then [run the `main.pbs` script](../README.md#quick-start-on-sumner-jaxs-hpc) to submit jobs to the cluster.
+* Ensure you have the following files in this directory: `reads.csv`, `rmats_pairs.txt`, `NF_splicing_pipeline.config`
 
+* Run the pipeline! 
+```
+sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.pbs
+```
+**NOTE: if running on cloud we don't have main.pbs set up yet**
+
+
+# Below has not been updated yet (5/19/20)
 ## Examples
 
 See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
