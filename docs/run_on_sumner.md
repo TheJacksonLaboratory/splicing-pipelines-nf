@@ -8,6 +8,7 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 ### Create `reads` input CSV file
 
+* This file contains a `sample_id` and path to fastq files for each sample 
 * You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
 * These files must have the column names as in the above examples
 * The `sample_id` can be anything, however each must be unique
