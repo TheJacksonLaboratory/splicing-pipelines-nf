@@ -7,7 +7,7 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 ### 1. Create input files
 
 1) Create `reads` input CSV file
-    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/testdata/human_test/human_test_reps.csv) data
+    - You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
 2) Optional: create `rmats_pairs` input file
     - As the pipeline takes FASTQ (not BAM) input the values will need to be the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names). Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated.
     <details>
