@@ -19,9 +19,14 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 * You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. 
 
 * rMATS requires all reads be the same lengths. Things to consider when deciding: 
-** Percentage of reads remaining after trimmomatic
-** Star mapping stats
-** Longer reads produce higher quality data for splicing analysis
+ 
+    * Percentage of reads remaining after trimmomatic
+
+    * Star mapping stats
+
+    * Longer reads produce higher quality data for splicing analysis
+
+### a. Create a config for trim testing
 
 
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
