@@ -36,6 +36,10 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
     * Example: 75, 80, 90, etc.
 
+### b. Choose an `increment`
+
+* 
+
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
 
 * Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt)
