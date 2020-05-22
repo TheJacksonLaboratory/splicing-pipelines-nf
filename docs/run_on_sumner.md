@@ -30,11 +30,9 @@ For `readlength`, enter the length of the original reads (as multiple of 5)
 
 ### b. Choose an `increment`
 
-* What increments of read lengths would you like to test?
-
-    * For example, if my original read length is 150, I might want to test increments of 10. Meaning 140bp, 130bp, 120bp, and 110bp. 
+What increments of read lengths would you like to test? For example, if my original read length is 150, I might want to test increments of 10. Meaning 140bp, 130bp, 120bp, and 110bp. 
     
-    * Note: This test will only test 4 different read lengths. If you wish to test more, rerun the test and decrease the value specified for full length `readlength`
+Note: This test will only test 4 different read lengths. If you wish to test more, rerun the test and decrease the value specified for full length `readlength`
 
 ### c. Run `trim_test.pbs`
 
