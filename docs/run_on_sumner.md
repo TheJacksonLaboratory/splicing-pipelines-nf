@@ -1,5 +1,17 @@
 # Running your own analysis on Sumner
 
+**Before running anything, make sure the pipeline is up to date by doing the following:**
+
+Go into the splicing pipeline folder
+```
+cd /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/
+```
+
+Update local version of the pipeline. Note: you will need to enter your github username and password.
+```
+git pull
+```
+
 Note: if you have not successfully completed the pipeline test, see [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 ## 1. Create `reads` file for your dataset
