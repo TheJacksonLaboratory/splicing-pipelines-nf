@@ -4,9 +4,7 @@ See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
 # Running your own analysis
 
-## 1. Create input files
-
-### Create `reads` input CSV file
+## 1. Create `reads` file 
 
 * This file contains a `sample_id` and path to fastq files for each sample 
 
