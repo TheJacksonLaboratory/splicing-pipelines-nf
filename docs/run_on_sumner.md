@@ -14,9 +14,11 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 * You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
-## 2. Run trim test to determine optimal read length 
+## 2. Run trimming and mapping test to determine optimal read length 
 
 * You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. 
+
+* This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
 
 * rMATS requires all reads be the same lengths. Things to consider when deciding: 
  
@@ -28,6 +30,11 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 ### a. Create a config for trim testing
 
+* For example see [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/conf/examples/trim_test.config)
+
+* For `readlength`, enter the length of the original reads (as multiple of 5)
+
+    * Example: 75, 80, 90, etc.
 
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
 
