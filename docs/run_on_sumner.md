@@ -83,7 +83,7 @@ Find more information on all available parameters [here](usage.md#all-available-
 
 You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
 
-## c. Run the pipeline!
+### c. Run the pipeline!
 
 If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`. Ensure you have `NF_splicing_pipeline.config` in this directory. 
 
