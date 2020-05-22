@@ -4,9 +4,7 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 ## 1. Create `reads` file for your dataset
 
-* This CSV file contains a `sample_id` and path to fastq files for each sample. See examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
-
-* There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
+This CSV file contains a `sample_id` and path to fastq files for each sample. See examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data. There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
 
 These files must have the column names as in the above examples. The `sample_id` can be anything, however each must be unique. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
@@ -24,13 +22,11 @@ You only need to do this once. If you already know the optimal read length for y
 
 ### a. Create `NF_splicing_pipeline.config`
 
-* For example see [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/conf/examples/trim_test.config)
+For example see [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/conf/examples/trim_test.config). **You must name your config file `NF_splicing_pipeline.config`**
 
-* **You must name your config file `NF_splicing_pipeline.config`**
+For `readlength`, enter the length of the original reads (as multiple of 5)
 
-* For `readlength`, enter the length of the original reads (as multiple of 5)
-
-    * Example: 75, 80, 90, etc.
+* Example: 75, 80, 90, etc.
 
 ### b. Choose an `increment`
 
@@ -42,11 +38,11 @@ You only need to do this once. If you already know the optimal read length for y
 
 ### c. Run `trim_test.pbs`
 
-* To run: 
+To run: 
 ```
 sbatch --export=ALL,increment=10 /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/trim_test.pbs
 ```
-* Replace `increment` value with your desired value
+Note: Replace `increment` value with your desired value
 
 ## 3. Run full analysis
 
