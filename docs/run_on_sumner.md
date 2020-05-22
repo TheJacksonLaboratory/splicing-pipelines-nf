@@ -1,20 +1,28 @@
-# Test the pipeline
+# Running your own analysis on Sumner
 
-See [here](../README.md##quick-start-on-sumner-jaxs-hpc)
+Note: if you have not successfully completed the pipeline test, see [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
-# Running your own analysis
+## 1. Create `reads` file for your dataset
 
-## 1. Create `reads` file 
+* This CSV file contains a `sample_id` and path to fastq files for each sample. See examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
 
-* This file contains a `sample_id` and path to fastq files for each sample 
-
-* You will need to create a CSV file containing the path to your input `reads`. You can see examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data
+* There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
 
 * These files must have the column names as in the above examples
 
 * The `sample_id` can be anything, however each must be unique
 
 * You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
+
+## 2. Run trim test to determine optimal read length 
+
+* You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. 
+
+* rMATS requires all reads be the same lengths. Things to consider when deciding: 
+** Percentage of reads remaining after trimmomatic
+** Star mapping stats
+** Longer reads produce higher quality data for splicing analysis
+
 
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
 
