@@ -12,13 +12,13 @@ These files must have the column names as in the above examples. The `sample_id`
 
 You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
 
-* rMATS requires all reads be the same lengths. Things to consider when deciding: 
+rMATS requires all reads be the same lengths. Things to consider when deciding: 
  
-    * Percentage of reads remaining after trimmomatic
+* Percentage of reads remaining after trimmomatic
 
-    * Star mapping stats
+* Star mapping stats
 
-    * Longer reads produce higher quality data for splicing analysis
+* Longer reads produce higher quality data for splicing analysis
 
 ### a. Create `NF_splicing_pipeline.config`
 
