@@ -17,18 +17,26 @@ curl -fsSL get.nextflow.io | bash
 
 # get the ful length read from config
 full_readLen=$(awk '$1=="readlength"{print $3}' NF_splicing_pipeline.config)
+echo "read length"
 echo ${full_readLen}
 
-# calculate desired read lengths to test
-readLen_1=$(expr ${full_readLen} - 10)
-readLen_2=$(expr ${full_readLen} - 20)
-readLen_3=$(expr ${full_readLen} - 30)
-readLen_4=$(expr ${full_readLen} - 40)
+# get increment
+inc=${increment}
+echo "increment"
+echo ${inc}
+
+# get new read lengths to test
+readLen_1=$(( ${full_readLen} - $(( ${inc} * 1 )) ))
+readLen_2=$(( ${full_readLen} - $(( ${inc} * 2 )) ))
+readLen_3=$(( ${full_readLen} - $(( ${inc} * 3 )) ))
+readLen_4=$(( ${full_readLen} - $(( ${inc} * 4 )) ))
 
 # make list of new read lengths
 readlengths="${readLen_1} ${readLen_2} ${readLen_3} ${readLen_4}"
+echo "read lengths to test"
 echo ${readlengths}
 
+# run testing on all read lengths specified 
 for readlength in $readlengths; do
    echo $readlength
    ./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
