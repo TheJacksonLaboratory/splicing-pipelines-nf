@@ -12,6 +12,8 @@ These files must have the column names as in the above examples. The `sample_id`
 
 You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
 
+If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`
+
 rMATS requires all reads be the same lengths. Things to consider when deciding: 
  
 * Percentage of reads remaining after trimmomatic
@@ -44,13 +46,9 @@ Note: Replace `increment` value with your desired value
 
 ## 3. Run full analysis
 
-### If you wish to run rMATS you will need to create `rmats_pairs` input file
+### a. If you wish to run rMATS you will need to create `rmats_pairs` input file
 
-* Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt)
-
-* Each line in the file corresponds to a rMATS execution
-
-* The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
+Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
 
 * Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
     <details>
@@ -74,26 +72,22 @@ Note: Replace `increment` value with your desired value
     ```
     </details>
 
+### b. Setup `NF_splicing_pipeline.config`
 
-## 2. Setup your own configuration file
+This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. If you already created a `NF_splicing_pipeline.config` during the trim test, you can modify it. Otherwise, to create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
-Here you will be [adding your own custom config](https://nf-co.re/usage/configuration#custom-configuration-files). The config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**.
+**You must name your config file `NF_splicing_pipeline.config`**
+**The `readlength` here should be the read length you wish to trim all reads to, as determined by trim test**
 
-* To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
+Find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). **NOTE**: You do not need to specify all parameters if the default parameter is acceptable
 
-* **You must name your config file `NF_splicing_pipeline.config`**
+You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
 
-* Find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). **NOTE**: You do not need to specify all parameters if the default parameter is acceptable
+## c. Run the pipeline!
 
-* You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
+If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`. Ensure you have `NF_splicing_pipeline.config` in this directory. 
 
-## 3. Run the pipeline
-
-* If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`
-
-* Ensure you have the following files in this directory: `reads.csv`, `rmats_pairs.txt`, `NF_splicing_pipeline.config`
-
-* Run the pipeline! 
+Run the pipeline! 
 ```
 sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.pbs
 ```
