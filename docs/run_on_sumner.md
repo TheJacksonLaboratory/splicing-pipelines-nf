@@ -28,9 +28,11 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
     * Longer reads produce higher quality data for splicing analysis
 
-### a. Create a config for trim testing
+### a. Create `NF_splicing_pipeline.config`
 
 * For example see [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/conf/examples/trim_test.config)
+
+* **You must name your config file `NF_splicing_pipeline.config`**
 
 * For `readlength`, enter the length of the original reads (as multiple of 5)
 
@@ -38,7 +40,21 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 ### b. Choose an `increment`
 
-* 
+* What increments of read lengths would you like to test?
+
+    * For example, if my original read length is 150, I might want to test increments of 10. Meaning 140bp, 130bp, 120bp, and 110bp. 
+    
+    * Note: This test will only test 4 different read lengths. If you wish to test more, rerun the test and decrease the value specified for full length `readlength`
+
+### c. Run `trim_test.pbs`
+
+* To run: 
+```
+sbatch --export=ALL,increment=10 /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/trim_test.pbs
+```
+* Replace `increment` value with your desired value
+
+## 3. Run full analysis
 
 ### If you wish to run rMATS you will need to create `rmats_pairs` input file
 
