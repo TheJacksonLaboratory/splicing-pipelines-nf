@@ -8,17 +8,11 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 * There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
 
-* These files must have the column names as in the above examples
-
-* The `sample_id` can be anything, however each must be unique
-
-* You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
+These files must have the column names as in the above examples. The `sample_id` can be anything, however each must be unique. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
 ## 2. Run trimming and mapping test to determine optimal read length 
 
-* You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. 
-
-* This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
+You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
 
 * rMATS requires all reads be the same lengths. Things to consider when deciding: 
  
