@@ -56,6 +56,12 @@ sbatch --export=ALL,increment=10 /projects/anczukow-lab/splicing_pipeline/splici
 ```
 Note: Replace `increment` value with your desired value
 
+### d. Use MulitQC output to determine optimal read length
+
+Copy the multiQC reports for each read length to your local computer using WinSCP. Use these to look at the trimming and mapping stats. Alternatively you can look at the log files generated. 
+
+NOTE: all multiQC files have the same name. You will need to either change their name or put them in different folders on your computer. 
+
 ## 3. Run full analysis
 
 ### a. If you wish to run rMATS you will need to create `rmats_pairs` input file
