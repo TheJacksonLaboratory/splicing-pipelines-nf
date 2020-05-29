@@ -352,7 +352,7 @@ if (!params.test) {
     file(gtf) from gtf_stringtie_merge
 
     output:
-    file "stringtie_merged.gtf" into merged_gtf
+    file "gffcmp.annotated.corrected.gtf" into merged_gtf
     file "gffcmp.*" into gffcmp
 
     script:
@@ -417,7 +417,6 @@ if (!params.test) {
       input:
       set val(rmats_id), file(bams) from bams
       each file(gtf) from gtf_rmats
-      each file (gffcmp) from gffcmp
 
       output:
       file "*"
@@ -467,7 +466,6 @@ if (!params.test) {
       input:
       set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
       each file (gtf) from gtf_rmats
-      each file (gffcmp) from gffcmp
 
       output:
       file "*"
