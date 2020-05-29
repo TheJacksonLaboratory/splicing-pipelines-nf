@@ -352,7 +352,7 @@ if (!params.test) {
     file(gtf) from gtf_stringtie_merge
 
     output:
-    file "stringtie_merged.gtf" into merged_gtf
+    file "gffcmp.annotated.corrected.gtf" into merged_gtf
     file "gffcmp.*" into gffcmp
 
     script:
