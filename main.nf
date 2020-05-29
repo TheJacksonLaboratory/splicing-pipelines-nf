@@ -352,7 +352,7 @@ if (!params.test) {
     file(gtf) from gtf_stringtie_merge
 
     output:
-    file "gffcmp.annotated.corrected.gtf" into merged_gtf
+    file "stringtie_merged.gtf" into merged_gtf
     file "gffcmp.*" into gffcmp
 
     script:
@@ -432,7 +432,7 @@ if (!params.test) {
       """
       echo $b1_bams > b1.txt
       echo $b2_bams > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtfcmp --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
