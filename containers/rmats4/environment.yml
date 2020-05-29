@@ -6,3 +6,4 @@ channels:
 dependencies:
   - rmats=4.0.2
   - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.1
+  - bioconductor-bsgenome.mmusculus.ucsc.mm10=1.4.0
