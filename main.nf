@@ -432,7 +432,7 @@ if (!params.test) {
       """
       echo $b1_bams > b1.txt
       echo $b2_bams > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtfcmp --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gffcmp --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
