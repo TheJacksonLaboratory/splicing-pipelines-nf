@@ -16,7 +16,12 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 ## 1. Create `reads` file for your dataset
 
-This CSV file contains a `sample_id` and path to fastq files for each sample. See examples for [single-end](../examples/testdata/single_end/test_reps.csv) and [paired-end](../examples/human_test/human_test_reps.csv) data. There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
+The format of CSV file will vary slighly based upon the data, see examples for:
+- [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
+- [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
+- [TCGA, GTEx or SRA](../examples/testdata/single_end/tiny_reads_samples.csv) -  must contain `sample_id` column only
+
+The `fastq` column(s) should contain the path to FASTQ files. There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
 
 These files must have the column names as in the above examples. The `sample_id` can be anything, however each must be unique. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 

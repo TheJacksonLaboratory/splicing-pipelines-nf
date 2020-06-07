@@ -93,7 +93,15 @@ log.info "\n"
   Channel setup
 ---------------------------------------------------*/
 
-if (params.singleEnd) {
+if (isRemoteReads()) {
+  Channel
+    .fromPath(params.reads)
+    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+    .splitCsv(skip:1)
+    .map { it -> it[0].trim() }
+    .set { accession_ids }
+} 
+if (!isRemoteReads() && params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -101,7 +109,7 @@ if (params.singleEnd) {
     .map { sample_id, fastq -> [sample_id, file(fastq)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
-if (!params.singleEnd) {
+if (!isRemoteReads() && !params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -525,4 +533,12 @@ process multiqc {
   """
   multiqc . --config $multiqc_config -m fastqc -m star
   """
+}
+
+// define helper function to check if remote reads (eg TCGA) based on no. of cols in reads file
+def isRemoteReads() {
+  reads_file = file(params.reads)
+  first_line = reads_file.readLines().get(0)
+  n_cols = first_line.count(',') + 1
+  n_cols == 1
 }
