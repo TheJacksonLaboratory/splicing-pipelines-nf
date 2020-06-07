@@ -103,6 +103,7 @@ Reads:
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
   --test                        For running QC, trimming and STAR only (bool)
+  --key_file                    For downloading reads from TCGA, GTEX or SRA (path)
   --max_cpus                    Maximum number of CPUs (int)
   --max_memory                  Maximum memory (memory unit)
   --max_time                    Maximum time (time unit)

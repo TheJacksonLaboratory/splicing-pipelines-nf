@@ -39,6 +39,7 @@ def helpMessage() {
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
+      --key_file                    For downloading reads from TCGA, GTEX or SRA (path)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
       --max_time                    Maximum time (time unit)
@@ -64,6 +65,7 @@ if (!params.readlength) {
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
 overhang = params.overhang ? params.overhang : params.readlength - 1
+key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
@@ -79,6 +81,7 @@ log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Test                  : ${params.test}"
+log.info "Key file              : ${params.key_file ? params.key_file : 'Not provided'}"
 log.info "Outdir                : ${params.outdir}"
 log.info "Max CPUs              : ${params.max_cpus}"
 log.info "Max memory            : ${params.max_memory}"
@@ -122,6 +125,10 @@ Channel
   .fromPath(params.star_index)
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
+Channel
+  .fromPath(key_file)
+  .ifEmpty { exit 1, "Key file not found: ${key_file}" }
+  .set { key_file }
 Channel
   .fromPath(params.multiqc_config)
   .ifEmpty { exit 1, "MultiQC config YAML file not found: ${params.multiqc_config}" }
