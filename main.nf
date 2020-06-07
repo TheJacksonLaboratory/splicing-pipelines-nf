@@ -101,6 +101,7 @@ if (isRemoteReads()) {
     .map { it -> it[0].trim() }
     .set { accession_ids }
 } 
+// TODO: combine single and paired-end channel definitions
 if (!isRemoteReads() && params.singleEnd) {
   Channel
     .fromPath(params.reads)
@@ -153,6 +154,31 @@ if (params.rmats_pairs) {
       [ rmats_id, b1, b2 ]
     }
     .set { samples}
+}
+
+/*--------------------------------------------------
+  Download reads from TCGA, GTEx or SRA
+---------------------------------------------------*/
+
+if (isRemoteReads()) {
+  process get_accession {
+    tag "${accession}"
+    
+    input:
+    val accession from accession_ids
+    file key_file from key_file
+    
+    output:
+    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
+    """
+    $vdbConfigCmd
+    fasterq-dump $accession --threads ${task.cpus} --split-3
+    pigz *.fastq
+    """
+  }
 }
 
 /*--------------------------------------------------
