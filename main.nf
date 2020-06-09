@@ -39,6 +39,7 @@ def helpMessage() {
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
+      --download_from               Database to download FASTQ/BAMs from, options are: TCGA, GTEX or SRA (string)
       --key_file                    For downloading reads from TCGA, GTEX or SRA (path)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
@@ -81,6 +82,7 @@ log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Test                  : ${params.test}"
+log.info "Download from         : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file              : ${params.key_file ? params.key_file : 'Not provided'}"
 log.info "Outdir                : ${params.outdir}"
 log.info "Max CPUs              : ${params.max_cpus}"
@@ -93,7 +95,7 @@ log.info "\n"
   Channel setup
 ---------------------------------------------------*/
 
-if (isRemoteReads()) {
+if (params.download_from) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -102,7 +104,7 @@ if (isRemoteReads()) {
     .set { accession_ids }
 } 
 // TODO: combine single and paired-end channel definitions
-if (!isRemoteReads() && params.singleEnd) {
+if (!params.download_from && params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -110,7 +112,7 @@ if (!isRemoteReads() && params.singleEnd) {
     .map { sample_id, fastq -> [sample_id, file(fastq)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
-if (!isRemoteReads() && !params.singleEnd) {
+if (!params.download_from && !params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -157,10 +159,10 @@ if (params.rmats_pairs) {
 }
 
 /*--------------------------------------------------
-  Download reads from TCGA, GTEx or SRA
+  Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
 
-if (isRemoteReads()) {
+if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
     tag "${accession}"
     
@@ -561,10 +563,7 @@ process multiqc {
   """
 }
 
-// define helper function to check if remote reads (eg TCGA) based on no. of cols in reads file
-def isRemoteReads() {
-  reads_file = file(params.reads)
-  first_line = reads_file.readLines().get(0)
-  n_cols = first_line.count(',') + 1
-  n_cols == 1
+// define helper function
+def download_from(db) {
+  params.download_from.toLowerCase().contains(db)
 }
