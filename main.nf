@@ -39,8 +39,8 @@ def helpMessage() {
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
-      --download_from               Database to download FASTQ/BAMs from, options are: TCGA, GTEX or SRA (string)
-      --key_file                    For downloading reads from TCGA, GTEX or SRA (path)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA' (string)
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
       --max_time                    Maximum time (time unit)
