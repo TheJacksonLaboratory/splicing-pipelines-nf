@@ -232,7 +232,7 @@ if (download_from('tcga')) {
       """
     } else {
       """
-      samtools sort -n $bam ${name}_sorted.bam
+      samtools sort --threads ${task.cpus} $bam > ${name}_sorted.bam
       bedtools bamtofastq \
         -i ${name}_sorted.bam \
         -fq ${name}_1.fastq \
