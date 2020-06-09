@@ -202,7 +202,7 @@ if (download_from('tcga')) {
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
     // See https://github.com/IARCbioinfo/GDC-tricks#to-speed-up-the-download
-    key_flag = key_file.name != 'no_key_file.txt' ? "$key_file" : ""
+    key_flag = key_file.name != 'no_key_file.txt' ? "-t $key_file" : ""
     """
     gdc-client download $accession $key_flag
     mv $accession/*.bam .
