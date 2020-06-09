@@ -66,6 +66,7 @@ if (!params.readlength) {
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
 overhang = params.overhang ? params.overhang : params.readlength - 1
+download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
@@ -624,5 +625,5 @@ process multiqc {
 
 // define helper function
 def download_from(db) {
-  params.download_from.toLowerCase().contains(db)
+  download_from.toLowerCase().contains(db)
 }
