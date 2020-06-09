@@ -16,7 +16,10 @@ Note: if you have not successfully completed the pipeline test, see [here](../RE
 
 ## 1. Create `reads` file for your dataset
 
-The format of CSV file will vary slighly based upon the data, see examples for:
+The input reads to this pipeline can come from 3 input sources:
+![input_reads_graphic](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/input_reads_graphic.png)
+
+Regardless of where the input reads will come from they will always be specified by the `reads` input parameter which should specify a path to a CSV file. The format of CSV file will vary slighly based upon the data, see examples for:
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
 - [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
 - [TCGA, GTEx or SRA](../examples/testdata/single_end/tiny_reads_samples.csv) -  must contain `sample_id` column only
