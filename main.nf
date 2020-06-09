@@ -184,6 +184,65 @@ if ( download_from('gtex') || download_from('sra') ) {
 }
 
 /*--------------------------------------------------
+  Download BAMs from TCGA
+---------------------------------------------------*/
+
+if (download_from('tcga')) {
+  process get_tcga_bams {
+    tag "${accession}"
+    
+    input:
+    val accession from accession_ids
+    file key_file from key_file
+    
+    output:
+    set val(accession), file("*.bam") into bamtofastq
+
+    script:
+    // TODO: improve download speed by using `-n N_CONNECTIONS`
+    // See https://github.com/IARCbioinfo/GDC-tricks#to-speed-up-the-download
+    key_flag = key_file.name != 'no_key_file.txt' ? "$key_file" : ""
+    """
+    gdc-client download $accession $key_flag
+    mv $accession/*.bam .
+    """
+  }
+}
+
+/*--------------------------------------------------
+  Bedtools to extract FASTQ from BAM
+---------------------------------------------------*/
+
+if (download_from('tcga')) {
+  process bamtofastq {
+    tag "${accession}"
+    
+    input:
+    set val(name), file(bam) from bamtofastq
+    
+    output:
+    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    if (params.singleEnd) {
+      """
+      bedtools bamtofastq -i $bam -fq ${name}.fastq
+      pigz *.fastq
+      """
+    } else {
+      """
+      samtools sort -n $bam ${name}_sorted.bam
+      bedtools bamtofastq \
+        -i ${name}_sorted.bam \
+        -fq ${name}_1.fastq \
+        -fq2 ${name}_2.fastq
+      pigz *.fastq
+      """
+    }
+  }
+}
+
+/*--------------------------------------------------
   FastQC for quality control of input reads
 ---------------------------------------------------*/
 
