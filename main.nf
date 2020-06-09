@@ -216,13 +216,13 @@ if (download_from('tcga')) {
 
 if (download_from('tcga')) {
   process bamtofastq {
-    tag "${accession}"
+    tag "${name}"
     
     input:
     set val(name), file(bam) from bamtofastq
     
     output:
-    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(name), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     if (params.singleEnd) {
