@@ -298,6 +298,7 @@ if(rmats_gtf!="gffcmp.annotated.corrected.gtf"){
   write.csv(all_filt, paste0("Filtered_", sample_prefix, "_", date, ".csv"),row.names=FALSE)
 }
 
+if(nrow(all_filt)>0){                     
 # get summary table
 print("Generating summary table")
 get_summary_table <- function(unfilt_df, filt_df){
@@ -324,7 +325,8 @@ if(rmats_gtf=="gffcmp.annotated.corrected.gtf"){
 if(rmats_gtf!="gffcmp.annotated.corrected.gtf"){
   write.csv(summary_table, paste0("SummaryTable_", sample_prefix, "_", date, ".csv", sep=""),row.names=FALSE)
 }
-
+}
+                     
 # generate bam file list
 b1_file <- config[config$parameter=="b1", "value"]
 b2_file <- config[config$parameter=="b2", "value"]
