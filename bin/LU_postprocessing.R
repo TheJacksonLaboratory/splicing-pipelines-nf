@@ -34,15 +34,15 @@ if(!(genome_version %in% c("GRCh38",  "GRCm38"))){
 
 
 # load in JCEC files for each event type 
-CA <- read.table("SE.MATS.JCEC.txt", header=TRUE)
+CA <- read.table("SE.MATS.JCEC.txt", header=TRUE, sep="\t"))
 print("CA loaded")
-RI <- read.table("RI.MATS.JCEC.txt", header=TRUE)
+RI <- read.table("RI.MATS.JCEC.txt", header=TRUE, sep="\t"))
 print("RI loaded")
-A3SS <- read.table("A3SS.MATS.JCEC.txt", header=TRUE)
+A3SS <- read.table("A3SS.MATS.JCEC.txt", header=TRUE, sep="\t"))
 print("A3SS loaded")
-A5SS <- read.table("A5SS.MATS.JCEC.txt", header=TRUE)
+A5SS <- read.table("A5SS.MATS.JCEC.txt", header=TRUE, sep="\t"))
 print("A5SS loaded")
-MXE <- read.table("MXE.MATS.JCEC.txt", header=TRUE)
+MXE <- read.table("MXE.MATS.JCEC.txt", header=TRUE, sep="\t"))
 print("MXE loaded")
 
 # get names of b1 and b2
