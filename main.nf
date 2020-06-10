@@ -101,7 +101,7 @@ if (params.download_from) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { it -> it[0].trim() }
+    .map { sample -> sample[0].trim() }
     .set { accession_ids }
 } 
 // TODO: combine single and paired-end channel definitions
@@ -168,8 +168,8 @@ if ( download_from('gtex') || download_from('sra') ) {
     tag "${accession}"
     
     input:
-    val accession from accession_ids
-    file key_file from key_file
+    val(accession) from accession_ids
+    each file(key_file) from key_file
     
     output:
     set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
@@ -193,8 +193,8 @@ if (download_from('tcga')) {
     tag "${accession}"
     
     input:
-    val accession from accession_ids
-    file key_file from key_file
+    val(accession) from accession_ids
+    each file(key_file) from key_file
     
     output:
     set val(accession), file("*.bam") into bamtofastq
