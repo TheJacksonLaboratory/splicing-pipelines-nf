@@ -101,7 +101,8 @@ Reads:
   --mismatch                    Mismatch (default = 2, int)
 
 rMATS:
-  --paired_stats                 Use the paired stats model (bool)
+  --statoff                     Skip the statistical analysis
+  --paired_stats                Use the paired stats model (bool)
 
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
