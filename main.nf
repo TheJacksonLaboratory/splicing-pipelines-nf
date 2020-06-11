@@ -35,6 +35,7 @@ def helpMessage() {
       --readlength                  Read length (int)
       --overhang                    Overhang (default = readlength - 1, int)
       --mismatch                    Mismatch (default = 2, int)
+      --minlen                      Drop the read if it is below a specified length (default = readlength, int)
       --slidingwindow               Perform a sliding window trimming approach (bool)
 
     rMATS:
@@ -76,6 +77,7 @@ adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/ad
 overhang = params.overhang ? params.overhang : params.readlength - 1
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+minlen = params.minlen ? params.minlen : params.readlength
 variable_read_length = false // TODO: add logic based on params.minlength
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
@@ -90,6 +92,7 @@ log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pair
 log.info "Adapter                     : ${adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
 log.info "Overhang                    : ${overhang}"
+log.info "Minimum length              : ${minlen}"
 log.info "Sliding window              : ${params.slidingwindow}"
 log.info "rMATS variable_read_length  : ${variable_read_length}"
 log.info "rMATS statoff               : ${params.statoff}"
@@ -312,7 +315,7 @@ process trimmomatic {
     ILLUMINACLIP:${adapter}:2:30:10:8:true \
     LEADING:3 \
     TRAILING:3 \
-    MINLEN:${params.readlength} \
+    MINLEN:${minlen} \
     CROP:${params.readlength} $slidingwindow
 
   mkdir logs
