@@ -40,6 +40,8 @@ def helpMessage() {
       --statoff                     Skip the statistical analysis (bool)
       --paired_stats                Use the paired stats model (bool)
       --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
+      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
+      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
 
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
@@ -77,28 +79,30 @@ variable_read_length = false // TODO: add logic based on params.minlength
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
-log.info "Assembly name              : ${params.assembly_name}"
-log.info "Reads                      : ${params.reads}"
-log.info "Single-end                 : ${params.singleEnd}"
-log.info "GTF                        : ${params.gtf}"
-log.info "STAR index                 : ${params.star_index}"
-log.info "Stranded                   : ${params.stranded}"
-log.info "rMATS pairs file           : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter                    : ${adapter_file}"
-log.info "Read Length                : ${params.readlength}"
-log.info "Overhang                   : ${overhang}"
-log.info "rMATS variable_read_length : ${variable_read_length}"
-log.info "rMATS statoff              : ${params.statoff}"
-log.info "rMATS paired stats         : ${params.paired_stats}"
-log.info "rMATS novel splice sites   : ${params.novelSS}"
-log.info "Mismatch                   : ${params.mismatch}"
-log.info "Test                       : ${params.test}"
-log.info "Download from              : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
-log.info "Key file                   : ${params.key_file ? params.key_file : 'Not provided'}"
-log.info "Outdir                     : ${params.outdir}"
-log.info "Max CPUs                   : ${params.max_cpus}"
-log.info "Max memory                 : ${params.max_memory}"
-log.info "Max time                   : ${params.max_time}"
+log.info "Assembly name               : ${params.assembly_name}"
+log.info "Reads                       : ${params.reads}"
+log.info "Single-end                  : ${params.singleEnd}"
+log.info "GTF                         : ${params.gtf}"
+log.info "STAR index                  : ${params.star_index}"
+log.info "Stranded                    : ${params.stranded}"
+log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "Adapter                     : ${adapter_file}"
+log.info "Read Length                 : ${params.readlength}"
+log.info "Overhang                    : ${overhang}"
+log.info "rMATS variable_read_length  : ${variable_read_length}"
+log.info "rMATS statoff               : ${params.statoff}"
+log.info "rMATS paired stats          : ${params.paired_stats}"
+log.info "rMATS novel splice sites    : ${params.novelSS}"
+log.info "rMATS Minimum Intron Length : ${params.mil}"
+log.info "rMATS Maximum Exon Length   : ${params.mel}"
+log.info "Mismatch                    : ${params.mismatch}"
+log.info "Test                        : ${params.test}"
+log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
+log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
+log.info "Outdir                      : ${params.outdir}"
+log.info "Max CPUs                    : ${params.max_cpus}"
+log.info "Max memory                  : ${params.max_memory}"
+log.info "Max time                    : ${params.max_time}"
 log.info ""
 log.info "\n"
 
@@ -555,7 +559,9 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats $novelSS
+        --readLength ${params.readlength} \
+        --mil ${params.mil} \
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
@@ -610,7 +616,9 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats $novelSS
+        --readLength ${params.readlength} \
+        --mil ${params.mil} \
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config

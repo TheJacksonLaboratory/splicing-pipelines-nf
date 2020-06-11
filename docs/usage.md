@@ -104,6 +104,8 @@ rMATS:
   --statoff                     Skip the statistical analysis (bool)
   --paired_stats                Use the paired stats model (bool)
   --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
+  --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
+  --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
 
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
