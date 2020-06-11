@@ -101,7 +101,7 @@ Reads:
   --mismatch                    Mismatch (default = 2, int)
 
 rMATS:
-  --statoff                     Skip the statistical analysis
+  --statoff                     Skip the statistical analysis (bool)
   --paired_stats                Use the paired stats model (bool)
 
 Other:

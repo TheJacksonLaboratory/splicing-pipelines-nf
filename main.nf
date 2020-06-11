@@ -37,7 +37,7 @@ def helpMessage() {
       --mismatch                    Mismatch (default = 2, int)
 
     rMATS:
-      --statoff                     Skip the statistical analysis
+      --statoff                     Skip the statistical analysis (bool)
       --paired_stats                Use the paired stats model (bool)
 
     Other:
@@ -72,29 +72,31 @@ adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/ad
 overhang = params.overhang ? params.overhang : params.readlength - 1
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+variable_read_length = false // TODO: add logic based on params.minlength
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
-log.info "Assembly name         : ${params.assembly_name}"
-log.info "Reads                 : ${params.reads}"
-log.info "Single-end            : ${params.singleEnd}"
-log.info "GTF                   : ${params.gtf}"
-log.info "STAR index            : ${params.star_index}"
-log.info "Stranded              : ${params.stranded}"
-log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter               : ${adapter_file}"
-log.info "Read Length           : ${params.readlength}"
-log.info "Overhang              : ${overhang}"
-log.info "rMATS statoff         : ${params.statoff}"
-log.info "rMATS paired stats    : ${params.paired_stats}"
-log.info "Mismatch              : ${params.mismatch}"
-log.info "Test                  : ${params.test}"
-log.info "Download from         : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
-log.info "Key file              : ${params.key_file ? params.key_file : 'Not provided'}"
-log.info "Outdir                : ${params.outdir}"
-log.info "Max CPUs              : ${params.max_cpus}"
-log.info "Max memory            : ${params.max_memory}"
-log.info "Max time              : ${params.max_time}"
+log.info "Assembly name              : ${params.assembly_name}"
+log.info "Reads                      : ${params.reads}"
+log.info "Single-end                 : ${params.singleEnd}"
+log.info "GTF                        : ${params.gtf}"
+log.info "STAR index                 : ${params.star_index}"
+log.info "Stranded                   : ${params.stranded}"
+log.info "rMATS pairs file           : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "Adapter                    : ${adapter_file}"
+log.info "Read Length                : ${params.readlength}"
+log.info "Overhang                   : ${overhang}"
+log.info "rMATS variable_read_length : ${variable_read_length}"
+log.info "rMATS statoff              : ${params.statoff}"
+log.info "rMATS paired stats         : ${params.paired_stats}"
+log.info "Mismatch                   : ${params.mismatch}"
+log.info "Test                       : ${params.test}"
+log.info "Download from              : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
+log.info "Key file                   : ${params.key_file ? params.key_file : 'Not provided'}"
+log.info "Outdir                     : ${params.outdir}"
+log.info "Max CPUs                   : ${params.max_cpus}"
+log.info "Max memory                 : ${params.max_memory}"
+log.info "Max time                   : ${params.max_time}"
 log.info ""
 log.info "\n"
 
@@ -532,6 +534,7 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       n_samples_replicates = bams.size()
@@ -549,7 +552,7 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $statoff $paired_stats
+        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
@@ -590,6 +593,7 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       """
@@ -602,7 +606,7 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $statoff $paired_stats
+        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
