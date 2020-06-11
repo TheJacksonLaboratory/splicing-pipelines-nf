@@ -36,6 +36,9 @@ def helpMessage() {
       --overhang                    Overhang (default = readlength - 1, int)
       --mismatch                    Mismatch (default = 2, int)
 
+    rMATS:
+      --paired_stats                 Use the paired stats model (bool)
+
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
@@ -81,6 +84,7 @@ log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'N
 log.info "Adapter               : ${adapter_file}"
 log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${overhang}"
+log.info "rMATS paired stats    : ${params.paired_stats}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Test                  : ${params.test}"
 log.info "Download from         : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
@@ -526,6 +530,7 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      paired_stats = params.paired_stats ? '--paired-stats' : ''
       n_samples_replicates = bams.size()
       n_replicates = n_samples_replicates.intdiv(2)
       bam_groups = bams.collate(n_replicates)
@@ -534,7 +539,7 @@ if (!params.test) {
       """
       echo $b1_bams > b1.txt
       echo $b2_bams > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} $paired_stats
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
@@ -575,10 +580,11 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      paired_stats = params.paired_stats ? '--paired-stats' : ''
       """
       ls $bam1 > b1.txt
       ls $bam2 > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength} $paired_stats
 
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config

@@ -100,6 +100,9 @@ Reads:
   --overhang                    Overhang (default = readlength - 1, int)
   --mismatch                    Mismatch (default = 2, int)
 
+rMATS:
+  --paired_stats                 Use the paired stats model (bool)
+
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
   --test                        For running QC, trimming and STAR only (bool)
