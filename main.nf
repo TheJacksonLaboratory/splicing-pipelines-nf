@@ -78,7 +78,7 @@ overhang = params.overhang ? params.overhang : params.readlength - 1
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
 minlen = params.minlen ? params.minlen : params.readlength
-variable_read_length = false // TODO: add logic based on params.minlength
+variable_read_length = minlen == params.readlength ? false : true
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
