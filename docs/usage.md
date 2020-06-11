@@ -103,6 +103,7 @@ Reads:
 rMATS:
   --statoff                     Skip the statistical analysis (bool)
   --paired_stats                Use the paired stats model (bool)
+  --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
 
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)

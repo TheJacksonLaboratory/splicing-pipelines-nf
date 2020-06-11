@@ -39,6 +39,7 @@ def helpMessage() {
     rMATS:
       --statoff                     Skip the statistical analysis (bool)
       --paired_stats                Use the paired stats model (bool)
+      --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
 
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
@@ -89,6 +90,7 @@ log.info "Overhang                   : ${overhang}"
 log.info "rMATS variable_read_length : ${variable_read_length}"
 log.info "rMATS statoff              : ${params.statoff}"
 log.info "rMATS paired stats         : ${params.paired_stats}"
+log.info "rMATS novel splice sites   : ${params.novelSS}"
 log.info "Mismatch                   : ${params.mismatch}"
 log.info "Test                       : ${params.test}"
 log.info "Download from              : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
@@ -537,6 +539,7 @@ if (!params.test) {
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
+      novelSS = params.novelSS ? '--novelSS' : ''   
       n_samples_replicates = bams.size()
       n_replicates = n_samples_replicates.intdiv(2)
       bam_groups = bams.collate(n_replicates)
@@ -552,7 +555,7 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats
+        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
@@ -596,6 +599,7 @@ if (!params.test) {
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
+      novelSS = params.novelSS ? '--novelSS' : ''   
       """
       ls $bam1 > b1.txt
       ls $bam2 > b2.txt
@@ -606,7 +610,7 @@ if (!params.test) {
         --od ./ \
         -t $mode \
         --nthread $task.cpus \
-        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats
+        --readLength ${params.readlength} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
