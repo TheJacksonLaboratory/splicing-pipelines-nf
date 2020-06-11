@@ -1,0 +1,12 @@
+name: download_reads
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - anaconda
+dependencies:
+  - sra-tools=2.10.7
+  - pigz=2.3.4
+  - gdc-client=1.5.0
+  - samtools=1.10
+  - bedtools=2.29.2

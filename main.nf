@@ -39,6 +39,8 @@ def helpMessage() {
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA' (string)
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
       --max_time                    Maximum time (time unit)
@@ -64,6 +66,8 @@ if (!params.readlength) {
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
 overhang = params.overhang ? params.overhang : params.readlength - 1
+download_from = params.download_from ? params.download_from : ""
+key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
@@ -79,6 +83,8 @@ log.info "Read Length           : ${params.readlength}"
 log.info "Overhang              : ${overhang}"
 log.info "Mismatch              : ${params.mismatch}"
 log.info "Test                  : ${params.test}"
+log.info "Download from         : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
+log.info "Key file              : ${params.key_file ? params.key_file : 'Not provided'}"
 log.info "Outdir                : ${params.outdir}"
 log.info "Max CPUs              : ${params.max_cpus}"
 log.info "Max memory            : ${params.max_memory}"
@@ -90,7 +96,16 @@ log.info "\n"
   Channel setup
 ---------------------------------------------------*/
 
-if (params.singleEnd) {
+if (params.download_from) {
+  Channel
+    .fromPath(params.reads)
+    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+    .splitCsv(skip:1)
+    .map { sample -> sample[0].trim() }
+    .set { accession_ids }
+} 
+// TODO: combine single and paired-end channel definitions
+if (!params.download_from && params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -98,7 +113,7 @@ if (params.singleEnd) {
     .map { sample_id, fastq -> [sample_id, file(fastq)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
-if (!params.singleEnd) {
+if (!params.download_from && !params.singleEnd) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -123,6 +138,10 @@ Channel
   .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
   .set { star_index }
 Channel
+  .fromPath(key_file)
+  .ifEmpty { exit 1, "Key file not found: ${key_file}" }
+  .set { key_file }
+Channel
   .fromPath(params.multiqc_config)
   .ifEmpty { exit 1, "MultiQC config YAML file not found: ${params.multiqc_config}" }
   .set { multiqc_config }
@@ -138,6 +157,90 @@ if (params.rmats_pairs) {
       [ rmats_id, b1, b2 ]
     }
     .set { samples}
+}
+
+/*--------------------------------------------------
+  Download FASTQs from GTEx or SRA
+---------------------------------------------------*/
+
+if ( download_from('gtex') || download_from('sra') ) {
+  process get_accession {
+    tag "${accession}"
+    
+    input:
+    val(accession) from accession_ids
+    each file(key_file) from key_file
+    
+    output:
+    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
+    """
+    $vdbConfigCmd
+    fasterq-dump $accession --threads ${task.cpus} --split-3
+    pigz *.fastq
+    """
+  }
+}
+
+/*--------------------------------------------------
+  Download BAMs from TCGA
+---------------------------------------------------*/
+
+if (download_from('tcga')) {
+  process get_tcga_bams {
+    tag "${accession}"
+    
+    input:
+    val(accession) from accession_ids
+    each file(key_file) from key_file
+    
+    output:
+    set val(accession), file("*.bam") into bamtofastq
+
+    script:
+    // TODO: improve download speed by using `-n N_CONNECTIONS`
+    // See https://github.com/IARCbioinfo/GDC-tricks#to-speed-up-the-download
+    key_flag = key_file.name != 'no_key_file.txt' ? "-t $key_file" : ""
+    """
+    gdc-client download $accession $key_flag
+    mv $accession/*.bam .
+    """
+  }
+}
+
+/*--------------------------------------------------
+  Bedtools to extract FASTQ from BAM
+---------------------------------------------------*/
+
+if (download_from('tcga')) {
+  process bamtofastq {
+    tag "${name}"
+    
+    input:
+    set val(name), file(bam) from bamtofastq
+    
+    output:
+    set val(name), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    if (params.singleEnd) {
+      """
+      bedtools bamtofastq -i $bam -fq ${name}.fastq
+      pigz *.fastq
+      """
+    } else {
+      """
+      samtools sort --threads ${task.cpus} -n $bam > ${name}_sorted.bam
+      bedtools bamtofastq \
+        -i ${name}_sorted.bam \
+        -fq ${name}_1.fastq \
+        -fq2 ${name}_2.fastq
+      pigz *.fastq
+      """
+    }
+  }
 }
 
 /*--------------------------------------------------
@@ -518,4 +621,9 @@ process multiqc {
   """
   multiqc . --config $multiqc_config -m fastqc -m star
   """
+}
+
+// define helper function
+def download_from(db) {
+  download_from.toLowerCase().contains(db)
 }
