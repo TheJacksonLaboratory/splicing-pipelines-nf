@@ -35,13 +35,14 @@ def helpMessage() {
       --readlength                  Read length (int)
       --overhang                    Overhang (default = readlength - 1, int)
       --mismatch                    Mismatch (default = 2, int)
+      --slidingwindow               Perform a sliding window trimming approach (bool)
 
     rMATS:
       --statoff                     Skip the statistical analysis (bool)
       --paired_stats                Use the paired stats model (bool)
       --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
-      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
-      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
+      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (default = 50, int)
+      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (default = 500, int)
 
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
@@ -89,6 +90,7 @@ log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pair
 log.info "Adapter                     : ${adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
 log.info "Overhang                    : ${overhang}"
+log.info "Sliding window              : ${params.slidingwindow}"
 log.info "rMATS variable_read_length  : ${variable_read_length}"
 log.info "rMATS statoff               : ${params.statoff}"
 log.info "rMATS paired stats          : ${params.paired_stats}"
@@ -299,6 +301,7 @@ process trimmomatic {
   mode = params.singleEnd ? 'SE' : 'PE'
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
   output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
+  slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
   """
   trimmomatic \
     $mode \
@@ -309,9 +312,8 @@ process trimmomatic {
     ILLUMINACLIP:${adapter}:2:30:10:8:true \
     LEADING:3 \
     TRAILING:3 \
-    SLIDINGWINDOW:4:15 \
     MINLEN:${params.readlength} \
-    CROP:${params.readlength} \
+    CROP:${params.readlength} $slidingwindow
 
   mkdir logs
   cp .command.log logs/${name}_trimmomatic.log

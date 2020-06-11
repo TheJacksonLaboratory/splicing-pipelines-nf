@@ -99,6 +99,7 @@ Reads:
   --readlength                  Read length (int)
   --overhang                    Overhang (default = readlength - 1, int)
   --mismatch                    Mismatch (default = 2, int)
+  --slidingwindow               Perform a sliding window trimming approach (bool)
 
 rMATS:
   --statoff                     Skip the statistical analysis (bool)
