@@ -562,6 +562,7 @@ if (!params.test) {
         --b2 b2.txt \
         --gtf $gtf \
         --od ./ \
+        --tmp tmp \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
@@ -619,6 +620,7 @@ if (!params.test) {
         --b2 b2.txt \
         --gtf $gtf \
         --od ./ \
+        --tmp tmp \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
