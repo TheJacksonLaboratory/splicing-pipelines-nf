@@ -35,11 +35,20 @@ def helpMessage() {
       --readlength                  Read length (int)
       --overhang                    Overhang (default = readlength - 1, int)
       --mismatch                    Mismatch (default = 2, int)
+      --minlen                      Drop the read if it is below a specified length (default = readlength, int)
+      --slidingwindow               Perform a sliding window trimming approach (bool)
+
+    rMATS:
+      --statoff                     Skip the statistical analysis (bool)
+      --paired_stats                Use the paired stats model (bool)
+      --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
+      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (default = 50, int)
+      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (default = 500, int)
 
     Other:
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
       --test                        For running QC, trimming and STAR only (bool)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA' (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', string)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
       --max_cpus                    Maximum number of CPUs (int)
       --max_memory                  Maximum memory (memory unit)
@@ -68,27 +77,37 @@ adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/ad
 overhang = params.overhang ? params.overhang : params.readlength - 1
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+minlen = params.minlen ? params.minlen : params.readlength
+variable_read_length = minlen == params.readlength ? false : true
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
-log.info "Assembly name         : ${params.assembly_name}"
-log.info "Reads                 : ${params.reads}"
-log.info "Single-end            : ${params.singleEnd}"
-log.info "GTF                   : ${params.gtf}"
-log.info "STAR index            : ${params.star_index}"
-log.info "Stranded              : ${params.stranded}"
-log.info "rMATS pairs file      : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter               : ${adapter_file}"
-log.info "Read Length           : ${params.readlength}"
-log.info "Overhang              : ${overhang}"
-log.info "Mismatch              : ${params.mismatch}"
-log.info "Test                  : ${params.test}"
-log.info "Download from         : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
-log.info "Key file              : ${params.key_file ? params.key_file : 'Not provided'}"
-log.info "Outdir                : ${params.outdir}"
-log.info "Max CPUs              : ${params.max_cpus}"
-log.info "Max memory            : ${params.max_memory}"
-log.info "Max time              : ${params.max_time}"
+log.info "Assembly name               : ${params.assembly_name}"
+log.info "Reads                       : ${params.reads}"
+log.info "Single-end                  : ${params.singleEnd}"
+log.info "GTF                         : ${params.gtf}"
+log.info "STAR index                  : ${params.star_index}"
+log.info "Stranded                    : ${params.stranded}"
+log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "Adapter                     : ${adapter_file}"
+log.info "Read Length                 : ${params.readlength}"
+log.info "Overhang                    : ${overhang}"
+log.info "Minimum length              : ${minlen}"
+log.info "Sliding window              : ${params.slidingwindow}"
+log.info "rMATS variable read length  : ${variable_read_length}"
+log.info "rMATS statoff               : ${params.statoff}"
+log.info "rMATS paired stats          : ${params.paired_stats}"
+log.info "rMATS novel splice sites    : ${params.novelSS}"
+log.info "rMATS Minimum Intron Length : ${params.mil}"
+log.info "rMATS Maximum Exon Length   : ${params.mel}"
+log.info "Mismatch                    : ${params.mismatch}"
+log.info "Test                        : ${params.test}"
+log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
+log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
+log.info "Outdir                      : ${params.outdir}"
+log.info "Max CPUs                    : ${params.max_cpus}"
+log.info "Max memory                  : ${params.max_memory}"
+log.info "Max time                    : ${params.max_time}"
 log.info ""
 log.info "\n"
 
@@ -285,6 +304,7 @@ process trimmomatic {
   mode = params.singleEnd ? 'SE' : 'PE'
   out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
   output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
+  slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
   """
   trimmomatic \
     $mode \
@@ -295,9 +315,8 @@ process trimmomatic {
     ILLUMINACLIP:${adapter}:2:30:10:8:true \
     LEADING:3 \
     TRAILING:3 \
-    SLIDINGWINDOW:4:15 \
-    MINLEN:${params.readlength} \
-    CROP:${params.readlength} \
+    MINLEN:${minlen} \
+    CROP:${params.readlength} $slidingwindow
 
   mkdir logs
   cp .command.log logs/${name}_trimmomatic.log
@@ -526,6 +545,10 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
+      statoff = params.statoff ? '--statoff' : ''
+      paired_stats = params.paired_stats ? '--paired-stats' : ''
+      novelSS = params.novelSS ? '--novelSS' : ''   
       n_samples_replicates = bams.size()
       n_replicates = n_samples_replicates.intdiv(2)
       bam_groups = bams.collate(n_replicates)
@@ -534,7 +557,17 @@ if (!params.test) {
       """
       echo $b1_bams > b1.txt
       echo $b2_bams > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
+      rmats.py \
+        --b1 b1.txt \
+        --b2 b2.txt \
+        --gtf $gtf \
+        --od ./ \
+        --tmp tmp \
+        -t $mode \
+        --nthread $task.cpus \
+        --readLength ${params.readlength} \
+        --mil ${params.mil} \
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
@@ -575,11 +608,24 @@ if (!params.test) {
 
       script:
       mode = params.singleEnd ? 'single' : 'paired'
+      variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
+      statoff = params.statoff ? '--statoff' : ''
+      paired_stats = params.paired_stats ? '--paired-stats' : ''
+      novelSS = params.novelSS ? '--novelSS' : ''   
       """
       ls $bam1 > b1.txt
       ls $bam2 > b2.txt
-      rmats.py --b1 b1.txt --b2 b2.txt --gtf $gtf --od ./ -t $mode --nthread $task.cpus --readLength ${params.readlength}
-
+      rmats.py \
+        --b1 b1.txt \
+        --b2 b2.txt \
+        --gtf $gtf \
+        --od ./ \
+        --tmp tmp \
+        -t $mode \
+        --nthread $task.cpus \
+        --readLength ${params.readlength} \
+        --mil ${params.mil} \
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config

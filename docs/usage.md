@@ -99,6 +99,15 @@ Reads:
   --readlength                  Read length (int)
   --overhang                    Overhang (default = readlength - 1, int)
   --mismatch                    Mismatch (default = 2, int)
+  --minlen                      Drop the read if it is below a specified length (default = readlength, int)
+  --slidingwindow               Perform a sliding window trimming approach (bool)
+
+rMATS:
+  --statoff                     Skip the statistical analysis (bool)
+  --paired_stats                Use the paired stats model (bool)
+  --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
+  --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
+  --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
 
 Other:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)

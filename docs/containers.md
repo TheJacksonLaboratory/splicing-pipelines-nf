@@ -22,13 +22,13 @@ Doing both of these things makes containers as portable as possible. However, bo
 ## To build a Docker container
 If you need to modify one of the containers, eg to update or add more software dependencies you can do so like so:
 ```bash
-docker tag my-image <registry_user>/<image_name>:<tag>
+docker build -t <registry_user>/<image_name>:<tag> .
 ```
 
 Eg:
 ```
 cd containers/splicing-pipelines-nf/
-docker build -t gcr.io/nextflow-250616/splicing-pipelines-nf:2.0 .
+docker build -t gcr.io/nextflow-250616/splicing-pipelines-nf:gawk .
 ```
 
 ## To push your image to a container register
