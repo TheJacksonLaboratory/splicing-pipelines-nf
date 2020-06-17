@@ -429,6 +429,7 @@ if (!params.test) {
     file "${name}_for_DGE.gtf" into stringtie_dge_gtf
 
     script: 
+    rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
     rf = params.stranded ? '--rf' : ''
     """
     stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
@@ -544,6 +545,7 @@ if (!params.test) {
       file "*"
 
       script:
+      libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
       mode = params.singleEnd ? 'single' : 'paired'
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
@@ -563,6 +565,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
+	--libType $libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
@@ -607,6 +610,7 @@ if (!params.test) {
       file "*"
 
       script:
+      libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
       mode = params.singleEnd ? 'single' : 'paired'
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
@@ -621,6 +625,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
+	--libType $libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
