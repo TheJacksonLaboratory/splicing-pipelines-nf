@@ -554,8 +554,9 @@ if (!params.test) {
       novelSS = params.novelSS ? '--novelSS' : ''   
       if (b1_only) {
         b1_bams = bams.join(",")
-        b2_cmd = 'touch b2.txt'
+        b2_cmd = ''
         b2_flag = ''
+        b2_config_cmd = ''
       } else {
         n_samples_replicates = bams.size()
         n_replicates = n_samples_replicates.intdiv(2)
@@ -564,6 +565,7 @@ if (!params.test) {
         b2_bams = bam_groups[1].join(",")
         b2_cmd = "echo $b2_bams > b2.txt"
         b2_flag = "--b2 b2.txt"
+        b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
       }
       """
       echo $b1_bams > b1.txt
@@ -581,7 +583,7 @@ if (!params.test) {
         --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
-      echo b2 b2.txt >> \$rmats_config
+      $b2_config_cmd
       echo rmats_gtf       ${gtf} >> \$rmats_config
       echo ref_gtf         ${gtf} >> \$rmats_config
       echo fasta           ${params.assembly_name} >> \$rmats_config
