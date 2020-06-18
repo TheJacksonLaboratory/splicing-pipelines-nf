@@ -315,8 +315,9 @@ process trimmomatic {
     ILLUMINACLIP:${adapter}:2:30:10:8:true \
     LEADING:3 \
     TRAILING:3 \
+    $slidingwindow \
     MINLEN:${minlen} \
-    CROP:${params.readlength} $slidingwindow
+    CROP:${params.readlength}
 
   mkdir logs
   cp .command.log logs/${name}_trimmomatic.log
