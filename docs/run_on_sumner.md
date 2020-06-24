@@ -28,48 +28,6 @@ The `fastq` column(s) should contain the path to FASTQ files. There should be on
 
 These files must have the column names as in the above examples. The `sample_id` can be anything, however each must be unique. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
-## 2. Run trimming and mapping test to determine optimal read length 
-
-You only need to do this once. If you already know the optimal read length for your data, proceed to step 3. This will run FastQC, trimmomatic, and Star on your data at a variety of read lenghts
-
-If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`
-
-rMATS requires all reads be the same lengths. Things to consider when deciding: 
- 
-* Percentage of reads remaining after trimmomatic
-
-* Star mapping stats
-
-* Longer reads produce higher quality data for splicing analysis
-
-### a. Create `NF_splicing_pipeline.config`
-
-For example see [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/conf/examples/trim_test.config). **You must name your config file `NF_splicing_pipeline.config`**
-
-For `readlength`, enter the length of the original reads (as multiple of 5)
-
-* Example: 75, 80, 90, etc.
-
-### b. Choose an `increment`
-
-What increments of read lengths would you like to test? For example, if my original read length is 150, I might want to test increments of 10. Meaning 140bp, 130bp, 120bp, and 110bp. 
-    
-Note: This test will only test 4 different read lengths. If you wish to test more, rerun the test and decrease the value specified for full length `readlength`
-
-### c. Run `trim_test.pbs`
-
-To run: 
-```
-sbatch --export=ALL,increment=10 /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/trim_test.pbs
-```
-Note: Replace `increment` value with your desired value
-
-### d. Use MulitQC output to determine optimal read length
-
-Copy the multiQC reports for each read length to your local computer using WinSCP. Use these to look at the trimming and mapping stats. Alternatively you can look at the log files generated. 
-
-NOTE: all multiQC files have the same name. You will need to either change their name or put them in different folders on your computer. 
-
 ## 3. Run full analysis
 
 ### a. If you wish to run rMATS you will need to create `rmats_pairs` input file
