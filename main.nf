@@ -126,7 +126,7 @@ if (params.download_from) {
     .set { accession_ids }
 } 
 // TODO: combine single and paired-end channel definitions
-if (!params.download_from && params.singleEnd) {
+if (!params.download_from && params.singleEnd && !params.bams) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -134,7 +134,7 @@ if (!params.download_from && params.singleEnd) {
     .map { sample_id, fastq -> [sample_id, file(fastq)] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
-if (!params.download_from && !params.singleEnd) {
+if (!params.download_from && !params.singleEnd && !params.bams) {
   Channel
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -162,10 +162,12 @@ Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
-Channel
-  .fromPath(params.star_index)
-  .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
-  .set { star_index }
+if (!params.bams) {
+  Channel
+    .fromPath(params.star_index)
+    .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+    .set { star_index }
+}
 Channel
   .fromPath(key_file)
   .ifEmpty { exit 1, "Key file not found: ${key_file}" }
@@ -271,6 +273,8 @@ if (download_from('tcga')) {
     }
   }
 }
+
+if (!params.bams){
 
 /*--------------------------------------------------
   FastQC for quality control of input reads
@@ -418,6 +422,7 @@ process star {
   samtools index ${name}.Aligned.sortedByCoord.out.bam
   bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
   """
+}
 }
 
 if (!params.test) {
@@ -663,6 +668,7 @@ if (!params.test) {
   MultiQC to generate a QC HTML report
 ---------------------------------------------------*/
 
+if (!params.bams) {
 process multiqc {
   publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
@@ -683,6 +689,7 @@ process multiqc {
   """
   multiqc . --config $multiqc_config -m fastqc -m star
   """
+}
 }
 
 // define helper function
