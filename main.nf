@@ -85,7 +85,7 @@ log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
-log.info "Bams 			      : ${params.bams}"
+log.info "Bams                        : ${params.bams}"
 log.info "Single-end                  : ${params.singleEnd}"
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${params.star_index}"
@@ -276,153 +276,153 @@ if (download_from('tcga')) {
 
 if (!params.bams){
 
-/*--------------------------------------------------
-  FastQC for quality control of input reads
----------------------------------------------------*/
+  /*--------------------------------------------------
+    FastQC for quality control of input reads
+  ---------------------------------------------------*/
 
-process fastqc {
-  tag "$name"
-  label 'process_medium'
-  publishDir "${params.outdir}/QC/raw", mode: 'copy'
+  process fastqc {
+    tag "$name"
+    label 'process_medium'
+    publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
-  input:
-  set val(name), file(reads) from raw_reads_fastqc
+    input:
+    set val(name), file(reads) from raw_reads_fastqc
 
-  output:
-  file "*_fastqc.{zip,html}" into fastqc_results_raw
+    output:
+    file "*_fastqc.{zip,html}" into fastqc_results_raw
 
-  script:
-  """
-  fastqc --casava --threads $task.cpus $reads
-  """
-}
+    script:
+    """
+    fastqc --casava --threads $task.cpus $reads
+    """
+  }
 
-/*--------------------------------------------------
-  Trimmomatic to trim input reads
----------------------------------------------------*/
+  /*--------------------------------------------------
+    Trimmomatic to trim input reads
+  ---------------------------------------------------*/
 
-process trimmomatic {
-  tag "$name"
-  label 'low_memory'
-  publishDir "${params.outdir}/trimmed", mode: 'copy'
+  process trimmomatic {
+    tag "$name"
+    label 'low_memory'
+    publishDir "${params.outdir}/trimmed", mode: 'copy'
 
-  input:
-  set val(name), file(reads) from raw_reads_trimmomatic
-  each file(adapter) from adapter
+    input:
+    set val(name), file(reads) from raw_reads_trimmomatic
+    each file(adapter) from adapter
 
-  output:
-  set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
-  file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
+    output:
+    set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
+    file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
-  script:
-  mode = params.singleEnd ? 'SE' : 'PE'
-  out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
-  output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
-  slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
-  """
-  trimmomatic \
-    $mode \
-    -threads $task.cpus \
-    -phred33 \
-    $reads \
-    $out \
-    ILLUMINACLIP:${adapter}:2:30:10:8:true \
-    LEADING:3 \
-    TRAILING:3 \
-    $slidingwindow \
-    MINLEN:${minlen} \
-    CROP:${params.readlength}
+    script:
+    mode = params.singleEnd ? 'SE' : 'PE'
+    out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
+    output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
+    slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
+    """
+    trimmomatic \
+      $mode \
+      -threads $task.cpus \
+      -phred33 \
+      $reads \
+      $out \
+      ILLUMINACLIP:${adapter}:2:30:10:8:true \
+      LEADING:3 \
+      TRAILING:3 \
+      $slidingwindow \
+      MINLEN:${minlen} \
+      CROP:${params.readlength}
 
-  mkdir logs
-  cp .command.log logs/${name}_trimmomatic.log
-  """
-}
+    mkdir logs
+    cp .command.log logs/${name}_trimmomatic.log
+    """
+  }
 
-/*--------------------------------------------------
-  FastQC for quality control of input reads
----------------------------------------------------*/
+  /*--------------------------------------------------
+    FastQC for quality control of input reads
+  ---------------------------------------------------*/
 
-process fastqc_trimmed {
-  tag "$name"
-  label 'process_medium'
-  publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
+  process fastqc_trimmed {
+    tag "$name"
+    label 'process_medium'
+    publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
-  input:
-  set val(name), file(reads) from trimmed_reads_fastqc
+    input:
+    set val(name), file(reads) from trimmed_reads_fastqc
 
-  output:
-  file "*_fastqc.{zip,html}" into fastqc_results_trimmed
+    output:
+    file "*_fastqc.{zip,html}" into fastqc_results_trimmed
 
-  script:
-  """
-  fastqc --casava --threads $task.cpus $reads
-  """
-}
+    script:
+    """
+    fastqc --casava --threads $task.cpus $reads
+    """
+  }
 
-/*--------------------------------------------------
-  STAR to align trimmed reads
----------------------------------------------------*/
+  /*--------------------------------------------------
+    STAR to align trimmed reads
+  ---------------------------------------------------*/
 
-process star {
-  tag "$name"
-  label 'high_memory'
-  publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+  process star {
+    tag "$name"
+    label 'high_memory'
+    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
-  input:
-  set val(name), file(reads) from trimmed_reads_star
-  each file(index) from star_index
-  each file(gtf) from gtf_star
+    input:
+    set val(name), file(reads) from trimmed_reads_star
+    each file(index) from star_index
+    each file(gtf) from gtf_star
 
-  output:
-  set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
-  file "*.out" into alignment_logs
-  file "*SJ.out.tab"
-  file "*Log.out" into star_log
-  file "*Unmapped*" optional true
-  file "${name}.bw"
+    output:
+    set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
+    file "*.out" into alignment_logs
+    file "*SJ.out.tab"
+    file "*Log.out" into star_log
+    file "*Unmapped*" optional true
+    file "${name}.bw"
 
-  script:
-  // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
-  // TODO: find a better solution to needing to use `chmod`
-  out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
-  out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-  xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
-  """
-  # Decompress STAR index if compressed
-  if [[ $index == *.tar.gz ]]; then
-    tar -xvzf $index
-  fi
+    script:
+    // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
+    // TODO: find a better solution to needing to use `chmod`
+    out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+    out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
+    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    """
+    # Decompress STAR index if compressed
+    if [[ $index == *.tar.gz ]]; then
+      tar -xvzf $index
+    fi
 
-  STAR \
-    --genomeDir ${index.toString().minus('.tar.gz')} \
-    --readFilesIn $reads \
-    --readMatesLengthsIn NotEqual \
-    --outFileNamePrefix ${name}. \
-    --runThreadN $task.cpus \
-    --readFilesCommand zcat \
-    --sjdbGTFfile $gtf \
-    --sjdbOverhang $overhang \
-    --alignSJoverhangMin 8 \
-    --outFilterMismatchNmax $params.mismatch \
-    --outFilterMultimapNmax 20 \
-    --alignMatesGapMax 1000000 \
-    --outSAMattributes All \
-    --outSAMtype BAM SortedByCoordinate \
-    --limitBAMsortRAM 100000000000 \
-    --outBAMsortingThreadN $task.cpus \
-    --outFilterType BySJout \
-    --twopassMode Basic \
-    --alignEndsType EndToEnd \
-    --alignIntronMax 1000000 \
-    --outReadsUnmapped Fastx \
-    --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
+    STAR \
+      --genomeDir ${index.toString().minus('.tar.gz')} \
+      --readFilesIn $reads \
+      --readMatesLengthsIn NotEqual \
+      --outFileNamePrefix ${name}. \
+      --runThreadN $task.cpus \
+      --readFilesCommand zcat \
+      --sjdbGTFfile $gtf \
+      --sjdbOverhang $overhang \
+      --alignSJoverhangMin 8 \
+      --outFilterMismatchNmax $params.mismatch \
+      --outFilterMultimapNmax 20 \
+      --alignMatesGapMax 1000000 \
+      --outSAMattributes All \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 100000000000 \
+      --outBAMsortingThreadN $task.cpus \
+      --outFilterType BySJout \
+      --twopassMode Basic \
+      --alignEndsType EndToEnd \
+      --alignIntronMax 1000000 \
+      --outReadsUnmapped Fastx \
+      --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
 
-  chmod a+rw $name*
-  $xs_tag_cmd
-  samtools index ${name}.Aligned.sortedByCoord.out.bam
-  bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
-  """
-}
+    chmod a+rw $name*
+    $xs_tag_cmd
+    samtools index ${name}.Aligned.sortedByCoord.out.bam
+    bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
+    """
+  }
 }
 
 if (!params.test) {
@@ -581,7 +581,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
-	--libType $libType \
+	      --libType $libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
@@ -641,7 +641,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
-	--libType $libType \
+	      --libType $libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
@@ -669,27 +669,27 @@ if (!params.test) {
 ---------------------------------------------------*/
 
 if (!params.bams) {
-process multiqc {
-  publishDir "${params.outdir}/MultiQC", mode: 'copy'
+  process multiqc {
+    publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
-  when:
-  !params.skipMultiQC
+    when:
+    !params.skipMultiQC
 
-  input:
-  file (fastqc:'fastqc/*') from fastqc_results_raw.collect().ifEmpty([])
-  file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
-  file ('alignment/*') from alignment_logs.collect().ifEmpty([])
-  file (multiqc_config) from multiqc_config
+    input:
+    file (fastqc:'fastqc/*') from fastqc_results_raw.collect().ifEmpty([])
+    file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
+    file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+    file (multiqc_config) from multiqc_config
 
-  output:
-  file "*multiqc_report.html" into multiqc_report
-  file "*_data"
+    output:
+    file "*multiqc_report.html" into multiqc_report
+    file "*_data"
 
-  script:
-  """
-  multiqc . --config $multiqc_config -m fastqc -m star
-  """
-}
+    script:
+    """
+    multiqc . --config $multiqc_config -m fastqc -m star
+    """
+  }
 }
 
 // define helper function
