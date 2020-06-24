@@ -22,7 +22,7 @@ def helpMessage() {
     
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
-      --bams 			    Path to input data CSV file specifying the bams sample_id and path to BAM files (path)
+      --bams                        Path to input data CSV file specifying the bams sample_id and path to BAM files (path)
       --gtf                         Path to GTF file (path)
       --star_index                  Path to STAR index (path)
       -profile                      Configuration profile to use. Can use multiple (comma separated, string)
