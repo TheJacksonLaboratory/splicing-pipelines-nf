@@ -22,6 +22,7 @@ def helpMessage() {
     
     Main arguments:
       --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
+      --bams 			    Path to input data CSV file specifying the bams sample_id and path to BAM files (path)
       --gtf                         Path to GTF file (path)
       --star_index                  Path to STAR index (path)
       -profile                      Configuration profile to use. Can use multiple (comma separated, string)
@@ -84,6 +85,7 @@ log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
+log.info "Bams 			      : ${params.bams}"
 log.info "Single-end                  : ${params.singleEnd}"
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${params.star_index}"
@@ -140,6 +142,14 @@ if (!params.download_from && !params.singleEnd) {
     .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
+if (params.bams) {
+  Channel
+    .fromPath(params.bams)
+    .ifEmpty { exit 1, "Cannot find BAMs csv file : ${params.bams}" }
+    .splitCsv(skip:1)
+    .map { name, bam, bai -> [ name, file(bam), file(bai) ] }
+    .into { indexed_bam; indexed_bam_rmats }
+} 
 Channel
   .fromPath(adapter_file)
   .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
