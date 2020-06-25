@@ -84,28 +84,79 @@ Both of these should be specified without quotes
 
 ## All available parameters
 ```
+Input files:
+  --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
+                                This file is used if starting at beginning of pipeline. 
+                                (default: no reads.csv)
+  --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
+                                This file is used if starting pipeline at Stringtie.
+                                (default: no bams.csv)
+  --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
+                                (default: no rmats_pairs specified) 
+  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+                                (default: false)
+  --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
+                                (default: false)     
+                                
 Main arguments:
-  --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
-  --gtf                         Path to GTF file (path)
+  --gtf                         Path to reference GTF file (path)
+                                (default: no gtf specified) 
+  --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+                                (default: false)
   --star_index                  Path to STAR index (path)
+                                (default: no index specified)
+  --singleEnd                   Specifies that the input is single-end reads (bool)
+                                (default: false)
+  --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
+                                (default: 'first-strand')
   -profile                      Configuration profile to use. Can use multiple (comma separated, string)
                                 Available: base, docker, sumner, test and more.
+  --readlength                  Read length - Note that all reads will be cropped to this length(int)
+                                (default: no read length specified)
+                                
+Trimmomatic: 
+  --minlen                      Drop the read if it is below a specified length (int)
+                                If minlen = readlength, all reads will be cropped to same length and --variable-readlength for rMATS is turned off
+                                (default: readlength)
+  --slidingwindow               Perform a sliding window trimming approach (bool)
+                                (default: true)
+  --adapter                     Path to adapter file (path)  
+                                (default: TruSeq3 for either PE or SE, see singleEnd parameter)
+                                
+Star:                    
+  --mismatch                    Number of allowed mismatches per read (SE) or combined read (PE) (int)
+                                SE ex. read length of 50, allow 2 mismatches per 50 bp
+                                PE ex. read length of 50, allow 2 mismatches per 100 bp 
+                                (default: 2)
+  --overhang                    Overhang (int)
+                                (default: readlength - 1)
 
-Reads:
-  --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison (path)
-  --singleEnd                   Specifies that the input is single-end reads (bool)
-  --stranded                    Specifies that the input is stranded (bool)
-  --adapter                     Path to adapter file (path)
-  --readlength                  Read length (int)
-  --overhang                    Overhang (default = readlength - 1, int)
-  --mismatch                    Mismatch (default = 2, int)
+rMATS:                              
+  --statoff                     Skip the statistical analysis (bool)
+                                If using only b1 as input, this must be turned on.
+                                (default: false)
+  --paired_stats                Use the paired stats model (bool)
+                                (default: false)
+  --novelSS                     Enable detection of unnanotated splice sites (bool)
+                                (default: false)
+  --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
+                                (default: 50)
+  --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
+                                (default: 500)
 
 Other:
-  --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+  --test                        For running trim test (bool)
+                                (default: false)
   --max_cpus                    Maximum number of CPUs (int)
+                                (default: ?)  
   --max_memory                  Maximum memory (memory unit)
+                                (default: 80)
   --max_time                    Maximum time (time unit)
+                                (default: ?)
   --skiprMATS                   Skip rMATS (bool)
+                                (default: false)
   --skipMultiQC                 Skip MultiQC (bool)
+                                (default: false)
   --outdir                      The output directory where the results will be saved (string)
+                                (default: directory where you submit the job)
 ```

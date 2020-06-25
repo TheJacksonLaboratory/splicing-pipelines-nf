@@ -34,15 +34,15 @@ if(!(genome_version %in% c("GRCh38",  "GRCm38"))){
 
 
 # load in JCEC files for each event type 
-CA <- read.table("SE.MATS.JCEC.txt", header=TRUE)
+CA <- read.table("SE.MATS.JCEC.txt", header=TRUE, sep="\t")
 print("CA loaded")
-RI <- read.table("RI.MATS.JCEC.txt", header=TRUE)
+RI <- read.table("RI.MATS.JCEC.txt", header=TRUE, sep="\t")
 print("RI loaded")
-A3SS <- read.table("A3SS.MATS.JCEC.txt", header=TRUE)
+A3SS <- read.table("A3SS.MATS.JCEC.txt", header=TRUE, sep="\t")
 print("A3SS loaded")
-A5SS <- read.table("A5SS.MATS.JCEC.txt", header=TRUE)
+A5SS <- read.table("A5SS.MATS.JCEC.txt", header=TRUE, sep="\t")
 print("A5SS loaded")
-MXE <- read.table("MXE.MATS.JCEC.txt", header=TRUE)
+MXE <- read.table("MXE.MATS.JCEC.txt", header=TRUE, sep="\t")
 print("MXE loaded")
 
 # get names of b1 and b2
@@ -247,6 +247,7 @@ get_postprocessing_table <- function(df){
   df$mSC2 <- sapply(df$SJC_SAMPLE_2, function(x) calc_mean(x))
   df$mPSI1 <- sapply(df$IncLevel1, function(x) calc_mean(x))
   df$mPSI2 <- sapply(df$IncLevel2, function(x) calc_mean(x))
+  df$IncLevelDifference <- df$IncLevelDifference*(-1)
   # reorder and rename columns, keeping only the ones we want
   final_df <- df[,c("Event_type", "short_ID", "long_ID", "geneSymbol", "GeneID", "strand", "IJC_SAMPLE_1", "SJC_SAMPLE_1", 
                     "IJC_SAMPLE_2", "SJC_SAMPLE_2", "IncLevel1", "IncLevel2", "mIC1", "mSC1", "mIC2", "mSC2", "mPSI1", "mPSI2",
@@ -297,6 +298,7 @@ if(rmats_gtf!="gffcmp.annotated.corrected.gtf"){
   write.csv(all_filt, paste0("Filtered_", sample_prefix, "_", date, ".csv"),row.names=FALSE)
 }
 
+if(nrow(all_filt)>0){                     
 # get summary table
 print("Generating summary table")
 get_summary_table <- function(unfilt_df, filt_df){
@@ -323,7 +325,8 @@ if(rmats_gtf=="gffcmp.annotated.corrected.gtf"){
 if(rmats_gtf!="gffcmp.annotated.corrected.gtf"){
   write.csv(summary_table, paste0("SummaryTable_", sample_prefix, "_", date, ".csv", sep=""),row.names=FALSE)
 }
-
+}
+                     
 # generate bam file list
 b1_file <- config[config$parameter=="b1", "value"]
 b2_file <- config[config$parameter=="b2", "value"]

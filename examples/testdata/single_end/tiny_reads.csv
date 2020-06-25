@@ -1,0 +1,5 @@
+sample_id,fastq
+SRR4238351,https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/reads/ultra_quick_test/SRR4238351_subsamp.fastq.gz
+SRR4238355,https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/reads/ultra_quick_test/SRR4238355_subsamp.fastq.gz
+SRR4238359,https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/reads/ultra_quick_test/SRR4238359_subsamp.fastq.gz
+SRR4238379,https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/reads/ultra_quick_test/SRR4238379_subsamp.fastq.gz
