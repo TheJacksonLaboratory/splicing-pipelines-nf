@@ -67,7 +67,7 @@ def helpMessage() {
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
-      -- filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+      --filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
 				    (default: 0.66)
       --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
 				    (default: 8)
@@ -147,6 +147,8 @@ log.info "rMATS novel splice sites    : ${params.novelSS}"
 log.info "rMATS Minimum Intron Length : ${params.mil}"
 log.info "rMATS Maximum Exon Length   : ${params.mel}"
 log.info "Mismatch                    : ${params.mismatch}"
+log.info "filterScore		      : ${params.filterScore}"
+log.info "sjdOverhangMin	      : ${params.sjdOverhangMin}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
