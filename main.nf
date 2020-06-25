@@ -449,7 +449,9 @@ if (!params.bams){
       --readFilesCommand zcat \
       --sjdbGTFfile $gtf \
       --sjdbOverhang $overhang \
-      --alignSJoverhangMin 8 \
+      --alignSJoverhangMin $params.sjdOverhangMin \
+      --outFilterScoreMinOverLread $params.filterScore \
+      --outFilterMatchNminOverLread $params.filterScore \
       --outFilterMismatchNmax $params.mismatch \
       --outFilterMultimapNmax 20 \
       --alignMatesGapMax 1000000 \
