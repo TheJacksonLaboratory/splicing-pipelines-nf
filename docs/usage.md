@@ -117,7 +117,7 @@ Main arguments:
 Trimmomatic: 
   --minlen                      Drop the read if it is below a specified length (int)
 				Default parameters turn on --variable-readlength
-				To crop all reads and turn off, set minlen = readlength                                
+				To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
                                 (default: 20)
   --slidingwindow               Perform a sliding window trimming approach (bool)
                                 (default: true)
