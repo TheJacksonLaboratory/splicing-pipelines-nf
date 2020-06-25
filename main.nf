@@ -67,6 +67,10 @@ def helpMessage() {
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
+      -- filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+				    (default: 0.66)
+      --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
+				    (default: 8)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
