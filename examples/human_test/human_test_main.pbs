@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -o splicing.%j.out
+#SBATCH -e splicing.%j.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=$USER@jax.org
+#SBATCH -p compute
+#SBATCH -q batch
+#SBATCH -t 1-01:00:00
+
+### to run this test: sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/examples/human_test/human_test_main.pbs
+ 
+cd $SLURM_SUBMIT_DIR
+date;hostname;pwd
+
+module load singularity
+curl -fsSL get.nextflow.io | bash
+
+./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
+	-config /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/conf/examples/human_test.config  \
+	--outdir ${SLURM_SUBMIT_DIR} \
+	-profile base,sumner -resume \
+	-with-report human_test.html \
+	-with-timeline human_test_timeline.html \
+	human_test.png
