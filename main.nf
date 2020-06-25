@@ -387,6 +387,7 @@ if (!params.bams){
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
     xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    endsType = variable_read_length ? 'Local' : 'EndToEnd'
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -412,7 +413,7 @@ if (!params.bams){
       --outBAMsortingThreadN $task.cpus \
       --outFilterType BySJout \
       --twopassMode Basic \
-      --alignEndsType EndToEnd \
+      --alignEndsType $endsType \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
       --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
