@@ -25,7 +25,7 @@ This pipeline can be run on Sumner in three ways:
 
 Create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`.  
 
-### 2. Create/Locate `reads` file for your dataset
+### 2. Create/Locate `reads.csv` file for your dataset
 
 Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slighly based upon the data, see examples for:
 
@@ -37,7 +37,7 @@ The 'reads.csv' column names must match the above [single-end] and [paired-end] 
 There should be one `reads.csv` file per dataset. If your dataset already has a `reads.csv` file, proceed to step 2.
 
 
-### 3. Create `rmats_pairs` input file
+### 3. Create `rmats_pairs.txt` input file
 
 Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to an rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
 
