@@ -134,6 +134,8 @@ variable_read_length = minlen == params.readlength ? false : true
 run_name = params.run_name ? params.run_name + "_" : ""
 date = new Date().format("MM-dd-yy")
 run_prefix = run_name + date
+// Set star index to read length unless otherwise specified 
+star_index = params.star_index ? params.star_index : "/projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${params.readlength}"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
