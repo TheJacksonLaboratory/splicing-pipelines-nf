@@ -129,6 +129,7 @@ variable_read_length = minlen == params.readlength ? false : true
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
+log.info "Run name                    : ${params.run_name}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
 log.info "Bams                        : ${params.bams}"
