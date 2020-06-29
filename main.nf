@@ -29,6 +29,8 @@ def helpMessage() {
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                     (default: no rmats_pairs specified) 
+      --run_name		    User specified name used as prefix for output files
+				    (defaut: no prefix, only date and time)
       --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
