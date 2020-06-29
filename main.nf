@@ -127,7 +127,7 @@ key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_
 minlen = params.minlen ? params.minlen : params.readlength
 variable_read_length = minlen == params.readlength ? false : true
 run_name = params.run_name ? params.run_name + "_" : ""
-date = new Date().format("dd-MM-yy")
+date = new Date().format("MM-dd-yy")
 run_prefix = run_name + date
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
