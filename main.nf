@@ -126,7 +126,7 @@ download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
 minlen = params.minlen ? params.minlen : params.readlength
 variable_read_length = minlen == params.readlength ? false : true
-run_name = params.read_name ? params.read_name : ""
+run_name = params.run_name ? params.run_name : ""
 date = new Date().format("dd-MM-yy")
 run_prefix = run_name + "_" + date 
 
