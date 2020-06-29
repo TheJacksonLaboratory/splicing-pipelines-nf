@@ -116,8 +116,9 @@ Main arguments:
                                 
 Trimmomatic: 
   --minlen                      Drop the read if it is below a specified length (int)
-                                If minlen = readlength, all reads will be cropped to same length and --variable-readlength for rMATS is turned off
-                                (default: readlength)
+				Default parameters turn on --variable-readlength
+				To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                (default: 20)
   --slidingwindow               Perform a sliding window trimming approach (bool)
                                 (default: true)
   --adapter                     Path to adapter file (path)  
@@ -130,6 +131,11 @@ Star:
                                 (default: 2)
   --overhang                    Overhang (int)
                                 (default: readlength - 1)
+  --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                (default: 0.66)
+  --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
+                                (default: 8)
+
 
 rMATS:                              
   --statoff                     Skip the statistical analysis (bool)

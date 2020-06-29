@@ -20,43 +20,87 @@ def helpMessage() {
     The typical command for running the pipeline is as follows:
     nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
     
+    Input files:
+      --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
+                                    This file is used if starting at beginning of pipeline. 
+                                    (default: no reads.csv)
+      --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
+                                    This file is used if starting pipeline at Stringtie.
+                                    (default: no bams.csv)
+      --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
+                                    (default: no rmats_pairs specified) 
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+                                    (default: false)
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
+                                    (default: false)  
+ 
     Main arguments:
-      --reads                       Path to input data CSV file specifying the reads sample_id and path to FASTQ files (path)
-      --bams                        Path to input data CSV file specifying the bams sample_id and path to BAM files (path)
-      --gtf                         Path to GTF file (path)
+      --gtf                         Path to reference GTF file (path)
+                                    (default: no gtf specified) 
+      --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
+                                    (default: false)
       --star_index                  Path to STAR index (path)
+                                    (default: no index specified)
+      --singleEnd                   Specifies that the input is single-end reads (bool)
+                                    (default: false)
+      --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
+                                    (default: 'first-strand')
+      --readlength                  Read length - Note that all reads will be cropped to this length(int)
+                                   (default: no read length specified)
       -profile                      Configuration profile to use. Can use multiple (comma separated, string)
                                     Available: base, docker, sumner, test and more.
 
-    Reads:
-      --rmats_pairs                 Path to file containing b1 & b2 samples names space seperated, one row for each rMATS comparison (path)
-      --singleEnd                   Specifies that the input is single-end reads (bool)
-      --stranded                    Specifies that the input is stranded (bool)
-      --adapter                     Path to adapter file (path)
-      --readlength                  Read length (int)
-      --overhang                    Overhang (default = readlength - 1, int)
-      --mismatch                    Mismatch (default = 2, int)
-      --minlen                      Drop the read if it is below a specified length (default = readlength, int)
+    Trimmomatic: 
+      --minlen                      Drop the read if it is below a specified length (int)
+    				    Default parameters turn on --variable-readlength
+				    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                    (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
+                                    (default: true)
+      --adapter                     Path to adapter file (path)  
+                                    (default: TruSeq3 for either PE or SE, see singleEnd parameter)
+                                
+    Star:                    
+      --mismatch                    Number of allowed mismatches per read (SE) or combined read (PE) (int)
+                                    SE ex. read length of 50, allow 2 mismatches per 50 bp
+                                    PE ex. read length of 50, allow 2 mismatches per 100 bp 
+                                    (default: 2)
+      --overhang                    Overhang (int)
+                                    (default: readlength - 1)
+      --filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+				    (default: 0.66)
+      --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
+				    (default: 8)
 
-    rMATS:
+    rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
+                                    If using only b1 as input, this must be turned on.
+                                    (default: false)
       --paired_stats                Use the paired stats model (bool)
-      --novelSS                     Enable detection of novel splice sites (unannotated splice sites, bool)
-      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (default = 50, int)
-      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (default = 500, int)
+                                    (default: false)
+      --novelSS                     Enable detection of unnanotated splice sites (bool)
+                                    (default: false)
+      --mil                         Minimum Intron Length. Only impacts --novelSS behavior (int)
+                                    (default: 50)
+      --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
+                                    (default: 500)
 
     Other:
-      --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
-      --test                        For running QC, trimming and STAR only (bool)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', string)
-      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
+      --test                        For running trim test (bool)
+                                    (default: false)
       --max_cpus                    Maximum number of CPUs (int)
+                                    (default: ?)  
       --max_memory                  Maximum memory (memory unit)
+                                    (default: 80)
       --max_time                    Maximum time (time unit)
+                                    (default: ?)
       --skiprMATS                   Skip rMATS (bool)
+                                    (default: false)
       --skipMultiQC                 Skip MultiQC (bool)
+                                    (default: false)
       --outdir                      The output directory where the results will be saved (string)
+                                    (default: directory where you submit the job)
+
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -103,6 +147,8 @@ log.info "rMATS novel splice sites    : ${params.novelSS}"
 log.info "rMATS Minimum Intron Length : ${params.mil}"
 log.info "rMATS Maximum Exon Length   : ${params.mel}"
 log.info "Mismatch                    : ${params.mismatch}"
+log.info "filterScore                 : ${params.filterScore}"
+log.info "sjdOverhangMin              : ${params.sjdOverhangMin}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
@@ -203,10 +249,11 @@ if ( download_from('gtex') || download_from('sra') ) {
     each file(key_file) from key_file
     
     output:
-    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(accession), file(output_filename) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
+    output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
     $vdbConfigCmd
     fasterq-dump $accession --threads ${task.cpus} --split-3
@@ -387,6 +434,7 @@ if (!params.bams){
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
     xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    endsType = variable_read_length ? 'Local' : 'EndToEnd'
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -402,7 +450,9 @@ if (!params.bams){
       --readFilesCommand zcat \
       --sjdbGTFfile $gtf \
       --sjdbOverhang $overhang \
-      --alignSJoverhangMin 8 \
+      --alignSJoverhangMin $params.sjdOverhangMin \
+      --outFilterScoreMinOverLread $params.filterScore \
+      --outFilterMatchNminOverLread $params.filterScore \
       --outFilterMismatchNmax $params.mismatch \
       --outFilterMultimapNmax 20 \
       --alignMatesGapMax 1000000 \
@@ -412,7 +462,7 @@ if (!params.bams){
       --outBAMsortingThreadN $task.cpus \
       --outFilterType BySJout \
       --twopassMode Basic \
-      --alignEndsType EndToEnd \
+      --alignEndsType $endsType \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
       --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
