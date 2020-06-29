@@ -29,8 +29,8 @@ def helpMessage() {
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                     (default: no rmats_pairs specified) 
-      --run_name		    User specified name used as prefix for output files
-				    (defaut: no prefix, only date and time)
+      --run_name		                User specified name used as prefix for output files
+				                            (defaut: no prefix, only date and time)
       --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
@@ -127,14 +127,14 @@ key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_
 minlen = params.minlen ? params.minlen : params.readlength
 variable_read_length = minlen == params.readlength ? false : true
 run_name = params.read_name ? params.read_name : ""
-now=
+date = Date().format( 'yyyyMMdd')
 //run_prefix = $(echo $run_name"_"$now) 
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Run name                    : ${params.run_name}"
 log.info "Date                        : ${now}"
-log.info "Final prefix                : ${run_prefix}"
+//log.info "Final prefix                : ${run_prefix}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
 log.info "Bams                        : ${params.bams}"
