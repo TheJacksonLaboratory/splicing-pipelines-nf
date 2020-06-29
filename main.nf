@@ -133,7 +133,7 @@ run_prefix = run_name + "_" + date
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
 log.info "Run name                    : ${params.run_name}"
-log.info "Date                        : ${now}"
+log.info "Date                        : ${date}"
 log.info "Final prefix                : ${run_prefix}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
