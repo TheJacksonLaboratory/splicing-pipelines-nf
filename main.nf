@@ -746,6 +746,7 @@ if (!params.bams) {
     script:
     """
     multiqc . --config $multiqc_config -m fastqc -m star
+    cp multiqc_report.html ${run_prefix}_multiqc_report.html
     """
   }
 }
