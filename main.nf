@@ -121,11 +121,16 @@ if (!params.readlength) {
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
+// Set overhang to read length -1, unless user specified
 overhang = params.overhang ? params.overhang : params.readlength - 1
+// if download_from was specified
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+// Get minlength, if user does not specify, set to read length
 minlen = params.minlen ? params.minlen : params.readlength
+// if minlength != read length, turn on variable read length 
 variable_read_length = minlen == params.readlength ? false : true
+// get run name and date prefix for counts matrix and multiqc
 run_name = params.run_name ? params.run_name + "_" : ""
 date = new Date().format("MM-dd-yy")
 run_prefix = run_name + date
