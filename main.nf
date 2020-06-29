@@ -225,8 +225,8 @@ Channel
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 if (!params.bams) {
   Channel
-    .fromPath(params.star_index)
-    .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+    .fromPath(star_index)
+    .ifEmpty { exit 1, "STAR index not found: ${star_index}" }
     .set { star_index }
 }
 Channel
