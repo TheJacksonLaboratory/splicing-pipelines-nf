@@ -128,7 +128,7 @@ minlen = params.minlen ? params.minlen : params.readlength
 variable_read_length = minlen == params.readlength ? false : true
 run_name = params.run_name ? params.run_name + "_" : ""
 date = new Date().format("dd-MM-yy")
-run_prefix = run_name + date 
+run_prefix = run_name + date
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
@@ -523,15 +523,16 @@ if (!params.test) {
 
     output:
     file "sample_lst.txt"
-    file "gene_count_matrix.csv"
-    file "transcript_count_matrix.csv"
+    file "*gene_count_matrix.csv"
+    file "*transcript_count_matrix.csv"
 
     script: 
     """
     echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
     echo "${gtf.join("\n")}" > gtfs.txt
     paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
-    prepDE.py -i sample_lst.txt  -l $params.readlength
+    prepDE.py -i sample_lst.txt  -l $params.readlength \
+              -g ${run_prefix}_gene_count_matrix.csv -t ${run_prefix}_transcript_count_matrix.csv
     """
   } 
 
