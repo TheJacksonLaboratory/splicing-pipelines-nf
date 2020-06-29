@@ -13,6 +13,9 @@ The workflow processes raw data from FastQ inputs
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. For example, it can be run on HPC (using [JAX](https://www.jax.org/)'s Sumner HPC) or on the cloud over ([Lifebit's CloudOS](https://lifebit.ai/cloudos) platform with AWS & GCloud). It comes with docker containers making installation trivial and results highly reproducible.
 
+The input reads to this pipeline can come from 3 input sources:
+![input_reads_graphic](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/input_reads_graphic.png)
+
 ## Quick start on Sumner (JAX's HPC)
 
 ### Download latest changes to pipeline 
