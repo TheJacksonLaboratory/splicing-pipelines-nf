@@ -42,7 +42,7 @@ def helpMessage() {
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                     (default: false)
       --star_index                  Path to STAR index (path)
-                                    (default: no index specified)
+                                    (default: read length)
       --singleEnd                   Specifies that the input is single-end reads (bool)
                                     (default: false)
       --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
