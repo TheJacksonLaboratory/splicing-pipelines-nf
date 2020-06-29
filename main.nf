@@ -249,10 +249,11 @@ if ( download_from('gtex') || download_from('sra') ) {
     each file(key_file) from key_file
     
     output:
-    set val(accession), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(accession), file(output_filename) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
+    output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
     $vdbConfigCmd
     fasterq-dump $accession --threads ${task.cpus} --split-3
