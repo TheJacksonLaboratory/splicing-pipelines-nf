@@ -607,7 +607,8 @@ if (!params.test) {
       .map { rmats_id, bams -> 
         def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
         def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
-        [ rmats_id, b1_bams[1] + b2_bams[1] ]
+        rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], true ] : [ rmats_id, b1_bams[1] + b2_bams[1], false ]
+        rmats_id_bams
       }
       .set { bams }
 
@@ -620,7 +621,7 @@ if (!params.test) {
       !params.skiprMATS
 
       input:
-      set val(rmats_id), file(bams) from bams
+      set val(rmats_id), file(bams), val(b1_only) from bams
       each file(gtf) from gtf_rmats
 
       output:
@@ -633,17 +634,26 @@ if (!params.test) {
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
-      n_samples_replicates = bams.size()
-      n_replicates = n_samples_replicates.intdiv(2)
-      bam_groups = bams.collate(n_replicates)
-      b1_bams = bam_groups[0].join(",")
-      b2_bams = bam_groups[1].join(",")
+      if (b1_only) {
+        b1_bams = bams.join(",")
+        b2_cmd = ''
+        b2_flag = ''
+        b2_config_cmd = ''
+      } else {
+        n_samples_replicates = bams.size()
+        n_replicates = n_samples_replicates.intdiv(2)
+        bam_groups = bams.collate(n_replicates)
+        b1_bams = bam_groups[0].join(",")
+        b2_bams = bam_groups[1].join(",")
+        b2_cmd = "echo $b2_bams > b2.txt"
+        b2_flag = "--b2 b2.txt"
+        b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
+      }
       """
       echo $b1_bams > b1.txt
-      echo $b2_bams > b2.txt
+      $b2_cmd
       rmats.py \
-        --b1 b1.txt \
-        --b2 b2.txt \
+        --b1 b1.txt $b2_flag \
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
@@ -655,7 +665,7 @@ if (!params.test) {
         --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
-      echo b2 b2.txt >> \$rmats_config
+      $b2_config_cmd
       echo rmats_gtf       ${gtf} >> \$rmats_config
       echo ref_gtf         ${gtf} >> \$rmats_config
       echo fasta           ${params.assembly_name} >> \$rmats_config
