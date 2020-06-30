@@ -74,7 +74,9 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. If you already created a `NF_splicing_pipeline.config` during the trim test, you can modify it. Otherwise, to create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
 **You must name your config file `NF_splicing_pipeline.config`**
+
 **Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.**
+
 **The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
 
 You do not need to specify all parameters if the default parameters are acceptable(find more information on all available parameters [here](usage.md#all-available-parameters) 
