@@ -29,7 +29,9 @@ def helpMessage() {
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                     (default: no rmats_pairs specified) 
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+      --run_name                    User specified name used as prefix for output files
+                                    (defaut: no prefix, only date and time)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
                                     (default: false)  
@@ -40,7 +42,7 @@ def helpMessage() {
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                     (default: false)
       --star_index                  Path to STAR index (path)
-                                    (default: no index specified)
+                                    (default: read length)
       --singleEnd                   Specifies that the input is single-end reads (bool)
                                     (default: false)
       --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
@@ -52,8 +54,8 @@ def helpMessage() {
 
     Trimmomatic: 
       --minlen                      Drop the read if it is below a specified length (int)
-    				    Default parameters turn on --variable-readlength
-				    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                    Default parameters turn on --variable-readlength
+                                    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
@@ -67,10 +69,10 @@ def helpMessage() {
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
-      --filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
-				    (default: 0.66)
-      --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
-				    (default: 8)
+      --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                    (default: 0.66)
+      --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
+                                    (default: 8)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
@@ -119,20 +121,33 @@ if (!params.readlength) {
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
+// Set overhang to read length -1, unless user specified
 overhang = params.overhang ? params.overhang : params.readlength - 1
+// if download_from was specified
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+// Get minlength, if user does not specify, set to read length
 minlen = params.minlen ? params.minlen : params.readlength
+// if minlength != read length, turn on variable read length 
 variable_read_length = minlen == params.readlength ? false : true
+// get run name and date prefix for counts matrix and multiqc
+run_name = params.run_name ? params.run_name + "_" : ""
+date = new Date().format("MM-dd-yy")
+run_prefix = run_name + date
+// Set star index to read length unless otherwise specified 
+star_index = params.star_index ? params.star_index : "/projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${params.readlength}"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
+log.info "Run name                    : ${params.run_name}"
+log.info "Date                        : ${date}"
+log.info "Final prefix                : ${run_prefix}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
 log.info "Bams                        : ${params.bams}"
 log.info "Single-end                  : ${params.singleEnd}"
 log.info "GTF                         : ${params.gtf}"
-log.info "STAR index                  : ${params.star_index}"
+log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${adapter_file}"
@@ -210,8 +225,8 @@ Channel
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 if (!params.bams) {
   Channel
-    .fromPath(params.star_index)
-    .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+    .fromPath(star_index)
+    .ifEmpty { exit 1, "STAR index not found: ${star_index}" }
     .set { star_index }
 }
 Channel
@@ -516,15 +531,16 @@ if (!params.test) {
 
     output:
     file "sample_lst.txt"
-    file "gene_count_matrix.csv"
-    file "transcript_count_matrix.csv"
+    file "*gene_count_matrix.csv"
+    file "*transcript_count_matrix.csv"
 
     script: 
     """
     echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
     echo "${gtf.join("\n")}" > gtfs.txt
     paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
-    prepDE.py -i sample_lst.txt  -l $params.readlength
+    prepDE.py -i sample_lst.txt  -l $params.readlength \
+              -g ${run_prefix}_gene_count_matrix.csv -t ${run_prefix}_transcript_count_matrix.csv
     """
   } 
 
@@ -738,6 +754,7 @@ if (!params.bams) {
     script:
     """
     multiqc . --config $multiqc_config -m fastqc -m star
+    cp multiqc_report.html ${run_prefix}_multiqc_report.html
     """
   }
 }
