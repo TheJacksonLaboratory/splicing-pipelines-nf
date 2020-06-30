@@ -29,9 +29,9 @@ def helpMessage() {
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                     (default: no rmats_pairs specified) 
-      --run_name		                User specified name used as prefix for output files
-				                            (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+      --run_name                    User specified name used as prefix for output files
+                                    (defaut: no prefix, only date and time)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
                                     (default: false)  
@@ -54,8 +54,8 @@ def helpMessage() {
 
     Trimmomatic: 
       --minlen                      Drop the read if it is below a specified length (int)
-    				    Default parameters turn on --variable-readlength
-				    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                    Default parameters turn on --variable-readlength
+                                    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
@@ -69,10 +69,10 @@ def helpMessage() {
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
-      --filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
-				    (default: 0.66)
-      --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
-				    (default: 8)
+      --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                    (default: 0.66)
+      --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
+                                    (default: 8)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
