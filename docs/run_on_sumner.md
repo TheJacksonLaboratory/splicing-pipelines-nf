@@ -27,7 +27,7 @@ Create a new run directory within the appropriate dataset directory with the fol
 
 ### 2. Create/Locate `reads.csv` file for your dataset
 
-Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slighly based upon the data, see examples for:
+Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slightly based upon the data, see examples for:
 
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
 - [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
@@ -61,6 +61,11 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
     comparison1_id[space]sample1replicate1,sample1replicate2,sample1replicate3[space]sample2replicate1,sample2replicate2,sample2replicate3
     comparison2_id[space]sample3replicate1,sample3replicate2,sample3replicate3[space]sample4replicate1,sample4replicate1,sample4replicate1
     ```
+    
+     #### B1 only, no rMATS comparison (if this is run, set '--Statoff' parameter to 'true'):
+    ```
+    comparison_id[space]sample1,sample2,sample3
+    ```
     </details>
 
 
@@ -70,9 +75,11 @@ This config file will be specific to your user and analysis. **You do not need t
 
 **You must name your config file `NF_splicing_pipeline.config`**
 **Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.**
-**The `readlength` here should be the read length you wish to trim all reads to, as determined by trim test**
+**The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
 
-You will need to specify the path to your: `reads.csv` and `rmats_pairs.txt` input files, 'reference gtf', and 'star indices'. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. Find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). **NOTE**: You do not need to specify all parameters if the default parameter is acceptable
+You do not need to specify all parameters if the default parameters are acceptable(find more information on all available parameters [here](usage.md#all-available-parameters) 
+
+To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 
 ### 5. Run the pipeline!
 
