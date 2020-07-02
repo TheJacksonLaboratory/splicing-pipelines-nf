@@ -4,6 +4,7 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=$USER@jax.org
 #SBATCH --mem=200000
+#SBATCH --cpus-per-task=4
 #SBATCH -p compute
 #SBATCH -q batch
 #SBATCH -t 1-01:00:00
