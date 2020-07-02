@@ -71,8 +71,8 @@ def helpMessage() {
                                     (default: readlength - 1)
       --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
                                     (default: 0.66)
-      --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
-                                    (default: 8)
+      --sjdbOverhangMin              Controls --alignSJDBoverhangMin (int)
+                                    (default: 3)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
@@ -163,7 +163,7 @@ log.info "rMATS Minimum Intron Length : ${params.mil}"
 log.info "rMATS Maximum Exon Length   : ${params.mel}"
 log.info "Mismatch                    : ${params.mismatch}"
 log.info "filterScore                 : ${params.filterScore}"
-log.info "sjdOverhangMin              : ${params.sjdOverhangMin}"
+log.info "sjdbOverhangMin             : ${params.sjdbOverhangMin}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
@@ -465,7 +465,7 @@ if (!params.bams){
       --readFilesCommand zcat \
       --sjdbGTFfile $gtf \
       --sjdbOverhang $overhang \
-      --alignSJoverhangMin $params.sjdOverhangMin \
+      --alignSJDBoverhangMin $params.sjdbOverhangMin \
       --outFilterScoreMinOverLread $params.filterScore \
       --outFilterMatchNminOverLread $params.filterScore \
       --outFilterMismatchNmax $params.mismatch \
