@@ -258,6 +258,7 @@ if (params.rmats_pairs) {
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
     tag "${accession}"
+    label 'tiny_memory'
     
     input:
     val(accession) from accession_ids
@@ -284,6 +285,7 @@ if ( download_from('gtex') || download_from('sra') ) {
 if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
+    label 'low_memory'
     
     input:
     val(accession) from accession_ids
@@ -310,6 +312,7 @@ if (download_from('tcga')) {
 if (download_from('tcga')) {
   process bamtofastq {
     tag "${name}"
+    label 'low_memory'
     
     input:
     set val(name), file(bam) from bamtofastq
@@ -344,7 +347,7 @@ if (!params.bams){
 
   process fastqc {
     tag "$name"
-    label 'process_medium'
+    label 'low_memory'
     publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
     input:
@@ -406,7 +409,7 @@ if (!params.bams){
 
   process fastqc_trimmed {
     tag "$name"
-    label 'process_medium'
+    label 'low_memory'
     publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
     input:
@@ -427,7 +430,7 @@ if (!params.bams){
 
   process star {
     tag "$name"
-    label 'high_memory'
+    label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
@@ -498,7 +501,7 @@ if (!params.test) {
 
   process stringtie {
     tag "$name"
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
@@ -523,7 +526,7 @@ if (!params.test) {
   ---------------------------------------------------*/
 
   process prep_de {
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
 
     input:
@@ -549,7 +552,7 @@ if (!params.test) {
   ---------------------------------------------------*/
 
   process stringtie_merge {
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
 
     input:
@@ -613,9 +616,9 @@ if (!params.test) {
       .set { bams }
 
     process rmats {
+      tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
-      tag "$rmats_id ${gtf.simpleName}"
 
       when:
       !params.skiprMATS
@@ -746,6 +749,7 @@ if (!params.test) {
 
 if (!params.bams) {
   process multiqc {
+    label 'mega_memory'
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     when:
