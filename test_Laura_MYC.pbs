@@ -23,7 +23,7 @@ curl -fsSL get.nextflow.io | bash
 #	-profile base,sumner --max_memory 200.GB --max_cpus 30 -resume
 ./nextflow run main.nf               \
 	--outdir ${SLURM_SUBMIT_DIR} \
-	-config /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/NF_splicing_pipeline.config  \
+	-config /projects/anczukow-lab/MYC_MCF10A/run24_LU_20200618_rMATS_test/test_24_samples/NF_splicing_pipeline.config  \
 	-profile base,sumner \
         --max_memory 200.GB \
         --max_cpus 30 \
