@@ -150,7 +150,7 @@ log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter                     : ${adapter_file}"
+log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
 log.info "Overhang                    : ${overhang}"
 log.info "Minimum length              : ${minlen}"
@@ -211,10 +211,6 @@ if (params.bams) {
     .map { name, bam, bai -> [ name, file(bam), file(bai) ] }
     .into { indexed_bam; indexed_bam_rmats }
 } 
-Channel
-  .fromPath(adapter_file)
-  .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
-  .set { adapter }
 Channel
   .from(params.assembly_name)
   .ifEmpty { exit 1, "Genome assembly name not set"}
@@ -377,14 +373,21 @@ if (!params.bams){
     Trimmomatic to trim input reads
   ---------------------------------------------------*/
 
+  raw_reads_trimmomatic
+    .map { 
+      name, reads, singleEnd ->
+      adapter = params.adapter ? file(params.adapter) : singleEnd ? file("$baseDir/adapters/TruSeq3-SE.fa") : file("$baseDir/adapters/TruSeq3-PE.fa")
+      [ name, reads, singleEnd, adapter ]
+    }
+    .set raw_reads_trimmomatic_adapter
+
   process trimmomatic {
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
-    set val(name), file(reads), val(singleEnd) from raw_reads_trimmomatic
-    each file(adapter) from adapter
+    set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
 
     output:
     set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
