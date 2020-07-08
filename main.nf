@@ -280,8 +280,6 @@ if ( download_from('gtex') || download_from('sra') ) {
 if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
-    publishDir "${params.outdir}/QC/tcga", mode: 'copy',
-      saveAs: {filename -> filename == "${accession}_paired_info.csv" ? null : "$filename"}
     
     input:
     val(accession) from accession_ids
@@ -289,6 +287,7 @@ if (download_from('tcga')) {
     
     output:
     set val(accession), file("*.bam"), env(singleEnd) into bamtofastq
+    file("${accession}_paired_info.csv") into paired_info
 
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
@@ -311,6 +310,9 @@ if (download_from('tcga')) {
     echo "$accession,\$n_single_reads,\$n_paired_reads,\$singleEnd" >> ${accession}_paired_info.csv
     """
   }
+
+  paired_info
+    .collectFile(name: "${params.outdir}/QC/tcga/paired_info.csv", keepHeader: true, skip: 1)
 }
 
 /*--------------------------------------------------
