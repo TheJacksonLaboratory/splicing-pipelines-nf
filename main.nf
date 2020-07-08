@@ -292,7 +292,7 @@ if (download_from('tcga')) {
     each file(key_file) from key_file
     
     output:
-    set val(accession), file("*.bam") into bamtofastq
+    set val(accession), file("*.bam"), env(singleEnd) into bamtofastq
 
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
@@ -326,13 +326,13 @@ if (download_from('tcga')) {
     tag "${name}"
     
     input:
-    set val(name), file(bam) from bamtofastq
+    set val(name), file(bam), val(singleEnd) from bamtofastq
     
     output:
     set val(name), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
-    if (params.singleEnd) {
+    if (singleEnd) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
       pigz *.fastq
