@@ -299,6 +299,18 @@ if (download_from('tcga')) {
     """
     gdc-client download $accession $key_flag
     mv $accession/*.bam .
+
+    # Check if reads are single or paired-end
+    n_single_reads=\$(samtools view -c -F 1 ${accession}.bam)
+    n_paired_reads=\$(samtools view -c -f 1 ${accession}.bam)
+
+    singleEnd=true
+    if (( \$n_paired_reads > \$n_single_reads )); then
+        singleEnd=false
+    fi
+
+    echo "sample_id,n_single_reads,n_paired_reads,single_end" > ${accession}_paired_info.csv
+    echo "$accession,\$n_single_reads,\$n_paired_reads,\$singleEnd" >> ${accession}_paired_info.csv
     """
   }
 }
