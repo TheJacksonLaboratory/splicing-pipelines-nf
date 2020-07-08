@@ -145,7 +145,7 @@ log.info "Final prefix                : ${run_prefix}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
 log.info "Bams                        : ${params.bams}"
-log.info "Single-end                  : ${params.singleEnd}"
+log.info "Single-end                  : ${download_from('tcga') ? 'Will be checked for each TCGA BAM file' : params.singleEnd}"
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
@@ -192,7 +192,7 @@ if (!params.download_from && params.singleEnd && !params.bams) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { sample_id, fastq -> [sample_id, file(fastq)] }
+    .map { sample_id, fastq -> [sample_id, file(fastq), params.singleEnd] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
 if (!params.download_from && !params.singleEnd && !params.bams) {
@@ -200,7 +200,7 @@ if (!params.download_from && !params.singleEnd && !params.bams) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
+    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)], params.singleEnd ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
 if (params.bams) {
@@ -264,7 +264,7 @@ if ( download_from('gtex') || download_from('sra') ) {
     each file(key_file) from key_file
     
     output:
-    set val(accession), file(output_filename) into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
@@ -329,7 +329,7 @@ if (download_from('tcga')) {
     set val(name), file(bam), val(singleEnd) from bamtofastq
     
     output:
-    set val(name), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     if (singleEnd) {
@@ -362,7 +362,7 @@ if (!params.bams){
     publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
     input:
-    set val(name), file(reads) from raw_reads_fastqc
+    set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
@@ -383,17 +383,17 @@ if (!params.bams){
     publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
-    set val(name), file(reads) from raw_reads_trimmomatic
+    set val(name), file(reads), val(singleEnd) from raw_reads_trimmomatic
     each file(adapter) from adapter
 
     output:
-    set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
+    set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
     script:
-    mode = params.singleEnd ? 'SE' : 'PE'
-    out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
-    output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
+    mode = singleEnd ? 'SE' : 'PE'
+    out = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
+    output_filename = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
     slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
     """
     trimmomatic \
@@ -424,7 +424,7 @@ if (!params.bams){
     publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
     input:
-    set val(name), file(reads) from trimmed_reads_fastqc
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_trimmed
@@ -445,7 +445,7 @@ if (!params.bams){
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
-    set val(name), file(reads) from trimmed_reads_star
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_star
     each file(index) from star_index
     each file(gtf) from gtf_star
 
