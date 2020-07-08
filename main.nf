@@ -374,8 +374,7 @@ if (!params.bams){
   ---------------------------------------------------*/
 
   raw_reads_trimmomatic
-    .map { 
-      name, reads, singleEnd ->
+    .map { name, reads, singleEnd ->
       adapter = params.adapter ? file(params.adapter) : singleEnd ? file("$baseDir/adapters/TruSeq3-SE.fa") : file("$baseDir/adapters/TruSeq3-PE.fa")
       [ name, reads, singleEnd, adapter ]
     }
