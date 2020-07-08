@@ -14,25 +14,32 @@ git pull
 
 Note: if you have not successfully completed the pipeline test, see [here](../README.md##quick-start-on-sumner-jaxs-hpc)
 
-## 1. Create `reads` file for your dataset
+This pipeline can be run on Sumner in three ways:
+  1. Input a 'reads' file to input fastq files and run the pipeline in its entirety.
+  2. Input a 'reads' file to input fastq files and run pipeline until STAR mapping step with 'test' parameter.
+  3. Input a 'bams' file to input bams and run steps of pipeline following STAR mapping (Stringtie and rMATS).
 
-The input reads to this pipeline can come from 3 input sources:
-![input_reads_graphic](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/input_reads_graphic.png)
 
-Regardless of where the input reads will come from they will always be specified by the `reads` input parameter which should specify a path to a CSV file. The format of CSV file will vary slighly based upon the data, see examples for:
+## Running full pipeline with FASTQ input
+### 1. Create a new run directory
+
+Create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`.  
+
+### 2. Create/Locate `reads.csv` file for your dataset
+
+Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slightly based upon the data, see examples for:
+
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
 - [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
-- [TCGA, GTEx or SRA](../examples/testdata/single_end/tiny_reads_samples.csv) -  must contain `sample_id` column only
 
-The `fastq` column(s) should contain the path to FASTQ files. There should be one `reads` file per dataset. If your dataset already has a `reads` file, proceed to step 2.
+The 'reads.csv' column names must match the above [single-end] and [paired-end] examples. The `sample_id` can be anything, however each must be unique. The `fastq` column(s) should contain the path to FASTQ files. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
-These files must have the column names as in the above examples. The `sample_id` can be anything, however each must be unique. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
+There should be one `reads.csv` file per dataset. If your dataset already has a `reads.csv` file, proceed to step 2.
 
-## 3. Run full analysis
 
-### a. If you wish to run rMATS you will need to create `rmats_pairs` input file
+### 3. Create `rmats_pairs.txt` input file
 
-Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to a rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
+Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to an rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
 
 * Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
     <details>
@@ -54,22 +61,31 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
     comparison1_id[space]sample1replicate1,sample1replicate2,sample1replicate3[space]sample2replicate1,sample2replicate2,sample2replicate3
     comparison2_id[space]sample3replicate1,sample3replicate2,sample3replicate3[space]sample4replicate1,sample4replicate1,sample4replicate1
     ```
+    
+     #### B1 only, no rMATS comparison (if this is run, set '--Statoff' parameter to 'true'):
+    ```
+    comparison_id[space]sample1,sample2,sample3
+    ```
     </details>
 
-### b. Setup `NF_splicing_pipeline.config`
+
+### 4. Setup `NF_splicing_pipeline.config`
 
 This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. If you already created a `NF_splicing_pipeline.config` during the trim test, you can modify it. Otherwise, to create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
 
 **You must name your config file `NF_splicing_pipeline.config`**
-**The `readlength` here should be the read length you wish to trim all reads to, as determined by trim test**
 
-Find more information on all available parameters [here](usage.md#all-available-parameters) and see their default values in [`nextflow.config`](../nextflow.config). **NOTE**: You do not need to specify all parameters if the default parameter is acceptable
+**Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.**
 
-You will need to specify the path to your `reads` and `rmats_pairs` input files. This string can be a relative path from the directory which you run Nextflow in, an absolute path or even a link.
+**The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
 
-### c. Run the pipeline!
+You do not need to specify all parameters if the default parameters are acceptable(find more information on all available parameters [here](usage.md#all-available-parameters) 
 
-If you have not done so already, create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`. Ensure you have `NF_splicing_pipeline.config` in this directory. 
+To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
+
+### 5. Run the pipeline!
+
+Ensure you have `NF_splicing_pipeline.config` in this directory. 
 
 Run the pipeline! 
 ```

@@ -93,6 +93,8 @@ Input files:
                                 (default: no bams.csv)
   --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                 (default: no rmats_pairs specified) 
+  --run_name                    User specified name used as prefix for output files
+                                (defaut: no prefix, only date and time)
   --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
                                 (default: false)
   --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
@@ -104,7 +106,7 @@ Main arguments:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                 (default: false)
   --star_index                  Path to STAR index (path)
-                                (default: no index specified)
+                                (default: read length)
   --singleEnd                   Specifies that the input is single-end reads (bool)
                                 (default: false)
   --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
@@ -133,8 +135,8 @@ Star:
                                 (default: readlength - 1)
   --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
                                 (default: 0.66)
-  --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
-                                (default: 8)
+  --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
+                                (default: 3)
 
 
 rMATS:                              

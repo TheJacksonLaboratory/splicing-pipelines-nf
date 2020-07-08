@@ -49,7 +49,12 @@ print("MXE loaded")
 b1 <- basename(config[config$parameter=="b1", "value"])
 b1 <- strsplit(b1, "[.]")[[1]][1]
 b2 <- basename(config[config$parameter=="b2", "value"])
+if(length(b2 > 0)){
 b2 <- strsplit(b2, "[.]")[[1]][1]
+} else {
+b2 <- "none"
+print("b2 not present")
+}
 
 # get names of gtf used
 rmats_gtf <- basename(config[config$parameter == "rmats_gtf", "value"])
@@ -332,14 +337,17 @@ b1_file <- config[config$parameter=="b1", "value"]
 b2_file <- config[config$parameter=="b2", "value"]
 
 b1_list <- t(read.table(b1_file, sep=","))
+if(b2 != "none"){
 b2_list <- t(read.table(b2_file, sep=","))
-
 bam_list_df <- merge(b1_list, b2_list, by="row.names", suffixes = c("_b1", "_b2"))
 bam_list_df <- bam_list_df[,-1]
 colnames(bam_list_df) <- lapply(colnames(bam_list_df), function(x){
   new_val <- strsplit(x, "_")[[1]][2]
   return(new_val)
 })
+} else {
+bam_list_df <- b1_list
+}
 
 if(rmats_gtf=="gffcmp.annotated.corrected.gtf"){
   write.csv(bam_list_df, paste0("BamList_","mergedGTF_", sample_prefix, "_", date, ".csv", sep=""),row.names=FALSE)

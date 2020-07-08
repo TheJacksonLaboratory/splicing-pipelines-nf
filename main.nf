@@ -29,7 +29,9 @@ def helpMessage() {
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                     (default: no rmats_pairs specified) 
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+      --run_name                    User specified name used as prefix for output files
+                                    (defaut: no prefix, only date and time)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
                                     (default: false)  
@@ -40,7 +42,7 @@ def helpMessage() {
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                     (default: false)
       --star_index                  Path to STAR index (path)
-                                    (default: no index specified)
+                                    (default: read length)
       --singleEnd                   Specifies that the input is single-end reads (bool)
                                     (default: false)
       --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
@@ -52,8 +54,8 @@ def helpMessage() {
 
     Trimmomatic: 
       --minlen                      Drop the read if it is below a specified length (int)
-    				    Default parameters turn on --variable-readlength
-				    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                    Default parameters turn on --variable-readlength
+                                    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
@@ -67,10 +69,10 @@ def helpMessage() {
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
-      --filterScore 		    Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
-				    (default: 0.66)
-      --sjdOverhangMin		    Controls --alignSJDBoverhangMin (int)
-				    (default: 8)
+      --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                    (default: 0.66)
+      --sjdbOverhangMin              Controls --alignSJDBoverhangMin (int)
+                                    (default: 3)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
@@ -119,23 +121,36 @@ if (!params.readlength) {
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
+// Set overhang to read length -1, unless user specified
 overhang = params.overhang ? params.overhang : params.readlength - 1
+// if download_from was specified
 download_from = params.download_from ? params.download_from : ""
 key_file = params.key_file ? params.key_file : "$baseDir/examples/assets/no_key_file.txt"
+// Get minlength, if user does not specify, set to read length
 minlen = params.minlen ? params.minlen : params.readlength
+// if minlength != read length, turn on variable read length 
 variable_read_length = minlen == params.readlength ? false : true
+// get run name and date prefix for counts matrix and multiqc
+run_name = params.run_name ? params.run_name + "_" : ""
+date = new Date().format("MM-dd-yy")
+run_prefix = run_name + date
+// Set star index to read length unless otherwise specified 
+star_index = params.star_index ? params.star_index : "/projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${params.readlength}"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
+log.info "Run name                    : ${params.run_name}"
+log.info "Date                        : ${date}"
+log.info "Final prefix                : ${run_prefix}"
 log.info "Assembly name               : ${params.assembly_name}"
 log.info "Reads                       : ${params.reads}"
 log.info "Bams                        : ${params.bams}"
-log.info "Single-end                  : ${params.singleEnd}"
+log.info "Single-end                  : ${download_from('tcga') ? 'Will be checked for each TCGA BAM file' : params.singleEnd}"
 log.info "GTF                         : ${params.gtf}"
-log.info "STAR index                  : ${params.star_index}"
+log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
-log.info "Adapter                     : ${adapter_file}"
+log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
 log.info "Overhang                    : ${overhang}"
 log.info "Minimum length              : ${minlen}"
@@ -148,7 +163,7 @@ log.info "rMATS Minimum Intron Length : ${params.mil}"
 log.info "rMATS Maximum Exon Length   : ${params.mel}"
 log.info "Mismatch                    : ${params.mismatch}"
 log.info "filterScore                 : ${params.filterScore}"
-log.info "sjdOverhangMin              : ${params.sjdOverhangMin}"
+log.info "sjdbOverhangMin             : ${params.sjdbOverhangMin}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
@@ -177,7 +192,7 @@ if (!params.download_from && params.singleEnd && !params.bams) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { sample_id, fastq -> [sample_id, file(fastq)] }
+    .map { sample_id, fastq -> [sample_id, file(fastq), params.singleEnd] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 } 
 if (!params.download_from && !params.singleEnd && !params.bams) {
@@ -185,7 +200,7 @@ if (!params.download_from && !params.singleEnd && !params.bams) {
     .fromPath(params.reads)
     .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
     .splitCsv(skip:1)
-    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)] ] }
+    .map { sample_id, fastq1, fastq2 -> [ sample_id, [file(fastq1),file(fastq2)], params.singleEnd ] }
     .into { raw_reads_fastqc; raw_reads_trimmomatic }
 }
 if (params.bams) {
@@ -197,10 +212,6 @@ if (params.bams) {
     .into { indexed_bam; indexed_bam_rmats }
 } 
 Channel
-  .fromPath(adapter_file)
-  .ifEmpty { exit 1, "Cannot find adapter file: ${adapter_file}" }
-  .set { adapter }
-Channel
   .from(params.assembly_name)
   .ifEmpty { exit 1, "Genome assembly name not set"}
   .set { assembly_name }
@@ -210,8 +221,8 @@ Channel
   .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 if (!params.bams) {
   Channel
-    .fromPath(params.star_index)
-    .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+    .fromPath(star_index)
+    .ifEmpty { exit 1, "STAR index not found: ${star_index}" }
     .set { star_index }
 }
 Channel
@@ -243,13 +254,14 @@ if (params.rmats_pairs) {
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
     tag "${accession}"
+    label 'tiny_memory'
     
     input:
     val(accession) from accession_ids
     each file(key_file) from key_file
     
     output:
-    set val(accession), file(output_filename) into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
     def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
@@ -269,13 +281,15 @@ if ( download_from('gtex') || download_from('sra') ) {
 if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
+    label 'low_memory'
     
     input:
     val(accession) from accession_ids
     each file(key_file) from key_file
     
     output:
-    set val(accession), file("*.bam") into bamtofastq
+    set val(accession), file("*.bam"), env(singleEnd) into bamtofastq
+    file("${accession}_paired_info.csv") into paired_info
 
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
@@ -284,8 +298,23 @@ if (download_from('tcga')) {
     """
     gdc-client download $accession $key_flag
     mv $accession/*.bam .
+
+    # Check if reads are single or paired-end
+    n_single_reads=\$(samtools view -c -F 1 ${accession}.bam)
+    n_paired_reads=\$(samtools view -c -f 1 ${accession}.bam)
+
+    singleEnd=true
+    if (( \$n_paired_reads > \$n_single_reads )); then
+        singleEnd=false
+    fi
+
+    echo "sample_id,n_single_reads,n_paired_reads,single_end" > ${accession}_paired_info.csv
+    echo "$accession,\$n_single_reads,\$n_paired_reads,\$singleEnd" >> ${accession}_paired_info.csv
     """
   }
+
+  paired_info
+    .collectFile(name: "${params.outdir}/QC/tcga/paired_info.csv", keepHeader: true, skip: 1)
 }
 
 /*--------------------------------------------------
@@ -295,15 +324,16 @@ if (download_from('tcga')) {
 if (download_from('tcga')) {
   process bamtofastq {
     tag "${name}"
+    label 'low_memory'
     
     input:
-    set val(name), file(bam) from bamtofastq
+    set val(name), file(bam), val(singleEnd) from bamtofastq
     
     output:
-    set val(name), file("*.fastq.gz") into raw_reads_fastqc, raw_reads_trimmomatic
+    set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
-    if (params.singleEnd) {
+    if (singleEnd) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
       pigz *.fastq
@@ -329,11 +359,11 @@ if (!params.bams){
 
   process fastqc {
     tag "$name"
-    label 'process_medium'
+    label 'low_memory'
     publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
     input:
-    set val(name), file(reads) from raw_reads_fastqc
+    set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
@@ -348,23 +378,29 @@ if (!params.bams){
     Trimmomatic to trim input reads
   ---------------------------------------------------*/
 
+  raw_reads_trimmomatic
+    .map { name, reads, singleEnd ->
+      adapter = params.adapter ? file(params.adapter) : singleEnd ? file("$baseDir/adapters/TruSeq3-SE.fa") : file("$baseDir/adapters/TruSeq3-PE.fa")
+      [ name, reads, singleEnd, adapter ]
+    }
+    .set { raw_reads_trimmomatic_adapter }
+
   process trimmomatic {
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
-    set val(name), file(reads) from raw_reads_trimmomatic
-    each file(adapter) from adapter
+    set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
 
     output:
-    set val(name), file(output_filename) into (trimmed_reads_fastqc, trimmed_reads_star)
+    set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
 
     script:
-    mode = params.singleEnd ? 'SE' : 'PE'
-    out = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
-    output_filename = params.singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
+    mode = singleEnd ? 'SE' : 'PE'
+    out = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
+    output_filename = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
     slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
     """
     trimmomatic \
@@ -391,11 +427,11 @@ if (!params.bams){
 
   process fastqc_trimmed {
     tag "$name"
-    label 'process_medium'
+    label 'low_memory'
     publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
     input:
-    set val(name), file(reads) from trimmed_reads_fastqc
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_trimmed
@@ -412,11 +448,11 @@ if (!params.bams){
 
   process star {
     tag "$name"
-    label 'high_memory'
+    label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
-    set val(name), file(reads) from trimmed_reads_star
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_star
     each file(index) from star_index
     each file(gtf) from gtf_star
 
@@ -450,7 +486,7 @@ if (!params.bams){
       --readFilesCommand zcat \
       --sjdbGTFfile $gtf \
       --sjdbOverhang $overhang \
-      --alignSJoverhangMin $params.sjdOverhangMin \
+      --alignSJDBoverhangMin $params.sjdbOverhangMin \
       --outFilterScoreMinOverLread $params.filterScore \
       --outFilterMatchNminOverLread $params.filterScore \
       --outFilterMismatchNmax $params.mismatch \
@@ -483,7 +519,7 @@ if (!params.test) {
 
   process stringtie {
     tag "$name"
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
@@ -508,7 +544,7 @@ if (!params.test) {
   ---------------------------------------------------*/
 
   process prep_de {
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
 
     input:
@@ -516,15 +552,16 @@ if (!params.test) {
 
     output:
     file "sample_lst.txt"
-    file "gene_count_matrix.csv"
-    file "transcript_count_matrix.csv"
+    file "*gene_count_matrix.csv"
+    file "*transcript_count_matrix.csv"
 
     script: 
     """
     echo "${gtf.join("\n").toString().replace("_for_DGE.gtf", "")}" > samples.txt
     echo "${gtf.join("\n")}" > gtfs.txt
     paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
-    prepDE.py -i sample_lst.txt  -l $params.readlength
+    prepDE.py -i sample_lst.txt  -l $params.readlength \
+              -g ${run_prefix}_gene_count_matrix.csv -t ${run_prefix}_transcript_count_matrix.csv
     """
   } 
 
@@ -533,7 +570,7 @@ if (!params.test) {
   ---------------------------------------------------*/
 
   process stringtie_merge {
-    label 'process_medium'
+    label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
 
     input:
@@ -591,20 +628,21 @@ if (!params.test) {
       .map { rmats_id, bams -> 
         def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
         def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
-        [ rmats_id, b1_bams[1] + b2_bams[1] ]
+        rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], true ] : [ rmats_id, b1_bams[1] + b2_bams[1], false ]
+        rmats_id_bams
       }
       .set { bams }
 
     process rmats {
+      tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
-      tag "$rmats_id ${gtf.simpleName}"
 
       when:
       !params.skiprMATS
 
       input:
-      set val(rmats_id), file(bams) from bams
+      set val(rmats_id), file(bams), val(b1_only) from bams
       each file(gtf) from gtf_rmats
 
       output:
@@ -617,17 +655,26 @@ if (!params.test) {
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
-      n_samples_replicates = bams.size()
-      n_replicates = n_samples_replicates.intdiv(2)
-      bam_groups = bams.collate(n_replicates)
-      b1_bams = bam_groups[0].join(",")
-      b2_bams = bam_groups[1].join(",")
+      if (b1_only) {
+        b1_bams = bams.join(",")
+        b2_cmd = ''
+        b2_flag = ''
+        b2_config_cmd = ''
+      } else {
+        n_samples_replicates = bams.size()
+        n_replicates = n_samples_replicates.intdiv(2)
+        bam_groups = bams.collate(n_replicates)
+        b1_bams = bam_groups[0].join(",")
+        b2_bams = bam_groups[1].join(",")
+        b2_cmd = "echo $b2_bams > b2.txt"
+        b2_flag = "--b2 b2.txt"
+        b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
+      }
       """
       echo $b1_bams > b1.txt
-      echo $b2_bams > b2.txt
+      $b2_cmd
       rmats.py \
-        --b1 b1.txt \
-        --b2 b2.txt \
+        --b1 b1.txt $b2_flag \
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
@@ -639,7 +686,7 @@ if (!params.test) {
         --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
-      echo b2 b2.txt >> \$rmats_config
+      $b2_config_cmd
       echo rmats_gtf       ${gtf} >> \$rmats_config
       echo ref_gtf         ${gtf} >> \$rmats_config
       echo fasta           ${params.assembly_name} >> \$rmats_config
@@ -720,6 +767,7 @@ if (!params.test) {
 
 if (!params.bams) {
   process multiqc {
+    label 'mega_memory'
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     when:
@@ -738,6 +786,7 @@ if (!params.bams) {
     script:
     """
     multiqc . --config $multiqc_config -m fastqc -m star
+    cp multiqc_report.html ${run_prefix}_multiqc_report.html
     """
   }
 }
