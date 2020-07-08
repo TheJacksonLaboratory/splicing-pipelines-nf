@@ -3,11 +3,11 @@
 #SBATCH -e splicing.%j.err
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=$USER@jax.org
-#SBATCH --mem=200000
+#SBATCH --mem=20000
+#SBATCH --cpus-per-task=4
 #SBATCH -p compute
 #SBATCH -q batch
-#SBATCH -t 1-01:00:00
-
+#SBATCH -t 2-09:00:00 
 
 cd $SLURM_SUBMIT_DIR
 date;hostname;pwd
@@ -19,4 +19,9 @@ curl -fsSL get.nextflow.io | bash
 ./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
 	--outdir ${SLURM_SUBMIT_DIR} \
 	-config NF_splicing_pipeline.config \
-	-profile base,sumner --max_memory 200.GB --max_cpus 30 -resume
+	-profile sumner -resume \
+        -with-report report.html \
+        -with-trace trace.txt \
+        -with-timeline timeline.html \
+        -with-dag DAG.png
+
