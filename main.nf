@@ -379,7 +379,7 @@ if (!params.bams){
       adapter = params.adapter ? file(params.adapter) : singleEnd ? file("$baseDir/adapters/TruSeq3-SE.fa") : file("$baseDir/adapters/TruSeq3-PE.fa")
       [ name, reads, singleEnd, adapter ]
     }
-    .set raw_reads_trimmomatic_adapter
+    .set { raw_reads_trimmomatic_adapter }
 
   process trimmomatic {
     tag "$name"
