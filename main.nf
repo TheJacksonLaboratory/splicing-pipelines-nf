@@ -284,6 +284,8 @@ if ( download_from('gtex') || download_from('sra') ) {
 if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
+    publishDir "${params.outdir}/QC/tcga", mode: 'copy',
+      saveAs: {filename -> filename == "${accession}_paired_info.csv" ? null : "$filename"}
     
     input:
     val(accession) from accession_ids
