@@ -20,4 +20,9 @@ curl -fsSL get.nextflow.io | bash
 ./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
 	--outdir ${SLURM_SUBMIT_DIR} \
 	-config NF_splicing_pipeline.config \
-	-profile base,sumner --max_memory 200.GB --max_cpus 30 -resume
+	-profile sumner -resume \
+        -with-report report.html \
+        -with-trace trace.txt \
+        -with-timeline timeline.html \
+        -with-dag DAG.png
+
