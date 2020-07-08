@@ -135,8 +135,8 @@ Star:
                                 (default: readlength - 1)
   --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
                                 (default: 0.66)
-  --sjdOverhangMin              Controls --alignSJDBoverhangMin (int)
-                                (default: 8)
+  --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
+                                (default: 3)
 
 
 rMATS:                              
