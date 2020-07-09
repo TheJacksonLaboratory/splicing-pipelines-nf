@@ -300,8 +300,8 @@ if (download_from('tcga')) {
     mv $accession/*.bam .
 
     # Check if reads are single or paired-end
-    n_single_reads=\$(samtools view -c -F 1 ${accession}.bam)
-    n_paired_reads=\$(samtools view -c -f 1 ${accession}.bam)
+    n_single_reads=\$(samtools view -c -F 1 *.bam)
+    n_paired_reads=\$(samtools view -c -f 1 *.bam)
 
     singleEnd=true
     if (( \$n_paired_reads > \$n_single_reads )); then
