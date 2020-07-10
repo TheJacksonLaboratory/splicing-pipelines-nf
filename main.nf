@@ -409,7 +409,7 @@ if (!params.bams){
       -phred33 \
       $reads \
       $out \
-      ILLUMINACLIP:${adapter}:2:30:10:8:true \
+      ILLUMINACLIP:${adapter}:2:30:10:2:true \
       LEADING:3 \
       TRAILING:3 \
       $slidingwindow \
