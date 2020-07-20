@@ -79,7 +79,7 @@ This config file will be specific to your user and analysis. **You do not need t
 
 **The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
 
-You do not need to specify all parameters if the default parameters are acceptable(find more information on all available parameters [here](usage.md#all-available-parameters) 
+You do not need to specify all parameters if the default parameters are acceptable (find more information on all available parameters [here](usage.md#all-available-parameters)) 
 
 To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 

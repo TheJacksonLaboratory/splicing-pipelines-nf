@@ -256,10 +256,10 @@ get_postprocessing_table <- function(df){
   # reorder and rename columns, keeping only the ones we want
   final_df <- df[,c("Event_type", "short_ID", "long_ID", "geneSymbol", "GeneID", "strand", "IJC_SAMPLE_1", "SJC_SAMPLE_1", 
                     "IJC_SAMPLE_2", "SJC_SAMPLE_2", "IncLevel1", "IncLevel2", "mIC1", "mSC1", "mIC2", "mSC2", "mPSI1", "mPSI2",
-                    "IncLevelDifference", "PValue", "FDR", "E1", "E2", "E3", "E4", "S1", "S2", "S3", "S4", "blat")]
+                    "IncLevelDifference", "PValue", "FDR", "E1", "E2", "E3", "E4", "S1", "S2", "S3", "S4", "blat", "IncFormLen", "SkipFormLen")]
   colnames(final_df) <- c("Event_type", "short_ID", "long_ID", "geneSymbol", "geneID", "strand", "IC1", "SC1", 
                           "IC2", "SC2", "PSI1", "PSI2", "mIC1", "mSC1", "mIC2", "mSC2", "mPSI1", "mPSI2",
-                          "dPSI_2_minus_1", "PValue", "FDR", "E1", "E2", "E3", "E4", "S1", "S2", "S3", "S4", "blat")
+                          "dPSI_2_minus_1", "PValue", "FDR", "E1", "E2", "E3", "E4", "S1", "S2", "S3", "S4", "blat", "IncFormLen", "SkipFormLen")
   print(sprintf("%s done.", event_type))
   return(final_df)
 }
