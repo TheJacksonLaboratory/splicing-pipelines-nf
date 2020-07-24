@@ -475,8 +475,8 @@ if (!params.bams){
     xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = variable_read_length ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
-    star_mem = task.memory ?: params.star_memory ?: false
-    avail_mem = star_mem ? ${star_mem.toBytes() - 100000000} : ''
+    star_mem = params.star_memory ? params.star_memory : task.memory
+    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 100000000}" : ''
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -500,7 +500,7 @@ if (!params.bams){
       --alignMatesGapMax 1000000 \
       --outSAMattributes All \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM $avail_mem \
+      $avail_mem_bam_sort \
       --outBAMsortingThreadN $task.cpus \
       --outFilterType BySJout \
       --twopassMode Basic \
