@@ -405,7 +405,7 @@ if (!params.bams){
     out = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R1.fastq.gz ${name}_unpaired_R1.fastq.gz ${name}_trimmed_R2.fastq.gz ${name}_unpaired_R2.fastq.gz"
     output_filename = singleEnd ? "${name}_trimmed.fastq.gz" : "${name}_trimmed_R{1,2}.fastq.gz"
     slidingwindow = params.slidingwindow ? 'SLIDINGWINDOW:4:15' : ''
-    keepbothreads = ​singleEnd == true ? '' : ':2:true'
+    keepbothreads = singleEnd == true ? '' : ':2:true'
     """
     trimmomatic \
       $mode \
