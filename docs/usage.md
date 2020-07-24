@@ -137,7 +137,8 @@ Star:
                                 (default: 0.66)
   --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
                                 (default: 3)
-
+  --star_memory                 Max memory to be used by STAR to sort BAM files.
+                                (default: Available task memory)
 
 rMATS:                              
   --statoff                     Skip the statistical analysis (bool)

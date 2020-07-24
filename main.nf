@@ -73,6 +73,8 @@ def helpMessage() {
                                     (default: 0.66)
       --sjdbOverhangMin              Controls --alignSJDBoverhangMin (int)
                                     (default: 3)
+      --star_memory                 Max memory to be used by STAR to sort BAM files.
+                                    (default: Available task memory)
 
     rMATS:                              
       --statoff                     Skip the statistical analysis (bool)
@@ -164,6 +166,7 @@ log.info "rMATS Maximum Exon Length   : ${params.mel}"
 log.info "Mismatch                    : ${params.mismatch}"
 log.info "filterScore                 : ${params.filterScore}"
 log.info "sjdbOverhangMin             : ${params.sjdbOverhangMin}"
+log.info "STAR memory                 : ${params.star_memory ? star_memory : 'Not provided, Using STAR task max memory'}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
@@ -471,6 +474,9 @@ if (!params.bams){
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
     xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = variable_read_length ? 'Local' : 'EndToEnd'
+    // Set maximum available memory to be used by STAR to sort BAM files
+    star_mem = params.star_memory ? params.star_memory : task.memory
+    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 100000000}" : ''
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -494,7 +500,7 @@ if (!params.bams){
       --alignMatesGapMax 1000000 \
       --outSAMattributes All \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 100000000000 \
+      $avail_mem_bam_sort \
       --outBAMsortingThreadN $task.cpus \
       --outFilterType BySJout \
       --twopassMode Basic \
