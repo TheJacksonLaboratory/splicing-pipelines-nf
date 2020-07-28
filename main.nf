@@ -539,7 +539,6 @@ if (!params.test) {
 
     script: 
     rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
-    rf = params.stranded ? '--rf' : ''
     """
     stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
     stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
