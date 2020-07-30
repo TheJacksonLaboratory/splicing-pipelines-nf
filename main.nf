@@ -652,7 +652,7 @@ if (!params.test) {
       each file(gtf) from gtf_rmats
 
       output:
-      file "*"
+      file "*.{txt,csv}" rmats_out
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
@@ -726,7 +726,7 @@ if (!params.test) {
       each file (gtf) from gtf_rmats
 
       output:
-      file "*"
+      file "*.{txt,csv}" into paired_rmats_out
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
