@@ -336,6 +336,7 @@ if (download_from('tcga')) {
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
+    singleEnd=singleEnd.toBoolean()
     if (singleEnd) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
