@@ -667,7 +667,7 @@ if (!params.test) {
         b2_flag = ''
         b2_config_cmd = ''
       } else {
-        b1_bams = b1_bams.join(",")
+        b1_bams = bams.join(",")
         b2_bams = b2_bams.join(",")
         b2_cmd = "echo $b2_bams > b2.txt"
         b2_flag = "--b2 b2.txt"
