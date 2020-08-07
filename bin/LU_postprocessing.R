@@ -303,7 +303,7 @@ if(rmats_gtf!="gffcmp.annotated.corrected.gtf"){
   write.csv(all_filt, paste0("Filtered_", sample_prefix, "_", date, ".csv"),row.names=FALSE)
 }
 
-if(nrow(all_filt)>0){                     
+if(nrow(all_filt)>100){                     
 # get summary table
 print("Generating summary table")
 get_summary_table <- function(unfilt_df, filt_df){
