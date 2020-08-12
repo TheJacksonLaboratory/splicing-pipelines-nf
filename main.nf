@@ -123,6 +123,15 @@ if (!params.readlength) {
     exit 1, "Read length '${params.readlength}' not in the range of 45-150, This may affect star index pull."
 }
 
+// Check if star_index is provided. (this is only when bam if not given)
+if (!params.bams) {
+  if (params.star_index) {
+    star_index = params.star_index
+  }else{
+    exit 1, "STAR index path is required, Not provided. Please specify a valid value for `--star_index`"
+  }
+}
+
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
 // Set overhang to read length -1, unless user specified
@@ -138,9 +147,6 @@ variable_read_length = minlen == params.readlength ? false : true
 run_name = params.run_name ? params.run_name + "_" : ""
 date = new Date().format("MM-dd-yy")
 run_prefix = run_name + date
-// Set star index to read length unless otherwise specified 
-// TODO: Change the star_index path based on executor
-star_index = params.star_index ? params.star_index : "/projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${params.readlength}"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
