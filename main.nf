@@ -119,8 +119,6 @@ if (params.help) {
 // Check if read length is set
 if (!params.readlength) {
   exit 1, "Read length not set, the provided value is '${params.readlength}'. Please specify a valid value for `--readlength`"
-} else if (!(params.readlength >= 45 && params.readlength <= 150)){
-    exit 1, "Read length '${params.readlength}' not in the range of 45-150, This may affect star index pull."
 }
 
 // Check if star_index is provided. (this is only when bam if not given)
