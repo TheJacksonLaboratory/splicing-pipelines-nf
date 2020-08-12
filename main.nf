@@ -120,7 +120,7 @@ if (params.help) {
 if (!params.readlength) {
   exit 1, "Read length not set, the provided value is '${params.readlength}'. Please specify a valid value for `--readlength`"
 } else if (!(params.readlength >= 45 && params.readlength <= 150)){
-    exit 1, "Read length not in the range of 45-150, This may affect star index pull."
+    exit 1, "Read length '${params.readlength}' not in the range of 45-150, This may affect star index pull."
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
