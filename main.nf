@@ -455,7 +455,11 @@ if (!params.bams){
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
-
+    publishDir "${params.outdir}/star_mapped/", mode: 'copy',
+      saveAs: {filename -> 
+          if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
+      }
+    
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_star
     each file(index) from star_index
