@@ -104,6 +104,8 @@ def helpMessage() {
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
                                     (default: directory where you submit the job)
+      --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
+                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
@@ -121,6 +123,15 @@ if (!params.readlength) {
   exit 1, "Read length not set, the provided value is '${params.readlength}'. Please specify a valid value for `--readlength`"
 }
 
+// Check if star_index is provided. (this is only when bam if not given)
+if (!params.bams) {
+  if (params.star_index) {
+    star_index = params.star_index
+  }else{
+    exit 1, "STAR index path is required, Not provided. Please specify a valid value for `--star_index`"
+  }
+}
+
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
 adapter_file = params.adapter ? params.adapter : params.singleEnd ? "$baseDir/adapters/TruSeq3-SE.fa" : "$baseDir/adapters/TruSeq3-PE.fa"
 // Set overhang to read length -1, unless user specified
@@ -136,8 +147,6 @@ variable_read_length = minlen == params.readlength ? false : true
 run_name = params.run_name ? params.run_name + "_" : ""
 date = new Date().format("MM-dd-yy")
 run_prefix = run_name + date
-// Set star index to read length unless otherwise specified 
-star_index = params.star_index ? params.star_index : "/projects/anczukow-lab/reference_genomes/human/Gencode/star_overhangs/star_${params.readlength}"
 
 log.info "Splicing-pipelines - N F  ~  version 0.1"
 log.info "====================================="
@@ -174,6 +183,7 @@ log.info "Outdir                      : ${params.outdir}"
 log.info "Max CPUs                    : ${params.max_cpus}"
 log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
+log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info ""
 log.info "\n"
 
@@ -455,7 +465,11 @@ if (!params.bams){
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
-
+    publishDir "${params.outdir}/star_mapped/", mode: 'copy',
+      saveAs: {filename -> 
+          if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
+      }
+    
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_star
     each file(index) from star_index
