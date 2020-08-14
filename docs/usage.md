@@ -168,4 +168,6 @@ Other:
                                 (default: false)
   --outdir                      The output directory where the results will be saved (string)
                                 (default: directory where you submit the job)
+  --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
+                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
 ```
