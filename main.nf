@@ -104,6 +104,8 @@ def helpMessage() {
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
                                     (default: directory where you submit the job)
+      --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
+                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
@@ -174,6 +176,7 @@ log.info "Outdir                      : ${params.outdir}"
 log.info "Max CPUs                    : ${params.max_cpus}"
 log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
+log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info ""
 log.info "\n"
 
