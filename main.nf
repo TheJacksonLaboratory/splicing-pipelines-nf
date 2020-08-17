@@ -130,7 +130,7 @@ if (!params.bams) {
   }else{
     exit 1, "STAR index path is required, Not provided. Please specify a valid value for `--star_index`"
   }
-}else 
+}else{ 
   star_index = false 
 }
 
