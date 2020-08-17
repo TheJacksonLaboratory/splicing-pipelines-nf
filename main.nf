@@ -130,6 +130,8 @@ if (!params.bams) {
   }else{
     exit 1, "STAR index path is required, Not provided. Please specify a valid value for `--star_index`"
   }
+}else 
+  star_index = false 
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
