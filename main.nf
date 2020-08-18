@@ -130,6 +130,8 @@ if (!params.bams) {
   }else{
     exit 1, "STAR index path is required, Not provided. Please specify a valid value for `--star_index`"
   }
+}else{ 
+  star_index = false 
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
@@ -492,7 +494,7 @@ if (!params.bams){
     endsType = variable_read_length ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
-    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 100000000}" : ''
+    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
