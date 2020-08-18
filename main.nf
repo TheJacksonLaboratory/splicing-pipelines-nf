@@ -492,7 +492,7 @@ if (!params.bams){
     endsType = variable_read_length ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
-    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 100000000}" : ''
+    avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
     """
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
