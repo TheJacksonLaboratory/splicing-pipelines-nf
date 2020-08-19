@@ -7,9 +7,11 @@
  * @authors
  * Laura Urbanski <laura.urbanski@jax.org> first author of the Post-processing portion of the workflow!
  * Marina Yurieva <marina.yurieva@jax.org>
+ * Brittany Angarola <brittany.angarola@jax.org>
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
+ * Sangram Sahu <sangram@lifebit.ai>
  * Anne Deslattes Mays <adeslatt@gmail.com>
  * Olga Anczukow
  */
@@ -104,10 +106,10 @@ def helpMessage() {
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
                                     (default: directory where you submit the job)
-      --mega_time		                Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)     
+      --mega_time		            Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)     
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
-                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+                                    (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
