@@ -104,7 +104,8 @@ def helpMessage() {
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
                                     (default: directory where you submit the job)
-
+      --mega_time		    Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)     
+                                    (default: 20.h) 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -174,6 +175,7 @@ log.info "Outdir                      : ${params.outdir}"
 log.info "Max CPUs                    : ${params.max_cpus}"
 log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
+log.info "Mega time                   : ${params.mega_time}"
 log.info ""
 log.info "\n"
 
