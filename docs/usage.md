@@ -157,11 +157,11 @@ Other:
   --test                        For running trim test (bool)
                                 (default: false)
   --max_cpus                    Maximum number of CPUs (int)
-                                (default: ?)  
+                                (default: 72)  
   --max_memory                  Maximum memory (memory unit)
-                                (default: 80)
+                                (default: 760)
   --max_time                    Maximum time (time unit)
-                                (default: ?)
+                                (default: 72.h)
   --skiprMATS                   Skip rMATS (bool)
                                 (default: false)
   --skipMultiQC                 Skip MultiQC (bool)
@@ -169,5 +169,10 @@ Other:
   --outdir                      The output directory where the results will be saved (string)
                                 (default: directory where you submit the job)
   --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
-                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+                                (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+  --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)
+                                Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
+                                (default: 20.h)
+
+	    
 ```
