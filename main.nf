@@ -348,8 +348,8 @@ if (download_from('tcga')) {
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
-    // 2GB reserved for Javaruntime
-    useable_mem = "${task.memory.toMega() - 2048}"
+    // 2GB reserved for Javaruntime and 2GB aside
+    useable_mem = "${task.memory.toMega() - 4000}"
     // samtools takes memory per thread, so - 
     per_thread_mem = "${useable_mem.toInteger()/task.cpus.toInteger()}"
     // check end
