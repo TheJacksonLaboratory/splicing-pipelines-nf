@@ -351,7 +351,7 @@ if (download_from('tcga')) {
     // 2GB reserved for Javaruntime and 2GB aside
     usable_mem = "${task.memory.toMega() - 4000}"
     // samtools takes memory per thread, so - 
-    per_thread_mem = "${useable_mem.toInteger()/task.cpus.toInteger()}"
+    per_thread_mem = "${usable_mem.toInteger()/task.cpus.toInteger()}"
     // check end
     singleEnd=singleEnd.toBoolean()
     if (singleEnd) {
