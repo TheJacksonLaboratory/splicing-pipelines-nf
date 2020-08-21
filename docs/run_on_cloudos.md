@@ -66,3 +66,9 @@ Once on the job monitor page, you can see the progress of the job update in real
 
 This page is completely sharable, for example, you can view a successfully completed example job [here](https://cloudos.lifebit.ai/public/jobs/5e87ef928079200103b0a0b8) 
 ![splicing_pip_job_page](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/splicing_pip_job_page.png)
+
+### Important notes while running large number of samples on CloudOS
+
+- For one sample to run the first part of the pipeline (having steps - get_tcga_bams, bamtofastq, fastqc, trmmomatic, fastqc_trimmed, star, multiqc) require about 20 GB of results space per sample. So in order to accommodate that you need to specify 20*Number of samples in the CloudOS GUI while selecting an instance.  (Example 100 samples 20*100 = 2000 GB).
+
+- Also accordingly there is a special parameter `--gc_disk_size` which is specific to google-cloud executor. Adds disk-space for few aggregative processes. (default: "200 GB" based on 100 samples. Which is 2GB x Number of Samples)
