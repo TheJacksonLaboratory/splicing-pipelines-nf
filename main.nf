@@ -352,6 +352,11 @@ if (download_from('tcga')) {
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
+    // 2GB reserved for Javaruntime and 2GB aside
+    usable_mem = "${task.memory.toMega() - 4000}"
+    // samtools takes memory per thread, so - 
+    per_thread_mem = "${usable_mem.toInteger()/task.cpus.toInteger()}"
+    // check end
     singleEnd=singleEnd.toBoolean()
     if (singleEnd) {
       """
@@ -360,7 +365,7 @@ if (download_from('tcga')) {
       """
     } else {
       """
-      samtools sort --threads ${task.cpus} -n $bam > ${name}_sorted.bam
+      samtools sort -@ ${task.cpus} -m ${per_thread_mem}M -n $bam > ${name}_sorted.bam
       bedtools bamtofastq \
         -i ${name}_sorted.bam \
         -fq ${name}_1.fastq \
