@@ -7,9 +7,11 @@
  * @authors
  * Laura Urbanski <laura.urbanski@jax.org> first author of the Post-processing portion of the workflow!
  * Marina Yurieva <marina.yurieva@jax.org>
+ * Brittany Angarola <brittany.angarola@jax.org>
  * Pablo Prieto Barja <pablo.prieto.barja@gmail.com>
  * Carolyn Paisie
  * Phil Palmer <phil@lifebit.ai>
+ * Sangram Sahu <sangram@lifebit.ai>
  * Anne Deslattes Mays <adeslatt@gmail.com>
  * Olga Anczukow
  */
@@ -104,9 +106,10 @@ def helpMessage() {
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
                                     (default: directory where you submit the job)
+      --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)     
+                                    (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
-                                    (deafult: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
-
+                                    (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -185,6 +188,7 @@ log.info "Outdir                      : ${params.outdir}"
 log.info "Max CPUs                    : ${params.max_cpus}"
 log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
+log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info ""
 log.info "\n"
@@ -349,9 +353,9 @@ if (download_from('tcga')) {
 
     script:
     // 2GB reserved for Javaruntime and 2GB aside
-    useable_mem = "${task.memory.toMega() - 4000}"
+    usable_mem = "${task.memory.toMega() - 4000}"
     // samtools takes memory per thread, so - 
-    per_thread_mem = "${useable_mem.toInteger()/task.cpus.toInteger()}"
+    per_thread_mem = "${usable_mem.toInteger()/task.cpus.toInteger()}"
     // check end
     singleEnd=singleEnd.toBoolean()
     if (singleEnd) {
@@ -495,7 +499,7 @@ if (!params.bams){
     // TODO: find a better solution to needing to use `chmod`
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | awk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = variable_read_length ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
