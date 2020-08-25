@@ -41,7 +41,7 @@ There should be one `reads.csv` file per dataset. If your dataset already has a 
 
 Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to an rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
 
-* Replicates should be comma seperated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
+* Replicates should be comma separated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
     <details>
     <summary>See examples</summary>
 
