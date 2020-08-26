@@ -533,7 +533,7 @@ if (!params.bams){
       --alignEndsType EndToEnd \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
-      --outWigType wiggle $out_filter_intron_motifs $out_sam_strand_field
+      --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
     chmod a+rw $name*
     $xs_tag_cmd
