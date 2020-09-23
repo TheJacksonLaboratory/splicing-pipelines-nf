@@ -283,11 +283,11 @@ if ( download_from('gtex') || download_from('sra') ) {
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
 
     script:
-    def vdbConfigCmd = key_file.name != 'no_key_file.txt' ? "vdb-config --import ${key_file} ./" : ''
+    def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
     output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
-    $vdbConfigCmd
-    fasterq-dump $accession --threads ${task.cpus} --split-3
+    prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
+    fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
     """
   }
