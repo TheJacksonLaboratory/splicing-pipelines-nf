@@ -553,6 +553,7 @@ if (!params.test) {
     tag "$name"
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    // TODO: remove
     echo true
 
     input:
@@ -578,6 +579,7 @@ if (!params.test) {
   process prep_de {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+    // TODO: remove
     echo true
 
     input:
@@ -605,6 +607,7 @@ if (!params.test) {
   process stringtie_merge {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
+    // TODO: remove
     echo true
 
     input:
@@ -636,8 +639,9 @@ if (!params.test) {
 
     indexed_bam_rmats
       .map { name, bam, bai -> [name, bam] }
-      .set { bam }
-      .view()
+      .into { bam ; bam_view}
+      // TODO: remove
+      bam_view.view{ "bam\n$it" }
     
     // Group BAMs for each rMATS execution
     samples
@@ -666,13 +670,15 @@ if (!params.test) {
         rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
         rmats_id_bams
       }
-      .set { bams }
-      .view()
+      .into { bam ; bam_view }
+      // TODO: remove
+      bam_view.view{ "bam\n$it" }
 
     process rmats {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      // TODO: remove
       echo true
 
       when:
@@ -739,13 +745,15 @@ if (!params.test) {
       .toSortedList { entry -> entry[0] }
       .flatten()
       .collate(4, false)
-      .set { paired_samples }
-      .view()
+      .into { paired_samples; paired_samples_view }
+      // TODO: remove
+      paired_samples_view.view{"paired_samples\n$it"}
 
     process paired_rmats {
       tag "$name1 $name2"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+      // TODO: remove
       echo true
 
       when:
