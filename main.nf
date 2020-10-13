@@ -685,7 +685,7 @@ if (!params.test) {
       !params.skiprMATS
 
       input:
-      set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams
+      set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bam
       each file(gtf) from gtf_rmats
 
       output:
