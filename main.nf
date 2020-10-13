@@ -553,7 +553,7 @@ if (!params.test) {
     tag "$name"
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
-    echo ture
+    echo true
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -605,7 +605,7 @@ if (!params.test) {
   process stringtie_merge {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
-    echo ture
+    echo true
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
@@ -673,7 +673,7 @@ if (!params.test) {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
-      echo ture
+      echo true
 
       when:
       !params.skiprMATS
