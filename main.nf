@@ -553,6 +553,7 @@ if (!params.test) {
     tag "$name"
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    echo ture
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -577,6 +578,7 @@ if (!params.test) {
   process prep_de {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+    echo true
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
@@ -603,6 +605,7 @@ if (!params.test) {
   process stringtie_merge {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
+    echo ture
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
@@ -634,6 +637,7 @@ if (!params.test) {
     indexed_bam_rmats
       .map { name, bam, bai -> [name, bam] }
       .set { bam }
+      .view()
     
     // Group BAMs for each rMATS execution
     samples
@@ -663,11 +667,13 @@ if (!params.test) {
         rmats_id_bams
       }
       .set { bams }
+      .view()
 
     process rmats {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      echo ture
 
       when:
       !params.skiprMATS
@@ -734,11 +740,13 @@ if (!params.test) {
       .flatten()
       .collate(4, false)
       .set { paired_samples }
+      .view()
 
     process paired_rmats {
       tag "$name1 $name2"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+      echo true
 
       when:
       !params.skiprMATS
