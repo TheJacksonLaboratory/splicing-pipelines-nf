@@ -73,7 +73,13 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 ### 4. Setup `NF_splicing_pipeline.config`
 
-This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. If you already created a `NF_splicing_pipeline.config` during the trim test, you can modify it. Otherwise, to create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file.
+This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters). 
+
+If you already created a `NF_splicing_pipeline.config` during the trim test, you can modify it. Otherwise, to create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file. 
+
+**VERY IMPORTANT NOTES***
+
+**Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMTERS**
 
 **You must name your config file `NF_splicing_pipeline.config`**
 
@@ -81,9 +87,7 @@ This config file will be specific to your user and analysis. **You do not need t
 
 **The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
 
-You do not need to specify all parameters if the default parameters are acceptable (find more information on all available parameters [here](usage.md#all-available-parameters)) 
-
-To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
+To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 
 ### 5. Run the pipeline!
 
@@ -93,29 +97,6 @@ Run the pipeline!
 ```
 sbatch /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.pbs
 ```
-**NOTE: if running on cloud we don't have main.pbs set up yet**
-
-
-# Below has not been updated yet (5/19/20)
-## Examples
-
-See [`MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config`](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) for an example analysis comparing the 0h and 8h timepoints
-
-The analysis compares `MYC_MCF10A_0h` with 3 replicates and `MYC_MCF10_8h`.
-The details of what needs to be configured to do this comparison analysis are found in three files:
-
-All the analyses can be kept in [`examples/analyses`](../examples/analyses) subdirectory (by convention). Encoded in the file name is the metadata details that outline the comparison that is being completed.  In this case capturing the statement above (`MYC_MCF10A_0h` vs `MYC_MCF10A_8h`).
-
-These files can be specified via command line or via a config file.
-
-To specify via command line:
-
-* `--reads examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv`
-    This file contains the `sample_id` a short name uniquely defines the sample within this comparison
-    comma seperated with the complete path for the `left` and `right` `fastqs`.   
-    
-* `--rmats_pairs examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/rmats_pairs.txt`
-    This is a space/comma separated file containing the a list of the rMATS comparisons you wish to perform.
 
 # Bonus: useful Nextflow options
 
