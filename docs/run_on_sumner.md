@@ -79,15 +79,15 @@ If you already created a `NF_splicing_pipeline.config` during the trim test, you
 
 **VERY IMPORTANT NOTES***
 
-**Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMTERS**
+- Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMTERS
 
-**You must name your config file `NF_splicing_pipeline.config`**
+- You must name your config file `NF_splicing_pipeline.config`
 
-**Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.**
+- Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.
 
-**The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing. **
+- The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing
 
-To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
+- To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 
 ### 5. Run the pipeline!
 
