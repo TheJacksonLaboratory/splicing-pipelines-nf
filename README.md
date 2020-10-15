@@ -30,11 +30,6 @@ cd /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf
 ```bash
 git pull
 ```
-If pipeline has not been downloaded you will need to clone it from `github`. 
-
-```bash
-git clone https://github.com/TheJacksonLaboratory/splicing-pipelines-nf.git
-```   
 
 ### Run test example to ensure the pipeline is working properly. 
 
