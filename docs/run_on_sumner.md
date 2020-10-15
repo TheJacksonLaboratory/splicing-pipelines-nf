@@ -23,6 +23,8 @@ This pipeline can be run on Sumner in three ways:
 ## Running full pipeline with FASTQ input
 ### 1. Create a new run directory
 
+All analyses should be run in `/projects/anczukow-lab/NGS_analysis`. If you're dataset already has a folder here, use that directory. Otherwise, create a new directory with the same name found in the `/projects/anczukow-lab/fastq_files/` folder. 
+
 Create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`.  
 
 ### 2. Create/Locate `reads.csv` file for your dataset
