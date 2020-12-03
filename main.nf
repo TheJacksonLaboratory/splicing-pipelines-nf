@@ -321,10 +321,7 @@ if ( download_from('gen3-drs')) {
       
       script:
       """
-      mkdir ~/.keys
-      mv $key_file ~/.keys/anvil_credentials.json
-      
-      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id)
+      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id $key_file)
       signed_url=\$(echo \$drs_url | awk '\$1="";1')
       wget -O ${sample_id}.bam \$(echo \$signed_url)
       """
@@ -381,7 +378,7 @@ if (download_from('tcga')) {
 if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
-    label 'low_memory'
+    label 'mid_memory'
     
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
@@ -403,7 +400,7 @@ if (download_from('tcga') || download_from('gen3-drs')) {
       """
     } else {
       """
-      samtools sort -@ ${task.cpus} -m ${per_thread_mem}M -n $bam > ${name}_sorted.bam
+      samtools sort -@ ${task.cpus} -m 2000M -n $bam > ${name}_sorted.bam
       bedtools bamtofastq \
         -i ${name}_sorted.bam \
         -fq ${name}_1.fastq \
