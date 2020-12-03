@@ -198,12 +198,22 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  Channel
-    .fromPath(params.reads)
-    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
-    .splitCsv(skip:1)
-    .map { sample -> sample[0].trim() }
-    .set { accession_ids }
+  if(!download_from('gen3-drs')) {
+      Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { sample -> sample[0].trim() }
+        .set { accession_ids }
+   }
+   if(download_from('gen3-drs')){
+       Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { sample_id, obj_id -> [sample_id, obj_id] }
+        .set { ch_gtex_gen3_ids }
+   }
 } 
 // TODO: combine single and paired-end channel definitions
 if (!params.download_from && params.singleEnd && !params.bams) {
@@ -294,6 +304,34 @@ if ( download_from('gtex') || download_from('sra') ) {
 }
 
 /*--------------------------------------------------
+  Download BAMs from GTEx using GEN3_DRS 
+---------------------------------------------------*/
+
+if ( download_from('gen3-drs')) {
+  process gen3_drs_fasp {
+      tag "${sample_id}"
+      label 'low_memory'
+      
+      input:
+      set val(sample_id), val(obj_id) from ch_gtex_gen3_ids
+      each file(key_file) from key_file
+      
+      output:
+      set val(sample_id), file("*.bam"), val(false) into bamtofastq
+      
+      script:
+      """
+      mkdir ~/.keys
+      mv $key_file ~/.keys/anvil_credentials.json
+      
+      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id)
+      signed_url=\$(echo \$drs_url | awk '\$1="";1')
+      wget -O ${sample_id}.bam \$(echo \$signed_url)
+      """
+  }
+} 
+
+/*--------------------------------------------------
   Download BAMs from TCGA
 ---------------------------------------------------*/
 
@@ -340,7 +378,7 @@ if (download_from('tcga')) {
   Bedtools to extract FASTQ from BAM
 ---------------------------------------------------*/
 
-if (download_from('tcga')) {
+if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
     label 'low_memory'
