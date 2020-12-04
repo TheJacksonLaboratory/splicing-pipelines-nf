@@ -334,9 +334,13 @@ if ( download_from('gen3-drs')) {
       """
       drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id $key_file)
       signed_url=\$(echo \$drs_url | awk '\$1="";1')
-      wget -O ${sample_id}.bam \$(echo \$signed_url)
+      
+      if [[ \$signed_url == *".bam"* ]]; then
+          wget -O ${sample_id}.bam \$(echo \$signed_url)
+      fi
       
       if [[ \$signed_url == *".cram"* ]]; then
+          wget -O ${sample_id}.cram \$(echo \$signed_url)
           samtools view -b -T ${genome_fasta} -o ${sample_id}.bam ${sample_id}.cram
       fi
       """
