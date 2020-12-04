@@ -276,6 +276,16 @@ if (params.rmats_pairs) {
     .set { samples}
 }
 
+if ( download_from('gen3-drs')) {
+    if(!params.genome_fasta){
+    exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
+    }
+    Channel
+        .fromPath(params.genome_fasta)
+        .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
+        .set {ch_genome_fasta}
+}
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
@@ -315,6 +325,7 @@ if ( download_from('gen3-drs')) {
       input:
       set val(sample_id), val(obj_id) from ch_gtex_gen3_ids
       each file(key_file) from key_file
+      each file(genome_fasta) from ch_genome_fasta
       
       output:
       set val(sample_id), file("*.bam"), val(false) into bamtofastq
@@ -324,6 +335,10 @@ if ( download_from('gen3-drs')) {
       drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id $key_file)
       signed_url=\$(echo \$drs_url | awk '\$1="";1')
       wget -O ${sample_id}.bam \$(echo \$signed_url)
+      
+      if [[ \$signed_url == *".cram"* ]]; then
+          samtools view -b -T ${genome_fasta} -o ${sample_id}.bam ${sample_id}.cram
+      fi
       """
   }
 } 

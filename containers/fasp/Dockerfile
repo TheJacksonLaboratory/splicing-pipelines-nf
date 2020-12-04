@@ -16,6 +16,8 @@ RUN apt-get update \
   && git clone https://github.com/lifebit-ai/fasp-scripts \ 
   && cd fasp-scripts \
   && python setup.py install \
-  && chmod +x fasp/scripts/* 
+  && chmod +x fasp/scripts/* \
+  && conda install samtools=1.3.1 -c bioconda \
+  && conda clean -a
   
 ENV PATH /fasp-scripts/fasp/scripts:$PATH
