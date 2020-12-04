@@ -17,7 +17,7 @@ RUN apt-get update \
   && cd fasp-scripts \
   && python setup.py install \
   && chmod +x fasp/scripts/* \
-  && conda install samtools=1.3.1 -c bioconda \
+  && conda install samtools=1.11 -c bioconda -c conda-forge \
   && conda clean -a
   
 ENV PATH /fasp-scripts/fasp/scripts:$PATH
