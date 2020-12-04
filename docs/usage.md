@@ -176,3 +176,27 @@ Other:
 
 	    
 ```
+
+## Run with data from AnviL Gen3-DRS
+
+You will be needing two things from - https://gen3.theanvil.io/
+
+1. manifest file
+2. credentials file
+
+Original downloaded `manifest.json` file need to be converted into `manifest.csv` in order to be accepted in `--reads`, for doing that you can do this - 
+
+```bash
+pip install csvkit
+in2csv manifest.json > manifest.csv
+```
+
+NOTE: Make sure the `manifest.csv` file have five columns, Check from [examples](../examples/gen3/)
+
+Downloaded `credentials.json` file can be provided in `--key` param.
+
+NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when you download.
+
+If you running with AnviL Gen3-DRS files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format.
+
+For a minimal params list check [gen3_drs.config](../conf/examples/gen3_drs.config)
