@@ -211,7 +211,7 @@ if (params.download_from) {
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
-        .map { sample_id, obj_id -> [sample_id, obj_id] }
+        .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
         .set { ch_gtex_gen3_ids }
    }
 } 
@@ -319,29 +319,31 @@ if ( download_from('gtex') || download_from('sra') ) {
 
 if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
-      tag "${sample_id}"
+      tag "${file_name}"
       label 'low_memory'
       
       input:
-      set val(sample_id), val(obj_id) from ch_gtex_gen3_ids
+      set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
       each file(genome_fasta) from ch_genome_fasta
       
       output:
-      set val(sample_id), file("*.bam"), val(false) into bamtofastq
+      set env(sample_name), file("*.bam"), val(false) into bamtofastq
       
       script:
       """
-      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py $obj_id gcp_id $key_file)
+      sample_name=\$(echo ${file_name} | cut -f1 -d".")
+      
+      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py ${obj_id} gcp_id ${key_file})
       signed_url=\$(echo \$drs_url | awk '\$1="";1')
       
       if [[ \$signed_url == *".bam"* ]]; then
-          wget -O ${sample_id}.bam \$(echo \$signed_url)
+          wget -O \${sample_name}.bam \$(echo \$signed_url)
       fi
       
       if [[ \$signed_url == *".cram"* ]]; then
-          wget -O ${sample_id}.cram \$(echo \$signed_url)
-          samtools view -b -T ${genome_fasta} -o ${sample_id}.bam ${sample_id}.cram
+          wget -O \${sample_name}.cram \$(echo \$signed_url)
+          samtools view -b -T ${genome_fasta} -o \${sample_name}.bam \${sample_name}.cram
       fi
       """
   }
