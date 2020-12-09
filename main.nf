@@ -339,10 +339,14 @@ if ( download_from('gen3-drs')) {
       
       if [[ \$signed_url == *".bam"* ]]; then
           wget -O \${sample_name}.bam \$(echo \$signed_url)
+          file_md5sum=\$(md5sum \${sample_name}.bam)
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
       fi
       
       if [[ \$signed_url == *".cram"* ]]; then
           wget -O \${sample_name}.cram \$(echo \$signed_url)
+          file_md5sum=\$(md5sum \${sample_name}.cram)
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
           samtools view -b -T ${genome_fasta} -o \${sample_name}.bam \${sample_name}.cram
       fi
       """
