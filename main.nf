@@ -33,9 +33,10 @@ def helpMessage() {
                                     (default: no rmats_pairs specified) 
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
+                                    or credentials.josn file in case of 'GEN3-DRS'
                                     (default: false)  
  
     Main arguments:
@@ -198,7 +199,7 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(!download_from('gen3-drs')) {
+  if(download_from('gtex') || download_from('sra') || download_from('tcga')) {
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
