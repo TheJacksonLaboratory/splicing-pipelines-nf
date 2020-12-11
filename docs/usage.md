@@ -95,10 +95,11 @@ Input files:
                                 (default: no rmats_pairs specified) 
   --run_name                    User specified name used as prefix for output files
                                 (defaut: no prefix, only date and time)
-  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
                                 (default: false)
   --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
-                                (default: false)     
+  				or credentials.josn file in case of 'GEN3-DRS'
+                                (default: false)
                                 
 Main arguments:
   --gtf                         Path to reference GTF file (path)
@@ -199,4 +200,4 @@ NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when 
 
 If you running with AnviL Gen3-DRS files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format.
 
-For a minimal params list check [gen3_drs.config](../conf/examples/gen3_drs.config)
+For a minimal params list check [gen3_drs.config](../conf/examples/GEN3_DRS_config.md)
