@@ -1,4 +1,6 @@
-// this is just for example purpose
+A minimal set of params need to run when downloading option is GEN3-DRS. Test is done with following params on a dev environment.
+
+```yaml
 params {
     reads = splicing-pipelines-nf/examples/gen3/manifest.csv
     run_name = gtex_gen3
@@ -13,3 +15,4 @@ params {
     max_cpus = 14
     max_memory = 60
 }
+```
