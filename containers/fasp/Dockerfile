@@ -13,7 +13,7 @@ COPY requirements.txt /
 RUN apt-get update \
   && apt-get install procps -y \
   && pip install -r requirements.txt \
-  && git clone https://github.com/lifebit-ai/fasp-scripts \ 
+  && git clone https://github.com/lifebit-ai/fasp-scripts --branch gen3-drs-gtex-download \ 
   && cd fasp-scripts \
   && python setup.py install \
   && chmod +x fasp/scripts/* \
