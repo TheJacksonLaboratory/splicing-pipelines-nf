@@ -208,8 +208,16 @@ If you have a list of bam file names of interest, extract the manifest file -
 
 ```bash
 # Get all the bam files name into a txt file
-cut -d, -f4 query_List.csv > query_list.txt
+cut -d, -f4 query_list.csv > bam_files_list.txt
 # Extract those bam files list from manifest.csv
-grep -f query_list.txt -i manifest.csv > manifest.csv
+grep -f bam_files_list.txt -i manifest.csv > manifest.csv
 ```
 
+Here `query_list.csv` should look something like - 
+
+```csv
+file_name,sequencing_assay,data_format,file_name,sample_id,participant_id,tissue,age,gender
+GTEX-11EM3-1326-SM-5N9C6,RNA-Seq,bam,GTEX-11EM3-1326-SM-5N9C6.Aligned.sortedByCoord.out.patched.md.bam,GTEX-11EM3-1326-SM-5N9C6,GTEX-11EM3,Breast,21,Female
+GTEX-RU1J-0626-SM-4WAWY,RNA-Seq,bam,GTEX-RU1J-0626-SM-4WAWY.Aligned.sortedByCoord.out.patched.md.bam,GTEX-RU1J-0626-SM-4WAWY,GTEX-RU1J,Breast,21,Female
+GTEX-ZTPG-2826-SM-57WGA,RNA-Seq,bam,GTEX-ZTPG-2826-SM-57WGA.Aligned.sortedByCoord.out.patched.md.bam,GTEX-ZTPG-2826-SM-57WGA,GTEX-ZTPG,Breast,21,Female
+```
