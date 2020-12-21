@@ -201,3 +201,15 @@ NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when 
 If you running with AnviL Gen3-DRS files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format.
 
 For a minimal params list check [gen3_drs.config](../conf/examples/GEN3_DRS_config.md)
+
+### Extract based on a bam query list
+
+If you have a list of bam file names of interest, extract the manifest file - 
+
+```bash
+# Get all the bam files name into a txt file
+cut -d, -f4 query_List.csv > query_list.txt
+# Extract those bam files list from manifest.csv
+grep -f query_list.txt -i manifest.csv > manifest.csv
+```
+
