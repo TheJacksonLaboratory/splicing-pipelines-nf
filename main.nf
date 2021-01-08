@@ -612,7 +612,7 @@ if (!params.test) {
 
   process stringtie {
     tag "$name"
-    label 'mid_memory'
+    label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
