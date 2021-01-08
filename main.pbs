@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH -p compute
 #SBATCH -q batch
-#SBATCH -t 2-09:00:00 
+#SBATCH -t 3-00:00:00 
 
 cd $SLURM_SUBMIT_DIR
 date;hostname;pwd
