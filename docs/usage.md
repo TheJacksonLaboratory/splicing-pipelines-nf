@@ -95,10 +95,11 @@ Input files:
                                 (default: no rmats_pairs specified) 
   --run_name                    User specified name used as prefix for output files
                                 (defaut: no prefix, only date and time)
-  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA', false) (string)
+  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
                                 (default: false)
   --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
-                                (default: false)     
+  				or credentials.josn file in case of 'GEN3-DRS'
+                                (default: false)
                                 
 Main arguments:
   --gtf                         Path to reference GTF file (path)
@@ -175,4 +176,48 @@ Other:
                                 (default: 20.h)
 
 	    
+```
+
+## Run with data from AnviL Gen3-DRS
+
+You will be needing two things from - https://gen3.theanvil.io/
+
+1. manifest file
+2. credentials file
+
+Original downloaded `manifest.json` file need to be converted into `manifest.csv` in order to be accepted in `--reads`, for doing that you can do this - 
+
+```bash
+pip install csvkit
+in2csv manifest.json > manifest.csv
+```
+
+NOTE: Make sure the `manifest.csv` file have five columns, Check from [examples](../examples/gen3/)
+
+Downloaded `credentials.json` file can be provided in `--key` param.
+
+NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when you download.
+
+If you running with AnviL Gen3-DRS files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format.
+
+For a minimal params list check [gen3_drs.config](../conf/examples/GEN3_DRS_config.md)
+
+### Extract based on a bam query list
+
+If you have a list of bam file names of interest, extract the manifest file - 
+
+```bash
+# Get all the bam files name into a txt file
+cut -d, -f4 query_list.csv > bam_files_list.txt
+# Extract those bam files list from manifest.csv
+grep -f bam_files_list.txt -i manifest.csv > manifest.csv
+```
+
+Here `query_list.csv` should look something like - 
+
+```csv
+file_name,sequencing_assay,data_format,file_name,sample_id,participant_id,tissue,age,gender
+GTEX-11EM3-1326-SM-5N9C6,RNA-Seq,bam,GTEX-11EM3-1326-SM-5N9C6.Aligned.sortedByCoord.out.patched.md.bam,GTEX-11EM3-1326-SM-5N9C6,GTEX-11EM3,Breast,21,Female
+GTEX-RU1J-0626-SM-4WAWY,RNA-Seq,bam,GTEX-RU1J-0626-SM-4WAWY.Aligned.sortedByCoord.out.patched.md.bam,GTEX-RU1J-0626-SM-4WAWY,GTEX-RU1J,Breast,21,Female
+GTEX-ZTPG-2826-SM-57WGA,RNA-Seq,bam,GTEX-ZTPG-2826-SM-57WGA.Aligned.sortedByCoord.out.patched.md.bam,GTEX-ZTPG-2826-SM-57WGA,GTEX-ZTPG,Breast,21,Female
 ```

@@ -10,3 +10,5 @@ splicing.*
 *.fastq
 test_single_end
 human_test
+*cred*
+*credentials*

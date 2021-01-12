@@ -33,9 +33,10 @@ def helpMessage() {
                                     (default: no rmats_pairs specified) 
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'SRA') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
+                                    or credentials.josn file in case of 'GEN3-DRS'
                                     (default: false)  
  
     Main arguments:
@@ -198,12 +199,22 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  Channel
-    .fromPath(params.reads)
-    .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
-    .splitCsv(skip:1)
-    .map { sample -> sample[0].trim() }
-    .set { accession_ids }
+  if(download_from('gtex') || download_from('sra') || download_from('tcga')) {
+      Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { sample -> sample[0].trim() }
+        .set { accession_ids }
+   }
+   if(download_from('gen3-drs')){
+       Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
+        .set { ch_gtex_gen3_ids }
+   }
 } 
 // TODO: combine single and paired-end channel definitions
 if (!params.download_from && params.singleEnd && !params.bams) {
@@ -266,6 +277,16 @@ if (params.rmats_pairs) {
     .set { samples}
 }
 
+if ( download_from('gen3-drs')) {
+    if(!params.genome_fasta){
+    exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
+    }
+    Channel
+        .fromPath(params.genome_fasta)
+        .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
+        .set {ch_genome_fasta}
+}
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
@@ -292,6 +313,46 @@ if ( download_from('gtex') || download_from('sra') ) {
     """
   }
 }
+
+/*--------------------------------------------------
+  Download BAMs from GTEx using GEN3_DRS 
+---------------------------------------------------*/
+
+if ( download_from('gen3-drs')) {
+  process gen3_drs_fasp {
+      tag "${file_name}"
+      label 'low_memory'
+      
+      input:
+      set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
+      each file(key_file) from key_file
+      each file(genome_fasta) from ch_genome_fasta
+      
+      output:
+      set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      
+      script:
+      """
+      sample_name=\$(echo ${file_name} | cut -f1 -d".")
+      
+      drs_url=\$(python /fasp-scripts/fasp/scripts/get_drs_url.py ${obj_id} gcp_id ${key_file})
+      signed_url=\$(echo \$drs_url | awk '\$1="";1')
+      
+      if [[ \$signed_url == *".bam"* ]]; then
+          wget -O \${sample_name}.bam \$(echo \$signed_url)
+          file_md5sum=\$(md5sum \${sample_name}.bam)
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
+      fi
+      
+      if [[ \$signed_url == *".cram"* ]]; then
+          wget -O \${sample_name}.cram \$(echo \$signed_url)
+          file_md5sum=\$(md5sum \${sample_name}.cram)
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
+          samtools view -b -T ${genome_fasta} -o \${sample_name}.bam \${sample_name}.cram
+      fi
+      """
+  }
+} 
 
 /*--------------------------------------------------
   Download BAMs from TCGA
@@ -340,10 +401,10 @@ if (download_from('tcga')) {
   Bedtools to extract FASTQ from BAM
 ---------------------------------------------------*/
 
-if (download_from('tcga')) {
+if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
-    label 'low_memory'
+    label 'mid_memory'
     
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
@@ -551,7 +612,7 @@ if (!params.test) {
 
   process stringtie {
     tag "$name"
-    label 'mid_memory'
+    label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
