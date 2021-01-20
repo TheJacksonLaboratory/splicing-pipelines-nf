@@ -416,7 +416,7 @@ if (download_from('tcga') || download_from('gen3-drs')) {
     // samtools takes memory per thread
     // 6GB reserved for Javaruntime
     def usable_mem = ("${(task.memory.toBytes() - 6000000000) / task.cpus}" > 2000000000) ? 'true' : 'false'
-    def per_thread_mem = (task.memory && usable_mem) ? "${(task.memory.toBytes() - 6000000000) / task.cpus}" : ''
+    def per_thread_mem = (task.memory && usable_mem) ? "${(task.memory.toBytes() - 6000000000) / (task.cpus * 2)}" : ''
     // check end
     singleEnd=singleEnd.toBoolean()
     if (singleEnd) {
