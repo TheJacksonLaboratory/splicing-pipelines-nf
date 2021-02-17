@@ -8,6 +8,7 @@ jobs:
     strategy:
       matrix:
         nxf_ver: ['19.04.0', '']
+        max_retries: [1, 10]
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -17,4 +18,4 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,docker
+          nextflow run ${GITHUB_WORKSPACE} --max_retries ${{max_retries}} -profile base,ultra_quick_test,docker
