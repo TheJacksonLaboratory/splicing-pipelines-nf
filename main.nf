@@ -573,7 +573,7 @@ if (!params.bams){
     fi
     
     # disk size debug
-    echo "##########"
+    echo "pre run check ##########"
     df -h
     echo "##########"
 
@@ -607,6 +607,12 @@ if (!params.bams){
     $xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
+    
+    # disk size debug
+    echo "post run check ##########"
+    df -h
+    echo "##########"
+    
     """
   }
 }
