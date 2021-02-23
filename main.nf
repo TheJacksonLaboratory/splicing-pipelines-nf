@@ -535,6 +535,7 @@ if (!params.bams){
   ---------------------------------------------------*/
 
   process star {
+    echo true
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
@@ -570,6 +571,11 @@ if (!params.bams){
     if [[ $index == *.tar.gz ]]; then
       tar -xvzf $index
     fi
+    
+    # disk size debug
+    echo "##########"
+    df -h
+    echo "##########"
 
     STAR \
       --genomeDir ${index.toString().minus('.tar.gz')} \
