@@ -447,7 +447,6 @@ if (!params.bams){
   process fastqc {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/raw", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
@@ -475,7 +474,6 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -516,7 +514,6 @@ if (!params.bams){
   process fastqc_trimmed {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
@@ -538,11 +535,7 @@ if (!params.bams){
     echo true
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
-    publishDir "${params.outdir}/star_mapped/", mode: 'copy',
-      saveAs: {filename -> 
-          if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
-      }
+
     
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_star
@@ -626,7 +619,6 @@ if (!params.test) {
   process stringtie {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -650,7 +642,6 @@ if (!params.test) {
 
   process prep_de {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
@@ -676,7 +667,6 @@ if (!params.test) {
 
   process stringtie_merge {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
