@@ -111,6 +111,9 @@ def helpMessage() {
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+      --debug                       This option will enable echo of script execution into STDOUT with some additional 
+                                    resource information (such as disk space)
+                                    (default: false)
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -192,6 +195,7 @@ log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
+log.info "Debug                       : ${params.debug}"
 log.info ""
 log.info "\n"
 
@@ -533,8 +537,10 @@ if (!params.bams){
     STAR to align trimmed reads
   ---------------------------------------------------*/
 
+  pre_script_run_resource_status = params.debug ? "echo ' ===== pre-script-run =====' && df -h" : ""
+  post_script_run_resource_status = params.debug ? "echo ' ===== post-script-run =====' && df -h" : ""
+
   process star {
-    echo true
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
@@ -566,15 +572,12 @@ if (!params.bams){
     star_mem = params.star_memory ? params.star_memory : task.memory
     avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
     """
+    ${pre_script_run_resource_status}
+
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
       tar -xvzf $index
     fi
-    
-    # disk size debug
-    echo "pre run check ##########"
-    df -h
-    echo "##########"
 
     STAR \
       --genomeDir ${index.toString().minus('.tar.gz')} \
@@ -607,11 +610,7 @@ if (!params.bams){
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
     
-    # disk size debug
-    echo "post run check ##########"
-    df -h
-    echo "##########"
-    
+    ${post_script_run_resource_status}
     """
   }
 }
