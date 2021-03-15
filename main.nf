@@ -292,6 +292,12 @@ if ( download_from('gen3-drs')) {
         .set {ch_genome_fasta}
 }
 
+// creatre empty channels for tool versions
+def ch_tools_get_accession = Channel.create()
+def ch_tools_bamtofastq = Channel.create()
+def ch_tools_fastqc = Channel.create()
+//def ch_tools_star = Channel.create()
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
@@ -307,6 +313,7 @@ if ( download_from('gtex') || download_from('sra') ) {
     
     output:
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+    file "*_version.txt" into ch_tools_get_accession
 
     script:
     def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
@@ -315,6 +322,8 @@ if ( download_from('gtex') || download_from('sra') ) {
     prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
     fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
+
+    conda list -n download_reads | grep sratools | tail -n 1 >> sratools_version.txt
     """
   }
 }
@@ -416,6 +425,7 @@ if (download_from('tcga') || download_from('gen3-drs')) {
     
     output:
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+    file "*_version.txt" into ch_tools_bamtofastq
 
     script:
     // samtools takes memory per thread
@@ -428,6 +438,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
       pigz *.fastq
+
+      conda list -n download_reads | grep samtools | tail -n 1 >> samtools_version.txt
+      conda list -n download_reads | grep bedtools | tail -n 1 >> bedtools_version.txt
       """
     } else {
       """
@@ -437,6 +450,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
         -fq ${name}_1.fastq \
         -fq2 ${name}_2.fastq
       pigz *.fastq
+
+      conda list -n download_reads | grep samtools | tail -n 1 >> samtools_version.txt
+      conda list -n download_reads | grep bedtools | tail -n 1 >> bedtools_version.txt
       """
     }
   }
@@ -458,10 +474,13 @@ if (!params.bams){
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
+    file "*_version.txt" into ch_tools_fastqc
 
     script:
     """
     fastqc --casava --threads $task.cpus $reads
+
+    conda list -n splicing-pipelines-nf | grep fastqc | tail -n 1 >> fastqc_version.txt
     """
   }
 
@@ -538,6 +557,7 @@ if (!params.bams){
   ---------------------------------------------------*/
 
   if(params.debug) {
+    // TODO: Move these with beforeScript and afterScript
     pre_script_run_resource_status = """
         echo ==========================
         echo Debug Summary
@@ -584,6 +604,7 @@ if (!params.bams){
     file "*Log.out" into star_log
     file "*Unmapped*" optional true
     file "${name}.bw"
+    file "*_version.txt" into ch_tools_star
 
     script:
     // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
@@ -632,6 +653,9 @@ if (!params.bams){
     $xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
+
+    conda list -n splicing-pipelines-nf | grep star | tail -n 1 >> star_version.txt
+    conda list -n splicing-pipelines-nf | grep samtools | tail -n 1 >> samtools_version.txt
     
     ${post_script_run_resource_status}
     """
@@ -912,6 +936,24 @@ if (!params.bams) {
     cp multiqc_report.html ${run_prefix}_multiqc_report.html
     """
   }
+}
+
+process collect_tool_versions {
+    publishDir "${params.outdir}", mode: 'copy'
+
+    input:
+    // //file ('*') from ch_tools_get_accession.collect().ifEmpty([])
+    // //file ('*') from ch_tools_bamtofastq.collect().ifEmpty([])
+    // file ('*') from ch_tools_fastqc.collect().ifEmpty([])
+    file "*" from ch_tools_star.collect().ifEmpty([])
+
+    output:
+    file("all_tool_versions.txt") into all_tool_versions
+
+    script:
+    """
+    cat *_version.txt > all_tool_versions.txt
+    """
 }
 
 // define helper function
