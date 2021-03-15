@@ -475,7 +475,6 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
