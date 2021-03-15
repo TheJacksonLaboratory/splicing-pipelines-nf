@@ -112,7 +112,7 @@ def helpMessage() {
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
       --debug                       This option will enable echo of script execution into STDOUT with some additional 
-                                    resource information (such as disk space)
+                                    resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
@@ -537,8 +537,31 @@ if (!params.bams){
     STAR to align trimmed reads
   ---------------------------------------------------*/
 
-  pre_script_run_resource_status = params.debug ? "echo ' ===== pre-script-run =====' && df -h" : ""
-  post_script_run_resource_status = params.debug ? "echo ' ===== post-script-run =====' && df -h" : ""
+  if(params.debug) {
+    pre_script_run_resource_status = """
+        echo ==========================
+        echo Debug Summary
+        echo ==========================
+        echo === Machine type ===
+        uname --all 
+        echo === Machine memory ===
+        free -g -t
+        echo === Machine CPU ===
+        nproc --all
+        echo === Pre-script run disk-free ===
+        df -h /
+        echo ==========================
+        """
+    post_script_run_resource_status = """
+        echo === Post-script run disk-free ===
+        df -h /
+        echo ==========================
+        """
+  }else{
+    pre_script_run_resource_status = ""
+    post_script_run_resource_status = ""
+  }
+
 
   process star {
     tag "$name"
