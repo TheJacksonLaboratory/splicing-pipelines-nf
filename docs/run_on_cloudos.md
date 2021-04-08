@@ -62,11 +62,35 @@ This page is completely sharable, for example, you can view a successfully compl
 
 ## 4) Accessing results
 
+### 4.1) Get path to results
 - Select job you wish to download results for. 
 - Select `view log` in Status box. 
 - Scroll over to the right until you see `-w`. Copy this path up until `/work`, which is the path to the work directory. Paste into a text editor.
-- Get path to results by adding `/results/results` to path. See below for example: 
+- Get path to results by adding `/results/results` to path. This will be the path to your results. See below for example: 
+- original path: gs://cloudosinputdata/deploit/teams/5ec2c818d663c5c2c3bd991/users/5ec3dbf417954701035a2b7f/projects/6053bcc029b82f011272c90c/jobs/606dc7955395e200e4596cf0/
+- new path: 
+gs://cloudosinputdata/deploit/teams/5ec2c818d663c5c23bd991/users/5ec3dbf417954701035a2b7f/projects/6053bcc029b82f011272c90c/jobs/606dc7955395e200e4596cf0/results/results
 
+Note, if you had to resume your job, the above method will not work **sad face**. Instead, do the following. 
+- Select the job you wish to download results for
+- Click the results tab above the Status box
+- Navigate to a small file such as the MultiQC or b1.txt files. 
+- Click on the file and the blue download button will light up. Click the download button. This should open the file in a new tab. 
+- Copy the url for this tab. Paste into Word. 
+- Delete `https://storage.googleapis.com` from the beginning of the path
+- add `gs:/` to the beginning of the path. The path should now start with `gs://cloudosinputdata/`. 
+- Delete everything after `%2Fresults%2Fresults`
+- Click Replace and replace all `%2F` with `/`
+- The final path is the path to your results. For example see below
+- original path: https://storage.googleapis.com/cloudosinputdata/deploit%2Fteams%2F5ec2c818d66c5c2cd3bd991%2Fusers%2F5ec3dbf417954701035a2b7f%2Fprojects%2F6053bcc029b82f011272c90c%2Fjobs%2F606efd8088b32200e432bb67%2Fresults%2Fresults%2FrMATS_out%2Fmeso_MYC_hvl_gencode%2Fb1.txt?GoogleAccessId=cloudos-serviceaccount%40jax-poc-lifebit-01.iam.gserviceaccount.com&Expires=1617998736&Signature=phmDIz9kIdTXTz54mOEpIgoqWt6Nw%2BEgLXS0gaN0tLVr9XC5otALr9AE7CfciiyhuGoygwqW%2B5x%2FJ9m%2BNM9L%2Fj1fvAmtYWGK5uIhfqHcfQT9tawRyrs%2FWJT51o8W28r32KX6fjKvvdqdNgOTeqDQJCkc2TI1FniqX6cR8d92kjOUGJ10hBd5RHc3akC0KJIhkkzXnnViDGwi4ly0iYAqEkCiwEbhQh97NBfjn7%2BNp4OsbzTYGhLooufrl7HZkRWHfxu8tjDGM6cIrXcPxcBJ06ROEh2Ld%2Bld1877YLKsjYCxo4gQiS1F2JxGGFcCKIwwhBpAx337%2B1vXgGSsjDVXYA%3D%3D
+- new path: gs://cloudosinputdata/deploit/teams/5ec2c818d663c5c2cd3bd991/users/5ec3dbf47954701035a2b7f/projects/6053bcc029b82f011272c90c/jobs/606efd8088b32200e432bb67/results/results 
+
+### 4.2) Downloading the data 
+
+- Open SDK shell and navigate to the location where you wish to download data. This should be within the NGS Dataset folder. 
+- List contents of your results folder `gsutil ls path_to_results`
+- Naviate to the file you wish to download 
+- To download `gsutil -m cp file_to_download . `. This will download your file into your current directory. 
 
 
 
