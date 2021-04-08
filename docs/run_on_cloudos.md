@@ -3,6 +3,16 @@
 ## 0) Create an account & join a team
 [Sign-up to CloudOS](https://deploit.lifebit.ai/register) if you haven't already and join your team workspace. (While you don't have to join a team it is important to have your cloud account linked. Joining your team means that you won't need to do this and can collaborate with colleagues).
 
+[Install SDK](https://cloud.google.com/sdk/docs/quickstart)
+
+## 1) Upload necessary files 
+Generate and upload reads.csv and rmats_pairs.txt - see [instructions](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/run_on_sumner.md) regarding contents of these files.
+
+Use Google Cloud SDK shell to upload:
+ 1) Put reads.csv and rmats_pairs.txt into a folder (ex Dataset_forCloudOS).
+ 2) Open SDK Shell and navigate to master Dataset folder (which contains the "forCloudOS" folder). (Ex - `cd c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder`)
+ 3) To copy the forCloudOS folder to the cloud use `gsutil -m cp -R c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder\Dataset_folder_forCloudOS gs://anczukow-bucket`
+
 ## 2) Run the pipeline
 
 Pipelines can be run in three simple steps:
