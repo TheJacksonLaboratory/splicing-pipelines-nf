@@ -10,9 +10,10 @@ Generate and upload reads.csv and rmats_pairs.txt - see [instructions](https://g
 
 Use Google Cloud SDK shell to upload:
  1) Put reads.csv and rmats_pairs.txt into a folder (ex Dataset_forCloudOS).
- 2) Open SDK Shell and navigate to master Dataset folder (which contains the "forCloudOS" folder). (Ex - `cd c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder`)
- 3) To copy the forCloudOS folder to the cloud use `gsutil -m cp -R c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder\Dataset_folder_forCloudOS gs://anczukow-bucket`
- 4) Make dataset folder on ClouOS. On cloudOS platform, click Data tab on left side. Click green plus sign to make new dataset. Name your dataset with designated Dataset number and name. Click green tab in upper right corner, choose import. Select anczukow-bucket and then select the folder you just uploaded. Using same method, add gtf and star overhangs (located in human/Gencode folder). Note: all necessary files need to be in this dataset folder in order for you to use them in a pipeline run. 
+ -For TCGA, you will use a reads.txt file.
+ 3) Open SDK Shell and navigate to master Dataset folder (which contains the "forCloudOS" folder). (Ex - `cd c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder`)
+ 4) To copy the forCloudOS folder to the cloud use `gsutil -m cp -R c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder\Dataset_folder_forCloudOS gs://anczukow-bucket`
+ 5) Make dataset folder on ClouOS. On cloudOS platform, click Data tab on left side. Click green plus sign to make new dataset. Name your dataset with designated Dataset number and name. Click green tab in upper right corner, choose import. Select anczukow-bucket and then select the folder you just uploaded. Using same method, add gtf and star overhangs (located in human/Gencode folder). Note: all necessary files need to be in this dataset folder in order for you to use them in a pipeline run. 
 
 ## 2) Run the pipeline
 
