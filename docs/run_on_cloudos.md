@@ -3,23 +3,6 @@
 ## 0) Create an account & join a team
 [Sign-up to CloudOS](https://deploit.lifebit.ai/register) if you haven't already and join your team workspace. (While you don't have to join a team it is important to have your cloud account linked. Joining your team means that you won't need to do this and can collaborate with colleagues).
 
-## 1) Import the pipeline
-
-If you navigate to the pipelines page (this can be found in the navigation bar on the left-hand-side) and then can see the pipeline under `MY PIPELINES & TOOLS` continue to step 2
-
-Otherwise, you will need to import it.
-
-To import the pipeline you need to:
-- Go to the pipelines page
-- Click the green `New` button (top right)
-- `Select` the GitHub icon to import the Nextflow pipeline from GitHub
-- Paste the URL of our pipeline [`https://github.com/lifebit-ai/splicing-pipelines-nf`](https://github.com/lifebit-ai/splicing-pipelines-nf)
-- Name the pipeline, eg `splicing-pipeline`
-- (Optional:) enter a pipeline description
-- Click `Next` & `Create pipeline` :tada:
-
-![import_splicing_pip](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/import_splicing_pip.gif)
-
 ## 2) Run the pipeline
 
 Pipelines can be run in three simple steps:
@@ -72,3 +55,6 @@ This page is completely sharable, for example, you can view a successfully compl
 - For one sample to run the first part of the pipeline (having steps - get_tcga_bams, bamtofastq, fastqc, trmmomatic, fastqc_trimmed, star, multiqc) require about 20 GB of results space per sample. So in order to accommodate that you need to specify 20*Number of samples in the CloudOS GUI while selecting an instance.  (Example 100 samples 20*100 = 2000 GB).
 
 - Also accordingly there is a special parameter `--gc_disk_size` which is specific to google-cloud executor. Adds disk-space for few aggregative processes. (default: "200 GB" based on 100 samples. Which is 2GB x Number of Samples)
+
+###Helpful Tips
+[Import the Pipeline](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/import_pipeline) 
