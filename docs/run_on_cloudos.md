@@ -5,66 +5,71 @@
 
 [Install SDK](https://cloud.google.com/sdk/docs/quickstart)
 
-## 1) Upload necessary files 
+## 1) Upload necessary files and make dataset folder on cloud
 Generate and upload reads.csv and rmats_pairs.txt - see [instructions](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/run_on_sumner.md) regarding contents of these files.
 
 Use Google Cloud SDK shell to upload:
  1) Put reads.csv and rmats_pairs.txt into a folder (ex Dataset_forCloudOS).
  2) Open SDK Shell and navigate to master Dataset folder (which contains the "forCloudOS" folder). (Ex - `cd c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder`)
  3) To copy the forCloudOS folder to the cloud use `gsutil -m cp -R c:\Users\urbanl\Box\Anczukow-lab NGS raw data\Dataset_folder\Dataset_folder_forCloudOS gs://anczukow-bucket`
+ 4) Make dataset folder on ClouOS. On cloudOS platform, click Data tab on left side. Click green plus sign to make new dataset. Name your dataset with designated Dataset number and name. Click green tab in upper right corner, choose import. Select anczukow-bucket and then select the folder you just uploaded. Using same method, add gtf and star overhangs (located in human/Gencode folder). Note: all necessary files need to be in this dataset folder in order for you to use them in a pipeline run. 
 
 ## 2) Run the pipeline
 
-Pipelines can be run in three simple steps:
-1. Select the pipeline
-2. Select data & parameters
-3. Run the analysis
+### 2.1) Start new analysis or clone an existing job
 
-### 2.1) Select the pipeline
+If you want to duplicate parameters from an existing job, you can clone that job. To do this, click on the job you wish to clone. Select `clone` in upper right corner. 
 
-Once the pipeline is imported it will automatically be selected.
+If you want to start a new analysis, select `new analysis` in upper right corner of home page. Select pipeline by choosing `TEAM PIPELINES & TOOLS`. Choose pipeline `TheJacksonLaboratory/splicing-pipelines-nf-April2021`. 
 
-Alternatively, you can navigate to the pipelines page. Where you can find the imported pipeline under `MY PIPELINES & TOOLS`. To select the pipeline you need to click the card for the pipeline.
+### 2.2) Enter parameters and run information 
 
-### 2.2) Select data & parameters
+[Refer to usage.md for descriptions of all parameters](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md)
 
-Next we want to link to data & add parameters. You can navigate/import data on CloudOS or simply paste links to data
+Enter all parameters as shown below. [LU BA add note about which parameter is different between cloud and sumner]. There are defaults on CloudOS just like on Sumner, but it is often good to specify each parameter you want. 
 
-For example, for this pipeline you may want to add the following parameters and example data:
-```
-nextflow run https://github.com/lifebit-ai/splicing-pipelines-nf
---reads 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads_google_cloud.csv'
---b1 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b1.txt'
---b2 'https://github.com/lifebit-ai/splicing-pipelines-nf/raw/master/examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/b2.txt'
---star_index 'gs://cloudosinputdata/inputs/splicing-pipelines-nf/references/Homo_sapiens/NCBI/GRCh38/Sequence/STARIndex'
---gtf 'gs://cloudosinputdata/inputs/splicing-pipelines-nf/gencode.v32.primary_assembly.annotation.gtf'
-```
+If analyzing TCGA, GTEX, or SRA, you will need to specify the `download_from` parameter. Each of these three inputs have slightly different processes that are run. For example, TCGA will download the bams and perform bamtofastq step. [For more information](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf)
 
 ![run_splicing_pip](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/run_splicing_pip.gif)
 
-### 2.3) Run the analysis
+There is a special parameter `--gc_disk_size` which is specific to google-cloud executor. Adds disk-space for few aggregative processes. (default: "200 GB" based on 100 samples. Which is 2GB x Number of Samples)
 
-Select a project & instance:
+### 2.3) Choose instance and added storage
 
-Before running the job you must:
+Click `Choose instance`. Select `Cost saving instance` from upper left corner. Select 8 CPU and `n1-standard-8`. 
 
-1. Select (and possible create) the project (which is like a folder used to group multiple analyses/jobs), eg `Splicing`
-2. Choose the instance to set the compute resources such as CPUs & memory. For example, `r4.4xlarge` on AWS
-3. Finally, click Run job
+Make sure to increase `Added storage` if necessary. This is useful for large datasets. 
+
+Below is a guide to choosing storage. You may need more if the files are larger. 
+
+For one sample to run the first part of the pipeline (having steps - get_tcga_bams, bamtofastq, fastqc, trmmomatic, fastqc_trimmed, star, multiqc) require about 20 GB of results space per sample. So in order to accommodate that you need to specify 20*Number of samples in the CloudOS GUI while selecting an instance.  (Example 100 samples 20*100 = 2000 GB).
+
+Click blue confirm button to confirm your selection. 
+
+If you wish to make the job resumable (which is recommended) make sure to check the `make job resumable` box below your instance selection. 
+
+### 2.4) Run the analysis
+
+When all parameters and instances have been selected, click `Run job` in upper right corner. It will take a few minutes to load the job. 
 
 ## 3) Monitor the analysis
 To monitor jobs you can click on the row for any given job. Immediately after running a job its status will be initialising. This normally occurs for ~5mins before you are able to view the progress of the job.
 
-Once on the job monitor page, you can see the progress of the job update in real time. Information such as the resources i.e. memory & CPUs is displayed. Once the job has finished the results can be found in the results tab as well as any reports for select pipelines.
+Once on the job monitor page, you can see the progress of the job update in real time. Information such as the resources i.e. memory & CPUs is displayed.
 
 This page is completely sharable, for example, you can view a successfully completed example job [here](https://cloudos.lifebit.ai/public/jobs/5e87ef928079200103b0a0b8) 
 ![splicing_pip_job_page](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/splicing_pip_job_page.png)
 
-### Important notes while running large number of samples on CloudOS
+## 4) Accessing results
 
-- For one sample to run the first part of the pipeline (having steps - get_tcga_bams, bamtofastq, fastqc, trmmomatic, fastqc_trimmed, star, multiqc) require about 20 GB of results space per sample. So in order to accommodate that you need to specify 20*Number of samples in the CloudOS GUI while selecting an instance.  (Example 100 samples 20*100 = 2000 GB).
+- Select job you wish to download results for. 
+- Select `view log` in Status box. 
+- Scroll over to the right until you see `-w`. Copy this path up until `/work`, which is the path to the work directory. Paste into a text editor.
+- Get path to results by adding `/results/results` to path. See below for example: 
 
-- Also accordingly there is a special parameter `--gc_disk_size` which is specific to google-cloud executor. Adds disk-space for few aggregative processes. (default: "200 GB" based on 100 samples. Which is 2GB x Number of Samples)
 
-###Helpful Tips
+
+
+### Helpful Tips
 [Import the Pipeline](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/import_pipeline) 
+[Information on how to run TCGA]
