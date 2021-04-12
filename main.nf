@@ -883,7 +883,7 @@ if (!params.bams) {
 
     output:
     file "*multiqc_report.html" into multiqc_report
-    file "*_data/"
+    file "*_data/*"
 
     script:
     """
