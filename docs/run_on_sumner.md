@@ -89,6 +89,8 @@ If you already created a `NF_splicing_pipeline.config` during the trim test, you
 
 - To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, `star_index`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 
+- Currently, the two options for genomes are hg38 and mm10. If you wish to use a newer version of the genome, you will need to add this to the post-processing script
+
 ### 5. Run the pipeline!
 
 Ensure you have `NF_splicing_pipeline.config` in this directory. 
