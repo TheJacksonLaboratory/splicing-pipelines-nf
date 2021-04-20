@@ -58,7 +58,7 @@ def helpMessage() {
     Trimmomatic: 
       --minlen                      Drop the read if it is below a specified length (int)
                                     Default parameters turn on --variable-readlength
-                                    To crop all reads and turn off, set minlen = readlength (NOTE: this will turn off soft clipping)                                
+                                    To crop all reads and turn off, set minlen = readlength                                 
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
