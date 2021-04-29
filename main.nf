@@ -111,6 +111,9 @@ def helpMessage() {
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+      --debug                       This option will enable echo of script execution into STDOUT with some additional 
+                                    resource information (such as machine type, memory, cpu and disk space)
+                                    (default: false)
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -192,6 +195,7 @@ log.info "Max memory                  : ${params.max_memory}"
 log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
+log.info "Debug                       : ${params.debug}"
 log.info ""
 log.info "\n"
 
@@ -475,7 +479,6 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/trimmed", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -534,8 +537,33 @@ if (!params.bams){
     STAR to align trimmed reads
   ---------------------------------------------------*/
 
+  if(params.debug) {
+    pre_script_run_resource_status = """
+        echo ==========================
+        echo Debug Summary
+        echo ==========================
+        echo === Machine type ===
+        uname --all 
+        echo === Machine memory ===
+        free -g -t
+        echo === Machine CPU ===
+        nproc --all
+        echo === Pre-script run disk-free ===
+        df -h /
+        echo ==========================
+        """
+    post_script_run_resource_status = """
+        echo === Post-script run disk-free ===
+        df -h /
+        echo ==========================
+        """
+  }else{
+    pre_script_run_resource_status = ""
+    post_script_run_resource_status = ""
+  }
+
+
   process star {
-    echo true
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
@@ -567,15 +595,12 @@ if (!params.bams){
     star_mem = params.star_memory ? params.star_memory : task.memory
     avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
     """
+    ${pre_script_run_resource_status}
+
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
       tar -xvzf $index
     fi
-    
-    # disk size debug
-    echo "pre run check ##########"
-    df -h
-    echo "##########"
 
     STAR \
       --genomeDir ${index.toString().minus('.tar.gz')} \
@@ -608,11 +633,7 @@ if (!params.bams){
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
     
-    # disk size debug
-    echo "post run check ##########"
-    df -h
-    echo "##########"
-    
+    ${post_script_run_resource_status}
     """
   }
 }
