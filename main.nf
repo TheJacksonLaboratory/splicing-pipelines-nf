@@ -921,12 +921,25 @@ process collect_tool_versions {
     echo true
     publishDir "${params.outdir}", mode: 'copy'
 
-    //output:
-    //file("all_tool_versions.txt") into all_tool_versions
+    output:
+    file("versions.txt") into all_tool_versions
 
     script:
     """
-    ls $workflow.projectDir/containers/*/*.yml
+    touch versions.txt
+    for env_yml in \$(ls $workflow.projectDir/containers/*/*.yml);  do 
+      echo \$(grep "sra-tools" \$env_yml) >> versions.txt
+      echo \$(grep "gdc-client" \$env_yml) >> versions.txt
+      echo \$(grep "samtools" \$env_yml) >> versions.txt
+      echo \$(grep "bedtools" \$env_yml) >> versions.txt
+      echo \$(grep "fastqc" \$env_yml) >> versions.txt
+      echo \$(grep "trimmomatic" \$env_yml) >> versions.txt
+      echo \$(grep "star" \$env_yml) >> versions.txt
+      echo \$(grep "stringtie=" \$env_yml) >> versions.txt
+      echo \$(grep "gffread" \$env_yml) >> versions.txt
+      echo \$(grep "rmats=" \$env_yml) >> versions.txt
+      echo \$(grep "multiqc" \$env_yml) >> versions.txt      
+    done
     """
 }
 
