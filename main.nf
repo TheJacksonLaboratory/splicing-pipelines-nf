@@ -914,6 +914,22 @@ if (!params.bams) {
   }
 }
 
+
+// Get tool versions
+
+process collect_tool_versions {
+    echo true
+    publishDir "${params.outdir}", mode: 'copy'
+
+    //output:
+    //file("all_tool_versions.txt") into all_tool_versions
+
+    script:
+    """
+    ls $workflow.projectDir/containers/*/*.yml
+    """
+}
+
 // define helper function
 def download_from(db) {
   download_from.toLowerCase().contains(db)
