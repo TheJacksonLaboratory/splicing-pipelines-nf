@@ -917,32 +917,41 @@ if (!params.bams) {
 
 // Get tool versions
 
-process collect_tool_versions {
-    echo true
-    publishDir "${params.outdir}", mode: 'copy'
+process collect_tool_versions_env1 {
+    // TODO: This collects tool versions for only one base enviroment/container - 'gcr.io/nextflow-250616/splicing-pipelines-nf:gawk'
+    // need to get tool versions from other enviroment/container
 
     output:
-    file("tool_versions.txt") into all_tool_versions
+    file("tool_versions.txt") into ch_tool_versions
 
     script:
-    // TODO: This `../../../` will ultimately should be replaced with workflow.projectDir
     """
-    touch versions.txt
-    for env_yml in \$(ls ../../../containers/*/*.yml);  do 
-      echo \$(grep "sra-tools" \$env_yml) >> versions.txt
-      echo \$(grep "gdc-client" \$env_yml) >> versions.txt
-      echo \$(grep "samtools" \$env_yml) >> versions.txt
-      echo \$(grep "bedtools" \$env_yml) >> versions.txt
-      echo \$(grep "fastqc" \$env_yml) >> versions.txt
-      echo \$(grep "trimmomatic" \$env_yml) >> versions.txt
-      echo \$(grep "star" \$env_yml) >> versions.txt
-      echo \$(grep "stringtie=" \$env_yml) >> versions.txt
-      echo \$(grep "gffread" \$env_yml) >> versions.txt
-      echo \$(grep "rmats=" \$env_yml) >> versions.txt
-      echo \$(grep "multiqc" \$env_yml) >> versions.txt      
-    done
+    touch tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep fastqc | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep trimmomatic | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep star | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep samtools | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep deeptools | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep multiqc | tail -n 1 >> tool_versions.txt
+    conda list -n splicing-pipelines-nf | grep gffread | tail -n 1 >> tool_versions.txt
+    echo -e "stringtie" ' \t\t\t\t ' \$(stringtie --version) >> tool_versions.txt
+    """
+}
 
-    awk 'NF' versions.txt > tool_versions.txt
+process collect_tool_versions_env2 {
+    echo true
+    publishDir "${params.outdir}", mode: 'copy'
+    
+
+    input:
+    file(tool_versions) from ch_tool_versions
+
+    output:
+    file("tool_versions.txt") into ch_all_tool_versions
+
+    script:
+    """
+    conda list -n rmats4 | grep rmats | tail -n 1 >> tool_versions.txt
     """
 }
 
