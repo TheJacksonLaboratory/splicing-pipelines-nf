@@ -925,9 +925,10 @@ process collect_tool_versions {
     file("versions.txt") into all_tool_versions
 
     script:
+    // TODO: This `../../../` will ultimately should be replaced with workflow.projectDir
     """
     touch versions.txt
-    for env_yml in \$(ls $workflow.projectDir/containers/*/*.yml);  do 
+    for env_yml in \$(ls ../../../containers/*/*.yml);  do 
       echo \$(grep "sra-tools" \$env_yml) >> versions.txt
       echo \$(grep "gdc-client" \$env_yml) >> versions.txt
       echo \$(grep "samtools" \$env_yml) >> versions.txt
