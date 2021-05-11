@@ -922,7 +922,7 @@ process collect_tool_versions {
     publishDir "${params.outdir}", mode: 'copy'
 
     output:
-    file("versions.txt") into all_tool_versions
+    file("tool_versions.txt") into all_tool_versions
 
     script:
     // TODO: This `../../../` will ultimately should be replaced with workflow.projectDir
@@ -941,6 +941,8 @@ process collect_tool_versions {
       echo \$(grep "rmats=" \$env_yml) >> versions.txt
       echo \$(grep "multiqc" \$env_yml) >> versions.txt      
     done
+
+    awk 'NF' versions.txt > tool_versions.txt
     """
 }
 
