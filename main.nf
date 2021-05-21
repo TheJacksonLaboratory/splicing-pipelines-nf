@@ -627,7 +627,7 @@ if (!params.bams){
       --alignEndsType EndToEnd \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
-      --quantMode GeneCounts
+      --quantMode GeneCounts \
       --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
     chmod a+rw $name*
