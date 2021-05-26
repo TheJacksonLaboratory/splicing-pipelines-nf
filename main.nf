@@ -580,6 +580,7 @@ if (!params.bams){
     output:
     set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
     file "*.out" into alignment_logs
+    file "*ReadsPerGene.out.tab"
     file "*SJ.out.tab"
     file "*Log.out" into star_log
     file "*Unmapped*" optional true
@@ -626,6 +627,7 @@ if (!params.bams){
       --alignEndsType EndToEnd \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
+      --quantMode GeneCounts \
       --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
     chmod a+rw $name*
