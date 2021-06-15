@@ -799,7 +799,7 @@ if (!params.test) {
       """
       echo $b1_bams > b1.txt
       $b2_cmd
-      ./opt/conda/envs/rmats4/bin/python /opt/conda/envs/rmats4/bin/rmats.py \
+      rmats.py \
         --b1 b1.txt $b2_flag \
         --gtf $gtf \
         --od ./ \
@@ -859,7 +859,7 @@ if (!params.test) {
       """
       ls $bam1 > b1.txt
       ls $bam2 > b2.txt
-      ./opt/conda/envs/rmats4/bin/python /opt/conda/envs/rmats4/bin/rmats.py \
+      rmats.py \
         --b1 b1.txt \
         --b2 b2.txt \
         --gtf $gtf \
