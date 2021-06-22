@@ -72,4 +72,4 @@ Documentation about the pipeline, found in the [`docs/`](docs) directory:
     * [Running on CloudOS](docs/run_on_cloudos.md)
 
 ## Pipeline DAG
-![splicing_pip_dag](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/splicing_pip_dag.png)
+![splicing_pip_dag](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/c23ee9552eb033dec087fb3b6fb01fe26716ce29/DAG.png)
