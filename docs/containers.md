@@ -42,3 +42,10 @@ docker push <registry_user>/<image_name>:<tag>
 gcloud auth login
 docker push gcr.io/<project_id>/<image_name>:<tag>
 ```
+
+
+## Troubleshooting Singularity Images on Sumner
+On Sumner, you may need to remove old singularity images from the cache dir in order to implement updated/new image:
+- Having a cache dir is a Nextflow thing. The idea of this is to save the images to prevent needing to pull the images on each execution which would be really slow 
+- You should only need to clear the cache as when the containers are updated.
+- We ended up setting the cacheDir to cacheDir = "/projects/anczukow-lab/.singularity_cache/"
