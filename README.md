@@ -1,5 +1,5 @@
 # splicing-pipelines-nf
-Anczukow-lab repository for the Nextflow splicing pipeline with `rMATS 4.0.2`.
+Anczukow-lab repository for the Nextflow splicing pipeline with `rMATS 4.1.0` and `rMATS 4.1.1`.
 
 ## Introduction
 
@@ -25,7 +25,13 @@ The input reads to this pipeline can come from 3 input sources:
 cd /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf
 ```
 
-2) `pull` any new changes. *Note*: you will need your github username and password
+2) `status` to check branch and if there are unmerged changes. *Note*: `master` is the main branch. 
+
+```bash
+git status
+```
+
+3) `pull` any new changes. *Note*: you will need your github username and password
 
 ```bash
 git pull
