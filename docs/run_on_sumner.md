@@ -23,9 +23,9 @@ This pipeline can be run on Sumner in three ways:
 ## Running full pipeline with FASTQ input
 ### 1. Create a new run directory
 
-All analyses should be run in `/projects/anczukow-lab/NGS_analysis`. If your dataset already has a folder here, use that directory. Otherwise, create a new directory with the same name found in the `/projects/anczukow-lab/fastq_files/` folder. 
+All analyses should be run in `/projects/anczukow-lab/NGS_analysis`. If your dataset already has a folder here, use that directory. Otherwise, create a new directory with the same name found in the `/projects/anczukow-lab/fastq_files/` folder (Example DATASET Directory - `/projects/anczukow-lab/NGS_analysis/Dataset_4_MYC_MCF10A`). 
 
-Create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519`.  
+Create a new run directory within the appropriate dataset directory with the following format: runNumber_initials_date `run1_LU_20200519` (Example RUN Directory - `/projects/anczukow-lab/NGS_analysis/Dataset_4_MYC_MCF10A/run1_LU_20200519`).  
 
 ### 2. Create/Locate `reads.csv` file for your dataset
 
@@ -43,7 +43,7 @@ There should be one `reads.csv` file per dataset. If your dataset already has a 
 
 Each rMATS comparison must be specified with a comparison name as well as the `sample_id` as specified in the [`reads`](../examples/testdata/human_test/human_test_reps.csv) file. See example [`rmats_pairs.txt`](../examples/human_test/rmats_pairs.txt). Each line in the file corresponds to an rMATS execution. The first column corresponds to a unique name/id for the rMATS comparison (this will be used for the output folder/file names)
 
-* Replicates should be comma separated and the samples for the `b1` / `b2` files i.e. case and control should be space seperated
+* Replicates should be comma separated and the samples for the `b1` / `b2` files i.e. case and control should be space separated
     <details>
     <summary>See examples</summary>
 
@@ -79,7 +79,7 @@ If you already created a `NF_splicing_pipeline.config` during the trim test, you
 
 **VERY IMPORTANT NOTES***
 
-- Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMTERS
+- Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMETERS
 
 - You must name your config file `NF_splicing_pipeline.config`
 
@@ -89,7 +89,7 @@ If you already created a `NF_splicing_pipeline.config` during the trim test, you
 
 - To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, `star_index`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
 
-- Currently, the two options for genomes are hg38 and mm10. If you wish to use a newer version of the genome, you will need to add this to the post-processing script
+- Currently, the two options for genomes are hg38 and mm10. If you wish to use a newer version of the genome, you will need to add this to the post-processing script.
 
 ### 5. Run the pipeline!
 
