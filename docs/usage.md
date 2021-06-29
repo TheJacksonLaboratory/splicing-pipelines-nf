@@ -96,6 +96,8 @@ Input files:
   --run_name                    User specified name used as prefix for output files
                                 (defaut: no prefix, only date and time)
   --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
+  				false should be used to run local files on the HPC (Sumner).
+				'TCGA' can also be used to download GDC data including HCMI data.
                                 (default: false)
   --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
   				or credentials.josn file in case of 'GEN3-DRS'
