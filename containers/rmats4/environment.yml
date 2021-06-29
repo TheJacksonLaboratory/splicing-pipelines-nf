@@ -4,6 +4,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - rmats=4.1.0
+  - rmats=4.1.1
   - bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.1
   - bioconductor-bsgenome.mmusculus.ucsc.mm10=1.4.0

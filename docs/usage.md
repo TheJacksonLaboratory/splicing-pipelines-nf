@@ -112,15 +112,15 @@ Main arguments:
                                 (default: false)
   --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
                                 (default: 'first-strand')
-  -profile                      Configuration profile to use. Can use multiple (comma separated, string)
-                                Available: base, docker, sumner, test and more.
   --readlength                  Read length - Note that all reads will be cropped to this length(int)
                                 (default: no read length specified)
-                                
+  -profile                      Configuration profile to use. Can use multiple (comma separated, string)
+                                Available: base, docker, sumner, test and more.
+                        
 Trimmomatic: 
   --minlen                      Drop the read if it is below a specified length (int)
 				Default parameters turn on --variable-readlength
-				To crop all reads and turn off, set minlen = readlength                               
+				To crop all reads and turn off --variable-readlength, set minlen = readlength                               
                                 (default: 20)
   --slidingwindow               Perform a sliding window trimming approach (bool)
                                 (default: true)
@@ -138,6 +138,11 @@ Star:
                                 (default: 0.66)
   --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
                                 (default: 3)
+  --soft_clipping               Enables soft clipping (bool)
+                                If true, the STAR parameter will be --alignEndsType Local and the rMATS parameter --allow-clipping will be added.
+				If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS parameter is added.
+				NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping off if reads need to be same length. Variable read length   	                                 parameter is turned on in rMATS when minlen does not equal readlength.
+                                (default: true)
   --star_memory                 Max memory to be used by STAR to sort BAM files.
                                 (default: Available task memory)
 
@@ -169,11 +174,14 @@ Other:
                                 (default: false)
   --outdir                      The output directory where the results will be saved (string)
                                 (default: directory where you submit the job)
-  --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
-                                (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
   --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)
                                 Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
                                 (default: 20.h)
+  --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
+                                (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+  --debug                       This option will enable echo of script execution into STDOUT with some additional 
+                                resource information (such as machine type, memory, cpu and disk space)
+                                (default: false)
 
 	    
 ```

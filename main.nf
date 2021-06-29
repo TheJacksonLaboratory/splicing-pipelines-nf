@@ -74,8 +74,10 @@ def helpMessage() {
                                     (default: readlength - 1)
       --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
                                     (default: 0.66)
-      --sjdbOverhangMin              Controls --alignSJDBoverhangMin (int)
+      --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
                                     (default: 3)
+      --soft_clipping               Enables soft clipping (bool)
+                                    (default: true)
       --star_memory                 Max memory to be used by STAR to sort BAM files.
                                     (default: Available task memory)
 
@@ -169,6 +171,7 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
+log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
@@ -592,6 +595,7 @@ if (!params.bams){
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
     xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
     avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
@@ -624,7 +628,7 @@ if (!params.bams){
       --outBAMsortingThreadN $task.cpus \
       --outFilterType BySJout \
       --twopassMode Basic \
-      --alignEndsType EndToEnd \
+      --alignEndsType $endsType \
       --alignIntronMax 1000000 \
       --outReadsUnmapped Fastx \
       --quantMode GeneCounts \
@@ -783,6 +787,7 @@ if (!params.test) {
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
+      allow_clipping = params.soft_clipping ? '--allow-clipping' : ''
       if (b1_only) {
         b1_bams = bams.join(",")
         b2_cmd = ''
@@ -808,7 +813,7 @@ if (!params.test) {
         --nthread $task.cpus \
         --readLength ${params.readlength} \
         --mil ${params.mil} \
-        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS $allow_clipping
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       $b2_config_cmd
