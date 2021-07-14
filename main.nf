@@ -199,6 +199,7 @@ log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info "Debug                       : ${params.debug}"
+log.info "Workdir cleanup             : ${params.cleanup}"
 log.info ""
 log.info "\n"
 
