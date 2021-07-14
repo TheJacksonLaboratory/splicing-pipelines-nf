@@ -116,6 +116,14 @@ def helpMessage() {
       --debug                       This option will enable echo of script execution into STDOUT with some additional 
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
+      --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull completion.
+                                    All intermediate files from nexftlow processes' workdirs will be cleared, staging folder with staged
+                                    files will not be cleared.
+                                    If pipeline is completed with errors or interrupted cleanup will not be executed. Following successfull run
+                                    resumed from the failed run with --cleanup option enabled will only clear folders of processess created in
+                                    the latest run, it will not clear cached folders coming from previous pipleine runs.
+                                    (default: false)
+
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -199,6 +207,7 @@ log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info "Debug                       : ${params.debug}"
+log.info "Workdir cleanup             : ${params.cleanup}"
 log.info ""
 log.info "\n"
 
