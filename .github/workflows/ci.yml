@@ -14,7 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: eWaterCycle/setup-singularity@v6
-      - name: Setup singularity
         with:
           singularity-version: ${{ matrix.singularity_version }}
       - name: Install Nextflow
