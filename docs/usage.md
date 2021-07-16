@@ -6,6 +6,9 @@ See [here](run_on_sumner.md)
 ## For running the pipeline on CloudOS
 See [here](run_on_cloudos.md)
 
+## For running the pipeline locally
+See [here](run_locally.md)
+
 # Nextflow parameters
 
 Nextflow parameters can be provided in one of two ways:
