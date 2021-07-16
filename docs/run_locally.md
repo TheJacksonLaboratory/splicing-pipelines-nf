@@ -69,5 +69,5 @@ nextflow run . -profile ultra_quick_test,docker --cleanup
 
 ### 2.2) Quick test with Docker container engine
 ```bash
-nextflow run . -profile ultra_quick_test,singularity_local --cleanup
+nextflow run . -profile ultra_quick_test,singularity --cleanup
 ```
