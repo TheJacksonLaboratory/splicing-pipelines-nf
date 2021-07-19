@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         nxf_ver: ['19.04.0', '']
-        max_retries: [1, 10]
+        max_retries: [1]
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -25,7 +25,7 @@ jobs:
       matrix:
         singularity_version: ['3.6.4']
         nxf_ver: ['19.04.0', '']
-        max_retries: [1, 10]
+        max_retries: [1]
     steps:
       - uses: actions/checkout@v1
       - uses: eWaterCycle/setup-singularity@v6
