@@ -1,6 +1,6 @@
 name: splicing-pipelines-nf CI
 # This workflow is triggered on pushes and PRs to the repository.
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   docker:
