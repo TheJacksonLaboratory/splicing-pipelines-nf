@@ -76,6 +76,7 @@ Documentation about the pipeline, found in the [`docs/`](docs) directory:
 3. [Running the pipeline](docs/usage.md)
     * [Running on Sumner](docs/run_on_sumner.md)
     * [Running on CloudOS](docs/run_on_cloudos.md)
+    * [Running locally](docs/run_locally.md)
 
 ## Pipeline DAG
 <img src="https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/c23ee9552eb033dec087fb3b6fb01fe26716ce29/DAG.png" alt="splicing_pip_dag" align = "left" width="600"/>
