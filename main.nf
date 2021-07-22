@@ -917,14 +917,16 @@ if (!params.bams) {
     file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
     file ('alignment/*') from alignment_logs.collect().ifEmpty([])
     file (multiqc_config) from multiqc_config
+    file ('trimmomatic/*') from trimmomatic_logs.collect()
 
     output:
     file "*multiqc_report.html" into multiqc_report
     file "*_data/*"
+    file ('trimmomatic')
 
     script:
     """
-    multiqc . --config $multiqc_config -m fastqc -m star
+    multiqc . --config $multiqc_config -m fastqc -m star -m trimmomatic
     cp multiqc_report.html ${run_prefix}_multiqc_report.html
     """
   }
