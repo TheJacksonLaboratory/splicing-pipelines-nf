@@ -11,8 +11,8 @@ module_order:
         target: ''
         path_filters:
             - '*_trimmed*_fastqc.zip'
-    - star
     - trimmomatic:
         name: 'Trimmomatic'
         path_filters:
             - '*_trimmomatic.log'
+    - star
