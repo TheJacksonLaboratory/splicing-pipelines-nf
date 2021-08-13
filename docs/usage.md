@@ -117,6 +117,7 @@ Main arguments:
                                 (default: false)
   --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
                                 (default: 'first-strand')
+				'first-strand' refers to RF/fr-firststrand in this pipeline.
   --readlength                  Read length - Note that all reads will be cropped to this length(int)
                                 (default: no read length specified)
   -profile                      Configuration profile to use. Can use multiple (comma separated, string)
@@ -239,7 +240,5 @@ Here `query_list.csv` should look something like -
 
 ```csv
 file_name,sequencing_assay,data_format,file_name,sample_id,participant_id,tissue,age,gender
-GTEX-11EM3-1326-SM-5N9C6,RNA-Seq,bam,GTEX-11EM3-1326-SM-5N9C6.Aligned.sortedByCoord.out.patched.md.bam,GTEX-11EM3-1326-SM-5N9C6,GTEX-11EM3,Breast,21,Female
-GTEX-RU1J-0626-SM-4WAWY,RNA-Seq,bam,GTEX-RU1J-0626-SM-4WAWY.Aligned.sortedByCoord.out.patched.md.bam,GTEX-RU1J-0626-SM-4WAWY,GTEX-RU1J,Breast,21,Female
-GTEX-ZTPG-2826-SM-57WGA,RNA-Seq,bam,GTEX-ZTPG-2826-SM-57WGA.Aligned.sortedByCoord.out.patched.md.bam,GTEX-ZTPG-2826-SM-57WGA,GTEX-ZTPG,Breast,21,Female
+GTEX-PPPP-XXX-XX-XXXXX,RNA-Seq,bam,GTEX-PPPP-XXX-XX-XXXXX.Aligned.sortedByCoord.out.patched.md.bam,GTEX-PPPP-XXX-XX-XXXXX,GTEX-PPPP,Breast,21,Female
 ```
