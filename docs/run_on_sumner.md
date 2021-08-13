@@ -19,6 +19,7 @@ This pipeline can be run on Sumner in three ways:
   2. Input a 'reads' file to input fastq files and run pipeline until STAR mapping step with 'test' parameter.
   3. Input a 'bams' file to input bams and run steps of pipeline following STAR mapping (Stringtie and rMATS).
 
+The `cacheDir` stores singularity images. This is set in splicing-pipelines-nf/conf/executors/sumner.config. For non-Anczukow users, this should be changed to a home directory.
 
 ## Running full pipeline with FASTQ input
 ### 1. Create a new run directory
@@ -81,13 +82,15 @@ If you already created a `NF_splicing_pipeline.config` during the trim test, you
 
 - Each time you run the pipeline, go through all possible parameters to ensure you are creating a config ideal for your data. If you do not specify a value for a parameter, the default will be used. All parameters used can be found in the `log` file. WHEN IN DOUBT, SPECIFY ALL PARAMETERS
 
-- You must name your config file `NF_splicing_pipeline.config`
+- You must name your config file `NF_splicing_pipeline.config` (as specified in main.pbs)
 
 - Your `NF_splicing_pipeline.config` must be in the directory that you are running your analysis.
 
-- The `readlength` here should be the length of the reads - if read leangth is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing
+- The `readlength` here should be the length of the reads - if read length is not a multiple of 5 (ex- 76 or 151), set 'readlength' to nearest multiple of 5 (ex- 75 or 150). This extra base is an artifact of Illumina sequencing
 
 - To run full pipeline, you **must** specify the following: `reads.csv`, `rmats_pairs.txt`, `readlength`, `assembly_name`, `star_index`, and `reference gtf`. This string can be a relative path from the directory in which you run Nextflow in, an absolute path or a link. 
+
+- The star indexes must be generated prior to executing the pipeline (this is a separate step). 
 
 - Currently, the two options for genomes are hg38 and mm10. If you wish to use a newer version of the genome, you will need to add this to the post-processing script.
 
@@ -106,7 +109,7 @@ Whereas parameters are set on the command-line using double dash options eg `--r
 
 You can see some of these options [here](https://www.nextflow.io/docs/latest/tracing.html) in the Nextflow documentation.
 
-Some useful ones include:
+Some useful ones include (specified in main.pbs):
 - `-resume` which will [resume](https://www.nextflow.io/docs/latest/getstarted.html?highlight=resume#modify-and-resume) any cached processes that have not been changed
 - `-with-trace` eg `-with-trace trace.txt` which gives a [trace report](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#trace-report) for resource consumption by the pipeline
 - `-with-dag` eg `-with-dag flowchart.png` which produces the [DAG visualisation](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#dag-visualisation) graph showing each of the different processes and the connections between them (the channels)
