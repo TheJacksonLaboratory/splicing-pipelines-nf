@@ -178,6 +178,7 @@ Other:
   --skipMultiQC                 Skip MultiQC (bool)
                                 (default: false)
   --outdir                      The output directory where the results will be saved (string)
+  				On Sumner, this must be set in the main.pbs. NF_splicing_pipeline.config will not overwrite main.pbs.
                                 (default: directory where you submit the job)
   --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)
                                 Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
