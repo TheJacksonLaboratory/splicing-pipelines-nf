@@ -992,11 +992,8 @@ if (!params.bams) {
     output:
     file "*multiqc_report.html" into multiqc_report
     file "*_data/*"
-<<<<<<< HEAD
     file ('trimmomatic')
-=======
     file("command-logs-*") optional true
->>>>>>> 2357129... Implements .command.* save in results/
 
     script:
     """
