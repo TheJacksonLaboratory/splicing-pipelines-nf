@@ -310,6 +310,8 @@ if ( download_from('gen3-drs')) {
 
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
+    publishDir "${params.output}/process-logs/get_accession/", pattern:"command-logs-*", mode: 'copy'
+
     tag "${accession}"
     label 'tiny_memory'
     
@@ -319,6 +321,7 @@ if ( download_from('gtex') || download_from('sra') ) {
     
     output:
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+	  file("command-logs-*") optional true
 
     script:
     def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
@@ -327,6 +330,9 @@ if ( download_from('gtex') || download_from('sra') ) {
     prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
     fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 }
@@ -339,7 +345,8 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      
+      publishDir "${params.output}/process-logs/gen3_drs_fasp/", pattern:"command-logs-*", mode: 'copy'
+
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
@@ -347,6 +354,7 @@ if ( download_from('gen3-drs')) {
       
       output:
       set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      file("command-logs-*") optional true
       
       script:
       """
@@ -367,6 +375,9 @@ if ( download_from('gen3-drs')) {
           if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
           samtools view -b -T ${genome_fasta} -o \${sample_name}.bam \${sample_name}.cram
       fi
+
+      # save .command.* logs
+      ${params.savescript}
       """
   }
 } 
@@ -379,6 +390,7 @@ if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
     label 'low_memory'
+    publishDir "${params.output}/process-logs/get_tcga_bams/", pattern:"command-logs-*", mode: 'copy'
     
     input:
     val(accession) from accession_ids
@@ -387,6 +399,7 @@ if (download_from('tcga')) {
     output:
     set val(accession), file("*.bam"), env(singleEnd) into bamtofastq
     file("${accession}_paired_info.csv") into paired_info
+	  file("command-logs-*") optional true
 
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
@@ -407,6 +420,9 @@ if (download_from('tcga')) {
 
     echo "sample_id,n_single_reads,n_paired_reads,single_end" > ${accession}_paired_info.csv
     echo "$accession,\$n_single_reads,\$n_paired_reads,\$singleEnd" >> ${accession}_paired_info.csv
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -422,12 +438,14 @@ if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
-    
+    publishDir "${params.output}/process-logs/bamtofastq/", pattern:"command-logs-*", mode: 'copy'
+
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
     
     output:
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+	  file("command-logs-*") optional true
 
     script:
     // samtools takes memory per thread
@@ -440,6 +458,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
       pigz *.fastq
+
+      # save .command.* logs
+      ${params.savescript}
       """
     } else {
       """
@@ -449,6 +470,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
         -fq ${name}_1.fastq \
         -fq2 ${name}_2.fastq
       pigz *.fastq
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
   }
@@ -464,9 +488,11 @@ if (!params.bams){
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/QC/raw", mode: 'copy'
+    publishDir "${params.output}/process-logs/fastqc/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
+	  file("command-logs-*") optional true
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
@@ -474,6 +500,9 @@ if (!params.bams){
     script:
     """
     fastqc --casava --threads $task.cpus $reads
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -491,6 +520,7 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
+    publishDir "${params.output}/process-logs/trimmomatic/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -498,6 +528,7 @@ if (!params.bams){
     output:
     set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
+	  file("command-logs-*") optional true
 
     script:
     mode = singleEnd ? 'SE' : 'PE'
@@ -521,6 +552,9 @@ if (!params.bams){
 
     mkdir logs
     cp .command.log logs/${name}_trimmomatic.log
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -532,16 +566,21 @@ if (!params.bams){
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
+    publishDir "${params.output}/process-logs/fastqc_trimmed/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_trimmed
+    file("command-logs-*") optional true
 
     script:
     """
     fastqc --casava --threads $task.cpus $reads
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -578,6 +617,7 @@ if (!params.bams){
   process star {
     tag "$name"
     label 'mega_memory'
+    publishDir "${params.output}/process-logs/star/", pattern:"command-logs-*", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
@@ -597,6 +637,7 @@ if (!params.bams){
     file "*Log.out" into star_log
     file "*Unmapped*" optional true
     file "${name}.bw"
+    file("command-logs-*") optional true
 
     script:
     // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
@@ -647,8 +688,11 @@ if (!params.bams){
     $xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
-    
+
     ${post_script_run_resource_status}
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 }
@@ -663,6 +707,7 @@ if (!params.test) {
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    publishDir "${params.output}/process-logs/stringtie/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -671,12 +716,16 @@ if (!params.test) {
     output:
     file "${name}.gtf" into stringtie_gtf
     file "${name}_for_DGE.gtf" into stringtie_dge_gtf
+    file("command-logs-*") optional true
 
     script: 
     rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
     """
     stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
     stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -687,9 +736,11 @@ if (!params.test) {
   process prep_de {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+    publishDir "${params.output}/process-logs/prep_de/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
+    file("command-logs-*") optional true
 
     output:
     file "sample_lst.txt"
@@ -703,6 +754,9 @@ if (!params.test) {
     paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
     prepDE.py -i sample_lst.txt  -l $params.readlength \
               -g ${run_prefix}_gene_count_matrix.csv -t ${run_prefix}_transcript_count_matrix.csv
+
+    # save .command.* logs
+    ${params.savescript}
     """
   } 
 
@@ -713,6 +767,7 @@ if (!params.test) {
   process stringtie_merge {
     label 'mid_memory'
     publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
+    publishDir "${params.output}/process-logs/stringtie_merge/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
@@ -721,6 +776,7 @@ if (!params.test) {
     output:
     file "gffcmp.annotated.corrected.gtf" into merged_gtf
     file "gffcmp.*" into gffcmp
+    file("command-logs-*") optional true
 
     script:
     """
@@ -729,6 +785,9 @@ if (!params.test) {
     gffcompare -R -V -r $gtf stringtie_merged.gtf
     correct_gene_names.R
     gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -778,6 +837,7 @@ if (!params.test) {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      publishDir "${params.output}/process-logs/rmats/", pattern:"command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -788,6 +848,7 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into rmats_out
+      file("command-logs-*") optional true
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
@@ -834,6 +895,9 @@ if (!params.test) {
       echo rmats_id        ${rmats_id} >> \$rmats_config
       
       LU_postprocessing.R
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
 
@@ -850,6 +914,7 @@ if (!params.test) {
       tag "$name1 $name2"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+      publishDir "${params.output}/process-logs/paired_rmats/", pattern:"command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -860,6 +925,7 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into paired_rmats_out
+      file("command-logs-*") optional true
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
@@ -895,6 +961,9 @@ if (!params.test) {
       echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
       
       LU_postprocessing.R
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
   }
@@ -908,6 +977,7 @@ if (!params.bams) {
   process multiqc {
     label 'mega_memory'
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
+    publishDir "${params.output}/process-logs/multiqc/", pattern:"command-logs-*", mode: 'copy'
 
     when:
     !params.skipMultiQC
@@ -922,12 +992,19 @@ if (!params.bams) {
     output:
     file "*multiqc_report.html" into multiqc_report
     file "*_data/*"
+<<<<<<< HEAD
     file ('trimmomatic')
+=======
+    file("command-logs-*") optional true
+>>>>>>> 2357129... Implements .command.* save in results/
 
     script:
     """
     multiqc . --config $multiqc_config -m fastqc -m star -m trimmomatic
     cp multiqc_report.html ${run_prefix}_multiqc_report.html
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 }
@@ -938,9 +1015,11 @@ if (!params.bams) {
 process collect_tool_versions_env1 {
     // TODO: This collects tool versions for only one base enviroment/container - 'gcr.io/nextflow-250616/splicing-pipelines-nf:gawk'
     // need to get tool versions from other enviroment/container
+    publishDir "${params.output}/process-logs/collect_tool_versions_env1/", pattern:"command-logs-*", mode: 'copy'
 
     output:
     file("tool_versions.txt") into ch_tool_versions
+    file("command-logs-*") optional true
 
     script:
     """
@@ -953,23 +1032,30 @@ process collect_tool_versions_env1 {
     conda list -n splicing-pipelines-nf | grep multiqc | tail -n 1 >> tool_versions.txt
     conda list -n splicing-pipelines-nf | grep gffread | tail -n 1 >> tool_versions.txt
     echo -e "stringtie" ' \t\t\t\t ' \$(stringtie --version) >> tool_versions.txt
+
+    # save .command.* logs
+    ${params.savescript}
     """
 }
 
 process collect_tool_versions_env2 {
     echo true
     publishDir "${params.outdir}", mode: 'copy'
-    
+    publishDir "${params.output}/process-logs/collect_tool_versions_env2/", pattern:"command-logs-*", mode: 'copy'
 
     input:
     file(tool_versions) from ch_tool_versions
 
     output:
     file("tool_versions.txt") into ch_all_tool_versions
+    file("command-logs-*") optional true
 
     script:
     """
     conda list -n rmats4 | grep rmats | tail -n 1 >> tool_versions.txt
+
+    # save .command.* logs
+    ${params.savescript}
     """
 }
 
