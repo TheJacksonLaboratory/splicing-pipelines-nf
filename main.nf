@@ -492,10 +492,10 @@ if (!params.bams){
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
-	  file("command-logs-*") optional true
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
+    file("command-logs-*") optional true
 
     script:
     """
