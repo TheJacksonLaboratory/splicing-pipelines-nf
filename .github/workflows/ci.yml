@@ -6,8 +6,8 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         nxf_ver: ['20.01.0', '']
         test_type: ['ultra_quick_test', 'sra_test']
     steps:
