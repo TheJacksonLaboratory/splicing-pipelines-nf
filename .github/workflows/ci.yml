@@ -39,4 +39,4 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity --echo true
