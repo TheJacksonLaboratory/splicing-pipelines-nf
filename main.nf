@@ -310,7 +310,7 @@ if ( download_from('gen3-drs')) {
 
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     tag "${accession}"
     label 'tiny_memory'
@@ -345,7 +345,7 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
@@ -390,7 +390,7 @@ if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
     label 'low_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
     
     input:
     val(accession) from accession_ids
@@ -438,7 +438,7 @@ if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
@@ -487,8 +487,8 @@ if (!params.bams){
   process fastqc {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/raw", pattern:"*_fastqc.{zip,html}", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/QC/raw", pattern: "*_fastqc.{zip,html}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
@@ -520,7 +520,7 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -565,8 +565,8 @@ if (!params.bams){
   process fastqc_trimmed {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/trimmed", pattern:"*_fastqc.{zip,html}", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/QC/trimmed", pattern: "*_fastqc.{zip,html}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
@@ -617,8 +617,8 @@ if (!params.bams){
   process star {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*" , mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
           if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
@@ -706,8 +706,8 @@ if (!params.test) {
   process stringtie {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -735,8 +735,8 @@ if (!params.test) {
 
   process prep_de {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/count_matrix", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
@@ -766,8 +766,8 @@ if (!params.test) {
 
   process stringtie_merge {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/stringtie_merge", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
@@ -836,8 +836,8 @@ if (!params.test) {
     process rmats {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -913,8 +913,8 @@ if (!params.test) {
     process paired_rmats {
       tag "$name1 $name2"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -976,8 +976,8 @@ if (!params.test) {
 if (!params.bams) {
   process multiqc {
     label 'mega_memory'
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/MultiQC", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     when:
     !params.skipMultiQC
@@ -1012,7 +1012,7 @@ if (!params.bams) {
 process collect_tool_versions_env1 {
     // TODO: This collects tool versions for only one base enviroment/container - 'gcr.io/nextflow-250616/splicing-pipelines-nf:gawk'
     // need to get tool versions from other enviroment/container
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     output:
     file("tool_versions.txt") into ch_tool_versions
@@ -1037,8 +1037,8 @@ process collect_tool_versions_env1 {
 
 process collect_tool_versions_env2 {
     echo true
-    publishDir "${params.outdir}/tool-versions/env2/", pattern:"(!?command-logs-)*", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern:"command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/tool-versions/env2/", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(tool_versions) from ch_tool_versions
