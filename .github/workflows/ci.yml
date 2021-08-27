@@ -19,6 +19,7 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,docker
+          echo "Results tree view:" ; tree -a results
   singularity:
     runs-on: ubuntu-latest
     strategy:
@@ -38,3 +39,4 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,singularity
+          echo "Results tree view:" ; tree -a results
