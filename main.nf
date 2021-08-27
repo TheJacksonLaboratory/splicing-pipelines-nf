@@ -304,6 +304,13 @@ if ( download_from('gen3-drs')) {
         .set {ch_genome_fasta}
 }
 
+if ( download_from('sra')) {
+    Channel
+        .value(file(params.sra_config_file))
+        .set {ch_sra_config_file}
+}
+
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
@@ -316,6 +323,7 @@ if ( download_from('gtex') || download_from('sra') ) {
     input:
     val(accession) from accession_ids
     each file(key_file) from key_file
+    file(sra_config) from ch_sra_config_file
     
     output:
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
@@ -324,6 +332,8 @@ if ( download_from('gtex') || download_from('sra') ) {
     def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
     output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
+    mkdir .ncbi
+    mv ${sra_config} .ncbi/
     prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
     fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
