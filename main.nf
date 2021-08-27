@@ -310,7 +310,7 @@ if ( download_from('gen3-drs')) {
 
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
 
     tag "${accession}"
     label 'tiny_memory'
@@ -345,7 +345,7 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
@@ -438,7 +438,7 @@ if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
@@ -488,7 +488,7 @@ if (!params.bams){
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/QC/raw", pattern: "*_fastqc.{zip,html}", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
@@ -520,7 +520,7 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -566,7 +566,7 @@ if (!params.bams){
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/QC/trimmed", pattern: "*_fastqc.{zip,html}", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
@@ -617,7 +617,7 @@ if (!params.bams){
   process star {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*" , mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
@@ -707,7 +707,7 @@ if (!params.test) {
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*", mode: 'copy'
-    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -837,7 +837,7 @@ if (!params.test) {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -914,7 +914,7 @@ if (!params.test) {
       tag "$name1 $name2"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
-      publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
