@@ -31,9 +31,6 @@ jobs:
       - uses: eWaterCycle/setup-singularity@v6
         with:
           singularity-version: ${{ matrix.singularity_version }}
-      - name: Install tree for listing results in the end
-        run: |
-          sudo apt-get -y install tree
       - name: Install Nextflow
         run: |
           export NXF_VER=${{ matrix.nxf_ver }}
