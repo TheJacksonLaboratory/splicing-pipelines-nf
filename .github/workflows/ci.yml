@@ -11,6 +11,9 @@ jobs:
         nxf_ver: ['20.01.0', '']
     steps:
       - uses: actions/checkout@v1
+      - name: Install tree for listing results in the end
+        run: |
+          sudo apt-get -y install tree
       - name: Install Nextflow
         run: |
           export NXF_VER=${{ matrix.nxf_ver }}
@@ -19,6 +22,7 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,docker
+          echo "Results tree view:" ; tree -a results
   singularity:
     runs-on: ubuntu-latest
     strategy:
@@ -30,6 +34,9 @@ jobs:
       - uses: eWaterCycle/setup-singularity@v6
         with:
           singularity-version: ${{ matrix.singularity_version }}
+      - name: Install tree for listing results in the end
+        run: |
+          sudo apt-get -y install tree
       - name: Install Nextflow
         run: |
           export NXF_VER=${{ matrix.nxf_ver }}
@@ -38,3 +45,4 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,singularity
+          echo "Results tree view:" ; tree -a results
