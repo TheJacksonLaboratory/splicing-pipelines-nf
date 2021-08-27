@@ -6,6 +6,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         nxf_ver: ['20.01.0', '']
         test_type: ['ultra_quick_test', 'sra_test']
@@ -38,4 +39,4 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity --echo true
