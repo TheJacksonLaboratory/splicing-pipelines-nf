@@ -23,6 +23,7 @@ jobs:
   singularity:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         singularity_version: ['3.6.4']
         nxf_ver: ['20.01.0', '']
