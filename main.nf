@@ -618,7 +618,7 @@ if (!params.bams){
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
-    publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*" , mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*{out.bam,out.bam.bai,out,ReadsPerGene.out.tab,SJ.out.tab,Unmapped}*" , mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
           if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
