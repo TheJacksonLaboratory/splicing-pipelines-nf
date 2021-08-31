@@ -179,6 +179,7 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
+log.info "strType                     : ${params.strType[params.stranded].strType}"
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
@@ -644,7 +645,7 @@ if (!params.bams){
     // TODO: find a better solution to needing to use `chmod`
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
