@@ -528,7 +528,7 @@ if (!params.bams){
     output:
     set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
-	  file("command-logs-*") optional true
+    file("command-logs-*") optional true
 
     script:
     mode = singleEnd ? 'SE' : 'PE'
