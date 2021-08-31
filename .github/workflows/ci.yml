@@ -8,6 +8,7 @@ jobs:
     strategy:
       matrix:
         nxf_ver: ['20.01.0', '']
+        test_type: ['ultra_quick_test', 'sra_test']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -17,13 +18,16 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,docker
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},docker
   singularity:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
+      max-parallel: 1
       matrix:
         singularity_version: ['3.6.4']
         nxf_ver: ['20.01.0', '']
+        test_type: ['ultra_quick_test', 'sra_test']
     steps:
       - uses: actions/checkout@v1
       - uses: eWaterCycle/setup-singularity@v6
@@ -36,4 +40,4 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile base,ultra_quick_test,singularity
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity
