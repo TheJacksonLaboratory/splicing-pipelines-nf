@@ -700,7 +700,7 @@ if (!params.bams){
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
 
     ${post_script_run_resource_status}
-    rm -r ${file(file(index).baseName).baseName}   # twice baseName instead of simpleName because index has dot's in name:  star_2.7.9a_yeast_chr_I.tar.gz
+    rm -r ${file(index).name.minus('.gz').minus('.tar')}   # not simpleName or twice baseName because index has dot's in name:  star_2.7.9a_yeast_chr_I.tar.gz
 
     # save .command.* logs
     ${params.savescript}
