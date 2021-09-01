@@ -20,9 +20,11 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},docker
+          echo "Results tree view:" ; tree -a results
   singularity:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         singularity_version: ['3.6.4']
         nxf_ver: ['20.01.0', '']
@@ -40,3 +42,4 @@ jobs:
       - name: Basic workflow tests
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity --echo true
+          echo "Results tree view:" ; tree -a results
