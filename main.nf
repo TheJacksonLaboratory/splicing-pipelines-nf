@@ -977,7 +977,7 @@ if (!params.test) {
 if (!params.bams) {
   process multiqc {
     label 'mega_memory'
-    publishDir "${params.outdir}/MultiQC", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/MultiQC", pattern: "{*multiqc_report.html,*_data/*,trimmomatic}", mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     when:
