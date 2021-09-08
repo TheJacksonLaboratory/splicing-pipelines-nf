@@ -735,7 +735,7 @@ if (!params.test) {
 
   process prep_de {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/count_matrix", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/count_matrix", pattern: "{sample_lst.txt,*gene_count_matrix.csv,*transcript_count_matrix.csv}", mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
