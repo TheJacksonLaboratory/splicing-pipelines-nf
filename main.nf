@@ -767,7 +767,7 @@ if (!params.test) {
 
   process stringtie_merge {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/stringtie_merge", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/stringtie_merge", pattern: "{gffcmp.annotated.corrected.gtf,gffcmp.*}", mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
