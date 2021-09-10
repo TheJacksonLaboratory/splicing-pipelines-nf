@@ -836,7 +836,7 @@ if (!params.test) {
     process rmats {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
@@ -848,6 +848,7 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into rmats_out
+      file "tmp/*_read_outcomes_by_bam.txt"
       file("command-logs-*") optional true
 
       script:
@@ -913,7 +914,7 @@ if (!params.test) {
     process paired_rmats {
       tag "$name1 $name2"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "[!command-logs-]*", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
@@ -925,6 +926,7 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into paired_rmats_out
+      file "tmp/*_read_outcomes_by_bam.txt"
       file("command-logs-*") optional true
 
       script:
