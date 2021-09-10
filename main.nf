@@ -740,12 +740,12 @@ if (!params.test) {
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
-    file("command-logs-*") optional true
 
     output:
     file "sample_lst.txt"
     file "*gene_count_matrix.csv"
     file "*transcript_count_matrix.csv"
+    file("command-logs-*") optional true
 
     script: 
     """
