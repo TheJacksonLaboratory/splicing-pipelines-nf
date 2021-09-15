@@ -116,6 +116,10 @@ def helpMessage() {
       --debug                       This option will enable echo of script execution into STDOUT with some additional 
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
+      --error_strategy              Mode of pipeline handling failed processes. Possible values: 'terminate', 'finish', 'ignore', 'retry'.
+                                    Check nextflow documnetation for detailed descriptions of each mode:
+                                    https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
+                                    (default: $params.error_strategy)
       --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull completion.
                                     All intermediate files from nexftlow processes' workdirs will be cleared, staging folder with staged
                                     files will not be cleared.
@@ -149,6 +153,11 @@ if (!params.bams) {
   }
 }else{ 
   star_index = false 
+}
+
+// Check if error_strategy parameter has a correct value
+if (!params.allowed_error_strategies.contains(params.error_strategy)) {
+  exit 1, "Error strategy \"${params.error_strategy} is not correct. Please choose one of: ${params.allowed_error_strategies.join(", ")}."
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
@@ -207,6 +216,7 @@ log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info "Debug                       : ${params.debug}"
+log.info "Error strategy              : ${params.error_strategy}"
 log.info "Workdir cleanup             : ${params.cleanup}"
 log.info ""
 log.info "\n"
