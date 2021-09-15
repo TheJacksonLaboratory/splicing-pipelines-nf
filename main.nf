@@ -188,6 +188,7 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
+log.info "strType                     : ${params.strType[params.stranded].strType}"
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
@@ -314,6 +315,13 @@ if ( download_from('gen3-drs')) {
         .set {ch_genome_fasta}
 }
 
+if ( download_from('sra')) {
+    Channel
+        .value(file(params.sra_config_file))
+        .set {ch_sra_config_file}
+}
+
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
@@ -328,6 +336,7 @@ if ( download_from('gtex') || download_from('sra') ) {
     input:
     val(accession) from accession_ids
     each file(key_file) from key_file
+    file(sra_config) from ch_sra_config_file
     
     output:
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
@@ -337,6 +346,8 @@ if ( download_from('gtex') || download_from('sra') ) {
     def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
     output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
+    mkdir .ncbi
+    mv ${sra_config} .ncbi/
     prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
     fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
@@ -654,7 +665,7 @@ if (!params.bams){
     // TODO: find a better solution to needing to use `chmod`
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
@@ -700,6 +711,7 @@ if (!params.bams){
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
 
     ${post_script_run_resource_status}
+    rm -r ${file(index).name.minus('.gz').minus('.tar')}   # not simpleName or twice baseName because index has dot's in name:  star_2.7.9a_yeast_chr_I.tar.gz
 
     # save .command.* logs
     ${params.savescript}
