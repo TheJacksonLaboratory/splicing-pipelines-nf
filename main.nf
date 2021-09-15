@@ -157,7 +157,7 @@ if (!params.bams) {
 
 // Check if error_strategy parameter has a correct value
 if (!params.allowed_error_strategies.contains(params.error_strategy)) {
-  exit 1, "Error strategy \"${params.error_strategy} is not correct. Please choose one of: ${params.allowed_error_strategies.join(", ")}."
+  exit 1, "Error strategy \"${params.error_strategy}\" is not correct. Please choose one of: ${params.allowed_error_strategies.join(", ")}."
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
