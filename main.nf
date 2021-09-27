@@ -179,7 +179,7 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
-log.info "strType                     : ${params.strType[params.stranded].strType}"
+if (params.stranded) {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
