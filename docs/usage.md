@@ -189,6 +189,10 @@ Other:
   --debug                       This option will enable echo of script execution into STDOUT with some additional 
                                 resource information (such as machine type, memory, cpu and disk space)
                                 (default: false)
+  --error_strategy              Mode of pipeline handling failed processes. Possible values: 'terminate', 'finish', 'ignore', 'retry'.
+                                Check nextflow documnetation for detailed descriptions of each mode:
+                                https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
+                                (default: finish)
   --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull completion.
                                 All intermediate files from nexftlow processes' workdirs will be cleared, staging folder with staged
                                 files will not be cleared.
