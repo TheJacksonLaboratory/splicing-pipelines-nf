@@ -24,7 +24,8 @@ def helpMessage() {
     
     Input files:
       --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
-                                    This file is used if starting at beginning of pipeline. 
+                                    This file is used if starting at beginning of pipeline. It can be file paths,
+                                    s3 links or ftp link.
                                     (default: no reads.csv)
       --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
                                     This file is used if starting pipeline at Stringtie.
@@ -33,7 +34,7 @@ def helpMessage() {
                                     (default: no rmats_pairs specified) 
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA', 'FTP') (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
                                     or credentials.josn file in case of 'GEN3-DRS'
@@ -227,22 +228,30 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(download_from('gtex') || download_from('sra') || download_from('tcga')) {
+  if(download_from('gtex') || download_from('sra') || download_from('tcga') ){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
         .map { sample -> sample[0].trim() }
         .set { accession_ids }
-   }
-   if(download_from('gen3-drs')){
-       Channel
+  }
+  if(download_from('gen3-drs')){
+      Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
         .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
         .set { ch_gtex_gen3_ids }
-   }
+  }
+  if(download_from('ftp')){
+    Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { sample -> sample[0].trim() }
+        .set { accession_ids_ftp }
+  }
 } 
 // TODO: combine single and paired-end channel definitions
 if (!params.download_from && params.singleEnd && !params.bams) {
@@ -354,6 +363,59 @@ if ( download_from('gtex') || download_from('sra') ) {
 
     # save .command.* logs
     ${params.savescript}
+    """
+  }
+} 
+
+if ( download_from('ftp') ) {
+  process get_ftp_accession {
+    publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
+    
+    tag "${accession}"
+    label 'tiny_memory'
+
+    input:
+    val(accession) from accession_ids_ftp
+
+    output:
+    set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
+    isSingle = params.singleEnd ? "true" : "false"
+
+    """
+    PREFIX="\$(echo "$accession" | head -c 6)"
+    FTP_PATH="ftp://ftp.sra.ebi.ac.uk/vol1/fastq/\${PREFIX}"
+    SAMPLE=$accession
+
+    if [[ "\${#SAMPLE}" == "9" ]]; then
+      FTP_PATH="\${FTP_PATH}/$accession/$accession"
+    elif [[ "\${#SAMPLE}" == "10" ]]; then
+      SUFFIX="\${SAMPLE: -1}" 
+      FTP_PATH="\${FTP_PATH}/00\${SUFFIX}/$accession/$accession"
+    elif [[ "\${#SAMPLE}" == "11" ]]; then
+      SUFFIX="\${SAMPLE: -2}" 
+      FTP_PATH="\${FTP_PATH}/0\${SUFFIX}/$accession/$accession"      
+    else    
+      SUFFIX="\${SAMPLE: -3}"    
+      FTP_PATH="\${FTP_PATH}/\${SUFFIX}/$accession/$accession"
+    fi
+
+    echo \$SAMPLE
+    echo \$FTP_PATH
+
+    if [ "$isSingle" = true ] ; then
+      {
+        wget "\${FTP_PATH}.fastq.gz"
+      } || {
+        wget "\${FTP_PATH}_1.fastq.gz" 
+        mv ${accession}_1.fastq.gz ${accession}.fastq.gz
+      }
+    else
+      wget "\${FTP_PATH}_1.fastq.gz"
+      wget "\${FTP_PATH}_2.fastq.gz"
+    fi
     """
   }
 }

@@ -35,7 +35,7 @@ Input reads are specified by the `reads` input parameter, specifying a path to a
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
 - [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
 
-The 'reads.csv' column names must match the above [single-end] and [paired-end] examples. The `sample_id` can be anything, however each must be unique. The `fastq` column(s) should contain the path to FASTQ files. You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
+The 'reads.csv' column names must match the above [single-end] and [paired-end] examples. The `sample_id` can be anything, however each must be unique. The `fastq` column(s) should contain the path to FASTQ files (publicly accessible ftp, s3 and gs links are also accepted). You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
 There should be one `reads.csv` file per dataset. If your dataset already has a `reads.csv` file, proceed to step 2.
 

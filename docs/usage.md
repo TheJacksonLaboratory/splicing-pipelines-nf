@@ -89,7 +89,8 @@ Both of these should be specified without quotes
 ```
 Input files:
   --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
-                                This file is used if starting at beginning of pipeline. 
+                                This file is used if starting at beginning of pipeline. It can be file paths,
+                                s3 links or ftp link.
                                 (default: no reads.csv)
   --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
                                 This file is used if starting pipeline at Stringtie.
@@ -98,7 +99,7 @@ Input files:
                                 (default: no rmats_pairs specified) 
   --run_name                    User specified name used as prefix for output files
                                 (defaut: no prefix, only date and time)
-  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
+  --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA', 'FTP') (string)
   				false should be used to run local files on the HPC (Sumner).
 				'TCGA' can also be used to download GDC data including HCMI data.
                                 (default: false)
