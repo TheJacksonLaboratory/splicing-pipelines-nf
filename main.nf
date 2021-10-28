@@ -79,6 +79,8 @@ def helpMessage() {
                                     (default: 3)
       --soft_clipping               Enables soft clipping (bool)
                                     (default: true)
+      --save_unmapped               Save unmapped and partially mapped reads in separate file (bool)
+                                    (default: false)
       --star_memory                 Max memory to be used by STAR to sort BAM files.
                                     (default: Available task memory)
 
@@ -127,7 +129,7 @@ def helpMessage() {
                                     If pipeline is completed with errors or interrupted cleanup will not be executed. Following successfull run
                                     resumed from the failed run with --cleanup option enabled will only clear folders of processess created in
                                     the latest run, it will not clear cached folders coming from previous pipleine runs.
-                                    (default: false)
+                                    (default: true)
 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
@@ -191,6 +193,7 @@ log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 if (params.stranded) {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
+log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
@@ -701,7 +704,8 @@ if (!params.bams){
     tag "$name"
     label 'mega_memory'
     publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
-    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*{out.bam,out.bam.bai,out,ReadsPerGene.out.tab,SJ.out.tab,Unmapped}*" , mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*{out.bam,out.bam.bai,out,ReadsPerGene.out.tab,SJ.out.tab}*" , mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*Unmapped*", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
           if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
@@ -732,6 +736,7 @@ if (!params.bams){
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
     avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
+    save_unmapped_reads = params.save_unmapped ? '--outReadsUnmapped Fastx' : ''
     """
     ${pre_script_run_resource_status}
 
@@ -763,7 +768,7 @@ if (!params.bams){
       --twopassMode Basic \
       --alignEndsType $endsType \
       --alignIntronMax 1000000 \
-      --outReadsUnmapped Fastx \
+      $save_unmapped_reads \
       --quantMode GeneCounts \
       --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
