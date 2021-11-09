@@ -150,6 +150,8 @@ Star:
 				If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS parameter is added.
 				NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping off if reads need to be same length. Variable read length   	                                 parameter is turned on in rMATS when minlen does not equal readlength.
                                 (default: true)
+  --save_unmapped               Save unmapped and partially mapped reads in separate file (bool)
+                                (default: false)
   --star_memory                 Max memory to be used by STAR to sort BAM files.
                                 (default: Available task memory)
 
