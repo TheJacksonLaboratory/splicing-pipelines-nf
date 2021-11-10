@@ -148,7 +148,7 @@ def helpMessage() {
                                     resumed from the failed run with --cleanup option enabled will only clear folders of processess created in
                                     the latest run, it will not clear cached folders coming from previous pipleine runs.
 				    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config example (does not work like normal config param)
-                                    (default: true)
+                                    (default: config.process.errorStrategy)
 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
