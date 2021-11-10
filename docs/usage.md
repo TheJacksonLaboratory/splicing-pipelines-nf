@@ -93,7 +93,7 @@ Input files:
                                 s3 links or ftp link.
                                 (default: no reads.csv)
   --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
-                                This file is used if starting pipeline at Stringtie.
+                                If this file is provided, pipeline will start at Stringtie (and proceed through rMATS and post processing).
                                 (default: no bams.csv)
   --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
                                 (default: no rmats_pairs specified) 
@@ -113,8 +113,11 @@ Main arguments:
   --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                 (default: false)
   --star_index                  Path to STAR index (path)
-                                (default: read length)
+  				Star indices must be generated prior to run (with correct STAR version)
+                                (default: false)
   --singleEnd                   Specifies that the input is single-end reads (bool)
+                                This parameter also automatically establishes the path to the SE or PE adapters.
+                                For PE, set to false.
                                 (default: false)
   --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
                                 (default: 'first-strand')
@@ -122,6 +125,8 @@ Main arguments:
   --readlength                  Read length - Note that all reads will be cropped to this length(int)
                                 (default: no read length specified)
   -profile                      Configuration profile to use. Can use multiple (comma separated, string)
+                                On sumner, this should be set in the main.pbs or as a command-line parameter.
+				Profile can only be activated from the command line.
                                 Available: base, docker, sumner, test and more.
                         
 Trimmomatic: 
@@ -142,11 +147,13 @@ Star:
   --overhang                    Overhang (int)
                                 (default: readlength - 1)
   --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                For TCGA values: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                 (default: 0.66)
   --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
+                                For TCGA values: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                 (default: 3)
   --soft_clipping               Enables soft clipping (bool)
-                                If true, the STAR parameter will be --alignEndsType Local and the rMATS parameter --allow-clipping will be added.
+                                If true, the STAR parameter will be --alignEndsType 'Local' and the rMATS parameter --allow-clipping will be added.
 				If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS parameter is added.
 				NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping off if reads need to be same length. Variable read length   	                                 parameter is turned on in rMATS when minlen does not equal readlength.
                                 (default: true)
@@ -170,6 +177,7 @@ rMATS:
 
 Other:
   --test                        For running trim test (bool)
+                                To run the first half of the pipeline (through STAR), set test = true.
                                 (default: false)
   --max_cpus                    Maximum number of CPUs (int)
                                 (default: 72)  
@@ -182,7 +190,7 @@ Other:
   --skipMultiQC                 Skip MultiQC (bool)
                                 (default: false)
   --outdir                      The output directory where the results will be saved (string)
-  				On Sumner, this must be set in the main.pbs. NF_splicing_pipeline.config will not overwrite main.pbs.
+  				On Sumner, this must be set in the main.pbs or via command line. NF_splicing_pipeline.config will not overwrite main.pbs.
                                 (default: directory where you submit the job)
   --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)
                                 Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
@@ -195,15 +203,17 @@ Other:
   --error_strategy              Mode of pipeline handling failed processes. Possible values: 'terminate', 'finish', 'ignore', 'retry'.
                                 Check nextflow documnetation for detailed descriptions of each mode:
                                 https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
-                                (default: finish)
+				Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config example (does not work like normal config param)
+				This does not overwrited CloudOS config (set to 'errorStrategy = { task.exitStatus in [3,9,10,14,143,137,104,134,139] ? 'retry': 'ignore'} 
+                                (default: 'finish')
   --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull completion.
                                 All intermediate files from nexftlow processes' workdirs will be cleared, staging folder with staged
                                 files will not be cleared.
                                 If pipeline is completed with errors or interrupted cleanup will not be executed. Following successfull run
                                 resumed from the failed run with --cleanup option enabled will only clear folders of processess created in
                                 the latest run, it will not clear cached folders coming from previous pipleine runs.
+				Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config example (does not work like normal config param)
                                 (default: false)
-
 
 	    
 ```
