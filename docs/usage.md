@@ -104,7 +104,7 @@ Input files:
 				'TCGA' can also be used to download GDC data including HCMI data.
                                 (default: false)
   --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
-  				or credentials.josn file in case of 'GEN3-DRS'
+  				or credentials.json file in case of 'GEN3-DRS'
                                 (default: false)
                                 
 Main arguments:
@@ -120,8 +120,8 @@ Main arguments:
                                 For PE, set to false.
                                 (default: false)
   --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
-                                (default: 'first-strand')
-				'first-strand' refers to RF/fr-firststrand in this pipeline.
+                                'first-strand' refers to RF/fr-firststrand in this pipeline.
+				(default: 'first-strand')
   --readlength                  Read length - Note that all reads will be cropped to this length(int)
                                 (default: no read length specified)
   -profile                      Configuration profile to use. Can use multiple (comma separated, string)
@@ -182,7 +182,7 @@ Other:
   --max_cpus                    Maximum number of CPUs (int)
                                 (default: 72)  
   --max_memory                  Maximum memory (memory unit)
-                                (default: 760)
+                                (default: 760.GB)
   --max_time                    Maximum time (time unit)
                                 (default: 72.h)
   --skiprMATS                   Skip rMATS (bool)
