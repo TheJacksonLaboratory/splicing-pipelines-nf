@@ -76,7 +76,7 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters). 
 
-To create your own custom config (to specify your input parameters) you can copy and edit this [example config](../conf/examples/MYC_MCF10A_0h_vs_MYC_MCF10A_8h.config) file. 
+To create your own custom config (to specify your input parameters) you can copy and edit this [example config](NF_splicing_pipeline.config) file. 
 
 **VERY IMPORTANT NOTES***
 
