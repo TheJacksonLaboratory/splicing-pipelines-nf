@@ -74,7 +74,7 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 ### 4. Setup `NF_splicing_pipeline.config`
 
-This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters). 
+This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters) and [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/03c977a4a5b386a1ea31c8aae78592432e38f3a2/nextflow.config). 
 
 To create your own custom config (to specify your input parameters) you can copy and edit this [example config](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/6ff6a5d3a629b2a9923f99c8266f7120409f4371/NF_splicing_pipeline.config) file. 
 
@@ -152,7 +152,9 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 ### 4. Setup `NF_splicing_pipeline.config`
 
-This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters). 
+This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters) and [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/03c977a4a5b386a1ea31c8aae78592432e38f3a2/nextflow.config). 
+
+To create your own custom config (to specify your input parameters) you can copy and edit this [example config]() file.  
 
 **VERY IMPORTANT NOTES***
 
