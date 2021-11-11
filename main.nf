@@ -21,30 +21,34 @@ def helpMessage() {
     Usage:
     The typical command for running the pipeline is as follows:
     nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
-    
+
     Input files:
-      --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
+      --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files
+                                    for each read or read pair (path).
                                     This file is used if starting at beginning of pipeline. It can be file paths,
                                     s3 links or ftp link.
                                     (default: no reads.csv)
-      --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
-                                    If this file is provided, pipeline will start at Stringtie (and proceed through rMATS and post processing).
+      --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai
+                                    files (path)
+                                    If this file is provided, pipeline will start at Stringtie (and proceed through
+                                    rMATS and post processing).
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
-                                    (default: no rmats_pairs specified) 
+                                    (default: no rmats_pairs specified)
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA', 'FTP') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS',
+                                    'SRA', 'FTP') (string)
                                     false should be used to run local files on the HPC (Sumner).
-				    'TCGA' can also be used to download GDC data including HCMI data.
+                                    'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
-      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
-                                    or credentials.josn file in case of 'GEN3-DRS'
-                                    (default: false)  
- 
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
+                                    key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
+                                    (default: false)
+
     Main arguments:
       --gtf                         Path to reference GTF file (path)
-                                    (default: no gtf specified) 
+                                    (default: no gtf specified)
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                     (default: false)
       --star_index                  Path to STAR index (path)
@@ -52,52 +56,59 @@ def helpMessage() {
                                     (default: false)
       --singleEnd                   Specifies that the input is single-end reads (bool)
                                     This parameter also automatically establishes the path to the SE or PE adapters.
-				    For PE, set to false.
+                                    For PE, set to false.
                                     (default: false)
-      --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
+      --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand',
+                                    false (aka unstranded))
                                     'first-strand' refers to RF/fr-firststrand in this pipeline.
                                     (default: 'first-strand')
       --readlength                  Read length - Note that all reads will be cropped to this length(int)
-                                   (default: no read length specified)
+                                    (default: no read length specified)
       -profile                      Configuration profile to use. Can use multiple (comma separated, string)
                                     On sumner, this should be set in the main.pbs or as a command-line parameter.
-				    Profile can only be activated from the command line.
+                                    Profile can only be activated from the command line.
                                     Available: base, docker, sumner, test and more.
 
-    Trimmomatic: 
+    Trimmomatic:
       --minlen                      Drop the read if it is below a specified length (int)
                                     Default parameters turn on --variable-readlength
-                                    To crop all reads and turn off --variable-readlength, set minlen = readlength                                 
+                                    To crop all reads and turn off --variable-readlength, set minlen = readlength
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
-      --adapter                     Path to adapter file (path)  
+      --adapter                     Path to adapter file (path)
                                     (default: TruSeq3 for either PE or SE, see singleEnd parameter)
-                                
-    Star:                    
+
+    Star:
       --mismatch                    Number of allowed mismatches per read (SE) or combined read (PE) (int)
                                     SE ex. read length of 50, allow 2 mismatches per 50 bp
-                                    PE ex. read length of 50, allow 2 mismatches per 100 bp 
+                                    PE ex. read length of 50, allow 2 mismatches per 100 bp
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
       --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
-                                    For TCGA values: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
+                                    For TCGA values:
+                                    https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                     (default: 0.66)
       --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
-                                    For TCGA values: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
+                                    For TCGA values:
+                                    https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                     (default: 3)
       --soft_clipping               Enables soft clipping (bool)
-                                    If true, the STAR parameter will be --alignEndsType 'Local' and the rMATS parameter --allow-clipping will be added.
-				    If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS parameter is added.
-				    NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping off if reads need to be same length. Variable read length   	                                 parameter is turned on in rMATS when minlen does not equal readlength.
+                                    If true, the STAR parameter will be --alignEndsType 'Local' and the rMATS parameter
+                                    --allow-clipping will be added.
+                                    If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS
+                                    parameter is added.
+                                    NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping
+                                    off if reads need to be same length. Variable read length parameter is turned on
+                                    in rMATS when minlen does not equal readlength.
                                     (default: true)
       --save_unmapped               Save unmapped and partially mapped reads in separate file (bool)
                                     (default: false)
       --star_memory                 Max memory to be used by STAR to sort BAM files.
                                     (default: Available task memory)
 
-    rMATS:                              
+    rMATS:
       --statoff                     Skip the statistical analysis (bool)
                                     If using only b1 as input, this must be turned on.
                                     (default: false)
@@ -115,7 +126,7 @@ def helpMessage() {
                                     To run the first half of the pipeline (through STAR), set test = true.
                                     (default: false)
       --max_cpus                    Maximum number of CPUs (int)
-                                    (default: 72)  
+                                    (default: 72)
       --max_memory                  Maximum memory (memory unit)
                                     (default: 760.GB)
       --max_time                    Maximum time (time unit)
@@ -125,30 +136,37 @@ def helpMessage() {
       --skipMultiQC                 Skip MultiQC (bool)
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
-                                    On Sumner, this must be set in the main.pbs or via command line. NF_splicing_pipeline.config will not overwrite main.pbs.
-                                    (default: directory where you submit the job)
-      --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit) 
+                                    On Sumner, this must be set in the main.pbs or via command line.
+                                    NF_splicing_pipeline.config will not overwrite main.pbs.
+                                    (default: <directory where you submit the job>/results)
+      --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the
+                                    base.config (time unit)
                                     Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
-      --debug                       This option will enable echo of script execution into STDOUT with some additional 
+      --debug                       This option will enable echo of script execution into STDOUT with some additional
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
-      --error_strategy              Mode of pipeline handling failed processes. Possible values: 'terminate', 'finish', 'ignore', 'retry'.
+      --error_strategy              Mode of pipeline handling failed processes.
+                                    Possible values: 'terminate', 'finish', 'ignore', 'retry'.
                                     Check nextflow documnetation for detailed descriptions of each mode:
                                     https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
-                                    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config example (does not work like normal config param)
-				    This does not overwrited CloudOS config (set to 'errorStrategy = { task.exitStatus in [3,9,10,14,143,137,104,134,139] ? 'retry': 'ignore'} 
-                                    (default: 'finish')
-      --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull completion.
-                                    All intermediate files from nexftlow processes' workdirs will be cleared, staging folder with staged
-                                    files will not be cleared.
-                                    If pipeline is completed with errors or interrupted cleanup will not be executed. Following successfull run
-                                    resumed from the failed run with --cleanup option enabled will only clear folders of processess created in
-                                    the latest run, it will not clear cached folders coming from previous pipleine runs.
-				    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config example (does not work like normal config param)
-                                    (default: config.process.errorStrategy)
+                                    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config
+                                    example (does not work like normal config param)
+                                    This does not overwrited CloudOS config, which is set to:
+                                    'errorStrategy = { task.exitStatus in [3,9,10,14,143,137,104,134,139] ? 'retry': 'ignore'}
+                                    (default (non-cloudos): 'finish')
+      --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull
+                                    completion. All intermediate files from nexftlow processes' workdirs will be
+                                    cleared, staging folder with staged files will not be cleared.
+                                    If pipeline is completed with errors or interrupted cleanup will not be executed.
+                                    Following successfull run resumed from the failed run with --cleanup option enabled
+                                    will only clear folders of processess created in the latest run, it will not clear
+                                    cached folders coming from previous pipleine runs.
+                                    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config
+                                    example (does not work like normal config param)
+                                    (default non-cloudos: true; cloudos: false)
 
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
