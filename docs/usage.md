@@ -14,6 +14,7 @@ See [here](run_locally.md)
 Nextflow parameters can be provided in one of two ways:
 1) They can be specified in configuration files
 2) They can be specified on the command-line
+3) They can be specified in main.pbs
 
 <details>
 <summary>For example, all of the following are equivalent:</summary>
@@ -44,9 +45,9 @@ nextflow run main.nf --reads /path/to/reads.csv --readlength 48 --singleEnd true
 
 </details>
 
-Parameters specified on the command-line take precedence over those specified in configuration files. It is generally best-practice to have your parameters saved in a configuration file as this makes your analysis more reproducible if you need to run it again.
+Parameters specified on the command-line (or in main.pbs) take precedence over those specified in configuration files. It is generally best-practice to have your parameters saved in a configuration file as this makes your analysis more reproducible if you need to run it again.
 
-[Profiles](https://www.nextflow.io/docs/latest/en/latest/config.html#config-profiles) are configuration that can be included by specifying the profile name on the command-line. For example, `-profile sumner` to include configuration specific to JAX's HPC Sumner
+[Profiles](https://www.nextflow.io/docs/latest/en/latest/config.html#config-profiles) are configuration that can be included by specifying the profile name on the command-line. This CANNOT be set from the configuration file. For example, `-profile sumner` to include configuration specific to JAX's HPC Sumner.
 
 ## Types of Nextflow parameters
 
@@ -233,6 +234,17 @@ Other:
                                 example (does not work like normal config param)
                                 (default non-cloudos: true; cloudos: false)
 ```
+
+# Useful Nextflow options
+
+Whereas parameters are set on the command-line using double dash options eg `--reads`, parameters passed to Nextflow itself can be provided with single-dash options eg `-profile`.
+
+You can see some of these options [here](https://www.nextflow.io/docs/latest/tracing.html) in the Nextflow documentation.
+
+Some useful ones include (specified in main.pbs):
+- `-resume` which will [resume](https://www.nextflow.io/docs/latest/getstarted.html?highlight=resume#modify-and-resume) any cached processes that have not been changed
+- `-with-trace` eg `-with-trace trace.txt` which gives a [trace report](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#trace-report) for resource consumption by the pipeline
+- `-with-dag` eg `-with-dag flowchart.png` which produces the [DAG visualisation](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#dag-visualisation) graph showing each of the different processes and the connections between them (the channels)
 
 ## Run with data from AnviL Gen3-DRS
 
