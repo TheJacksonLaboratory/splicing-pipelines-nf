@@ -468,7 +468,7 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
