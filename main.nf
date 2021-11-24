@@ -21,67 +21,94 @@ def helpMessage() {
     Usage:
     The typical command for running the pipeline is as follows:
     nextflow run main.nf --reads my_reads.csv --gtf genome.gtf --star_index star_dir -profile base,sumner
-    
+
     Input files:
-      --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files for each read or read pair (path).
-                                    This file is used if starting at beginning of pipeline. 
+      --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files
+                                    for each read or read pair (path).
+                                    This file is used if starting at beginning of pipeline. It can be file paths,
+                                    s3 links or ftp link.
                                     (default: no reads.csv)
-      --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai files (path)
-                                    This file is used if starting pipeline at Stringtie.
+      --bams                        Path to bams.csv file which specifies sample_id and path to BAM and BAM.bai
+                                    files (path)
+                                    If this file is provided, pipeline will start at Stringtie (and proceed through
+                                    rMATS and post processing).
                                     (default: no bams.csv)
       --rmats_pairs                 Path to rmats_pairs.txt file containing b1 (and b2) samples names (path)
-                                    (default: no rmats_pairs specified) 
+                                    (default: no rmats_pairs specified)
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS', 'SRA') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS',
+                                    'SRA', 'FTP') (string)
+                                    false should be used to run local files on the HPC (Sumner).
+                                    'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
-      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository key (GTEx, path)
-                                    or credentials.josn file in case of 'GEN3-DRS'
-                                    (default: false)  
- 
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
+                                    key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
+                                    (default: false)
+
     Main arguments:
       --gtf                         Path to reference GTF file (path)
-                                    (default: no gtf specified) 
+                                    (default: no gtf specified)
       --assembly_name               Genome assembly name (available = 'GRCh38' or 'GRCm38', string)
                                     (default: false)
       --star_index                  Path to STAR index (path)
-                                    (default: read length)
-      --singleEnd                   Specifies that the input is single-end reads (bool)
+                                    Star indices must be generated prior to run (with correct STAR version)
                                     (default: false)
-      --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand', false (aka unstranded))
+      --singleEnd                   Specifies that the input is single-end reads (bool)
+                                    This parameter also automatically establishes the path to the SE or PE adapters.
+                                    For PE, set to false.
+                                    (default: false)
+      --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand',
+                                    false (aka unstranded))
+                                    'first-strand' refers to RF/fr-firststrand in this pipeline.
                                     (default: 'first-strand')
       --readlength                  Read length - Note that all reads will be cropped to this length(int)
-                                   (default: no read length specified)
+                                    (default: no read length specified)
       -profile                      Configuration profile to use. Can use multiple (comma separated, string)
+                                    On sumner, this should be set in the main.pbs or as a command-line parameter.
+                                    Profile can only be activated from the command line.
                                     Available: base, docker, sumner, test and more.
 
-    Trimmomatic: 
+    Trimmomatic:
       --minlen                      Drop the read if it is below a specified length (int)
                                     Default parameters turn on --variable-readlength
-                                    To crop all reads and turn off, set minlen = readlength                                 
+                                    To crop all reads and turn off --variable-readlength, set minlen = readlength
                                     (default: 20)
       --slidingwindow               Perform a sliding window trimming approach (bool)
                                     (default: true)
-      --adapter                     Path to adapter file (path)  
+      --adapter                     Path to adapter file (path)
                                     (default: TruSeq3 for either PE or SE, see singleEnd parameter)
-                                
-    Star:                    
+
+    Star:
       --mismatch                    Number of allowed mismatches per read (SE) or combined read (PE) (int)
                                     SE ex. read length of 50, allow 2 mismatches per 50 bp
-                                    PE ex. read length of 50, allow 2 mismatches per 100 bp 
+                                    PE ex. read length of 50, allow 2 mismatches per 100 bp
                                     (default: 2)
       --overhang                    Overhang (int)
                                     (default: readlength - 1)
       --filterScore                 Controls --outFilterScoreMinOverLread and outFilterMatchNminOverLread
+                                    For TCGA values:
+                                    https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                     (default: 0.66)
       --sjdbOverhangMin             Controls --alignSJDBoverhangMin (int)
+                                    For TCGA values:
+                                    https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
                                     (default: 3)
       --soft_clipping               Enables soft clipping (bool)
+                                    If true, the STAR parameter will be --alignEndsType 'Local' and the rMATS parameter
+                                    --allow-clipping will be added.
+                                    If false, the STAR parameter will be --alignEndsType 'EndToEnd' and no rMATS
+                                    parameter is added.
+                                    NOTE: Soft Clipping will cause read lengths to be variable, so turn soft_clipping
+                                    off if reads need to be same length. Variable read length parameter is turned on
+                                    in rMATS when minlen does not equal readlength.
                                     (default: true)
+      --save_unmapped               Save unmapped and partially mapped reads in separate file (bool)
+                                    (default: false)
       --star_memory                 Max memory to be used by STAR to sort BAM files.
                                     (default: Available task memory)
 
-    rMATS:                              
+    rMATS:
       --statoff                     Skip the statistical analysis (bool)
                                     If using only b1 as input, this must be turned on.
                                     (default: false)
@@ -96,26 +123,51 @@ def helpMessage() {
 
     Other:
       --test                        For running trim test (bool)
+                                    To run the first half of the pipeline (through STAR), set test = true.
                                     (default: false)
       --max_cpus                    Maximum number of CPUs (int)
-                                    (default: ?)  
+                                    (default: 72)
       --max_memory                  Maximum memory (memory unit)
-                                    (default: 80)
+                                    (default: 760.GB)
       --max_time                    Maximum time (time unit)
-                                    (default: ?)
+                                    (default: 72.h)
       --skiprMATS                   Skip rMATS (bool)
                                     (default: false)
       --skipMultiQC                 Skip MultiQC (bool)
                                     (default: false)
       --outdir                      The output directory where the results will be saved (string)
-                                    (default: directory where you submit the job)
-      --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the base.config (time unit)     
+                                    On Sumner, this must be set in the main.pbs or via command line.
+                                    NF_splicing_pipeline.config will not overwrite main.pbs.
+                                    (default: <directory where you submit the job>/results)
+      --mega_time                   Sets time limit for processes withLabel 'mega_memory' in the main.nf using the
+                                    base.config (time unit)
+                                    Make sure '#SBATCH -t' in 'main.pbs' is appropriately set if you are changing this parameter.
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
-      --debug                       This option will enable echo of script execution into STDOUT with some additional 
+      --debug                       This option will enable echo of script execution into STDOUT with some additional
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
+      --error_strategy              Mode of pipeline handling failed processes.
+                                    Possible values: 'terminate', 'finish', 'ignore', 'retry'.
+                                    Check nextflow documnetation for detailed descriptions of each mode:
+                                    https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
+                                    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config
+                                    example (does not work like normal config param)
+                                    This does not overwrited CloudOS config, which is set to:
+                                    'errorStrategy = { task.exitStatus in [3,9,10,14,143,137,104,134,139] ? 'retry': 'ignore'}
+                                    (default (non-cloudos): 'finish')
+      --cleanup                     This option will enable nextflow work folder cleanup upon pipeline successfull
+                                    completion. All intermediate files from nexftlow processes' workdirs will be
+                                    cleared, staging folder with staged files will not be cleared.
+                                    If pipeline is completed with errors or interrupted cleanup will not be executed.
+                                    Following successfull run resumed from the failed run with --cleanup option enabled
+                                    will only clear folders of processess created in the latest run, it will not clear
+                                    cached folders coming from previous pipleine runs.
+                                    Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config
+                                    example (does not work like normal config param)
+                                    (default non-cloudos: true; cloudos: false)
+
 
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
@@ -141,6 +193,11 @@ if (!params.bams) {
   }
 }else{ 
   star_index = false 
+}
+
+// Check if error_strategy parameter has a correct value
+if (!params.allowed_error_strategies.contains(params.error_strategy)) {
+  exit 1, "Error strategy \"${params.error_strategy}\" is not correct. Please choose one of: ${params.allowed_error_strategies.join(", ")}."
 }
 
 // Check if user has set adapter sequence. If not set is based on the value of the singleEnd parameter
@@ -171,7 +228,9 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
+if (params.stranded) {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
+log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
@@ -199,6 +258,8 @@ log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info "Debug                       : ${params.debug}"
+log.info "Error strategy              : ${config.process.errorStrategy}"
+log.info "Workdir cleanup             : ${params.cleanup}"
 log.info ""
 log.info "\n"
 
@@ -207,22 +268,30 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(download_from('gtex') || download_from('sra') || download_from('tcga')) {
+  if(download_from('gtex') || download_from('sra') || download_from('tcga') ){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
         .map { sample -> sample[0].trim() }
         .set { accession_ids }
-   }
-   if(download_from('gen3-drs')){
-       Channel
+  }
+  if(download_from('gen3-drs')){
+      Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
         .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
         .set { ch_gtex_gen3_ids }
-   }
+  }
+  if(download_from('ftp')){
+    Channel
+        .fromPath(params.reads)
+        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
+        .splitCsv(skip:1)
+        .map { sample -> sample[0].trim() }
+        .set { accession_ids_ftp }
+  }
 } 
 // TODO: combine single and paired-end channel definitions
 if (!params.download_from && params.singleEnd && !params.bams) {
@@ -295,29 +364,98 @@ if ( download_from('gen3-drs')) {
         .set {ch_genome_fasta}
 }
 
+if ( download_from('sra')) {
+    Channel
+        .value(file(params.sra_config_file))
+        .set {ch_sra_config_file}
+}
+
+
 /*--------------------------------------------------
   Download FASTQs from GTEx or SRA
 ---------------------------------------------------*/
 
 if ( download_from('gtex') || download_from('sra') ) {
   process get_accession {
+    publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
+
     tag "${accession}"
     label 'tiny_memory'
     
     input:
     val(accession) from accession_ids
     each file(key_file) from key_file
+    file(sra_config) from ch_sra_config_file
     
     output:
     set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+	  file("command-logs-*") optional true
 
     script:
     def ngc_cmd_with_key_file = key_file.name != 'no_key_file.txt' ? "--ngc ${key_file}" : ''
     output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
     """
+    mkdir .ncbi
+    mv ${sra_config} .ncbi/
     prefetch $ngc_cmd_with_key_file $accession --progress -o $accession
     fasterq-dump $ngc_cmd_with_key_file $accession --threads ${task.cpus} --split-3
     pigz *.fastq
+
+    # save .command.* logs
+    ${params.savescript}
+    """
+  }
+} 
+
+if ( download_from('ftp') ) {
+  process get_ftp_accession {
+    publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
+    
+    tag "${accession}"
+    label 'tiny_memory'
+
+    input:
+    val(accession) from accession_ids_ftp
+
+    output:
+    set val(accession), file(output_filename), val(params.singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+
+    script:
+    output_filename = params.singleEnd ? "${accession}.fastq.gz" : "${accession}_{1,2}.fastq.gz"
+    isSingle = params.singleEnd ? "true" : "false"
+
+    """
+    PREFIX="\$(echo "$accession" | head -c 6)"
+    FTP_PATH="ftp://ftp.sra.ebi.ac.uk/vol1/fastq/\${PREFIX}"
+    SAMPLE=$accession
+
+    if [[ "\${#SAMPLE}" == "9" ]]; then
+      FTP_PATH="\${FTP_PATH}/$accession/$accession"
+    elif [[ "\${#SAMPLE}" == "10" ]]; then
+      SUFFIX="\${SAMPLE: -1}" 
+      FTP_PATH="\${FTP_PATH}/00\${SUFFIX}/$accession/$accession"
+    elif [[ "\${#SAMPLE}" == "11" ]]; then
+      SUFFIX="\${SAMPLE: -2}" 
+      FTP_PATH="\${FTP_PATH}/0\${SUFFIX}/$accession/$accession"      
+    else    
+      SUFFIX="\${SAMPLE: -3}"    
+      FTP_PATH="\${FTP_PATH}/\${SUFFIX}/$accession/$accession"
+    fi
+
+    echo \$SAMPLE
+    echo \$FTP_PATH
+
+    if [ "$isSingle" = true ] ; then
+      {
+        wget "\${FTP_PATH}.fastq.gz"
+      } || {
+        wget "\${FTP_PATH}_1.fastq.gz" 
+        mv ${accession}_1.fastq.gz ${accession}.fastq.gz
+      }
+    else
+      wget "\${FTP_PATH}_1.fastq.gz"
+      wget "\${FTP_PATH}_2.fastq.gz"
+    fi
     """
   }
 }
@@ -330,7 +468,8 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      
+      publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
+
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
@@ -338,6 +477,7 @@ if ( download_from('gen3-drs')) {
       
       output:
       set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      file("command-logs-*") optional true
       
       script:
       """
@@ -358,6 +498,9 @@ if ( download_from('gen3-drs')) {
           if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
           samtools view -b -T ${genome_fasta} -o \${sample_name}.bam \${sample_name}.cram
       fi
+
+      # save .command.* logs
+      ${params.savescript}
       """
   }
 } 
@@ -370,6 +513,7 @@ if (download_from('tcga')) {
   process get_tcga_bams {
     tag "${accession}"
     label 'low_memory'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
     
     input:
     val(accession) from accession_ids
@@ -378,6 +522,7 @@ if (download_from('tcga')) {
     output:
     set val(accession), file("*.bam"), env(singleEnd) into bamtofastq
     file("${accession}_paired_info.csv") into paired_info
+	  file("command-logs-*") optional true
 
     script:
     // TODO: improve download speed by using `-n N_CONNECTIONS`
@@ -398,6 +543,9 @@ if (download_from('tcga')) {
 
     echo "sample_id,n_single_reads,n_paired_reads,single_end" > ${accession}_paired_info.csv
     echo "$accession,\$n_single_reads,\$n_paired_reads,\$singleEnd" >> ${accession}_paired_info.csv
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -413,12 +561,14 @@ if (download_from('tcga') || download_from('gen3-drs')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
-    
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}/", pattern: "command-logs-*", mode: 'copy'
+
     input:
     set val(name), file(bam), val(singleEnd) from bamtofastq
     
     output:
     set val(name), file("*.fastq.gz"), val(singleEnd) into raw_reads_fastqc, raw_reads_trimmomatic
+	  file("command-logs-*") optional true
 
     script:
     // samtools takes memory per thread
@@ -431,6 +581,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
       """
       bedtools bamtofastq -i $bam -fq ${name}.fastq
       pigz *.fastq
+
+      # save .command.* logs
+      ${params.savescript}
       """
     } else {
       """
@@ -440,6 +593,9 @@ if (download_from('tcga') || download_from('gen3-drs')) {
         -fq ${name}_1.fastq \
         -fq2 ${name}_2.fastq
       pigz *.fastq
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
   }
@@ -454,17 +610,22 @@ if (!params.bams){
   process fastqc {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/raw", mode: 'copy'
+    publishDir "${params.outdir}/QC/raw", pattern: "*_fastqc.{zip,html}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from raw_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_raw
+    file("command-logs-*") optional true
 
     script:
     """
     fastqc --casava --threads $task.cpus $reads
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -482,6 +643,7 @@ if (!params.bams){
   process trimmomatic {
     tag "$name"
     label 'low_memory'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
@@ -489,6 +651,7 @@ if (!params.bams){
     output:
     set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
+    file("command-logs-*") optional true
 
     script:
     mode = singleEnd ? 'SE' : 'PE'
@@ -512,6 +675,9 @@ if (!params.bams){
 
     mkdir logs
     cp .command.log logs/${name}_trimmomatic.log
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -522,17 +688,22 @@ if (!params.bams){
   process fastqc_trimmed {
     tag "$name"
     label 'low_memory'
-    publishDir "${params.outdir}/QC/trimmed", mode: 'copy'
+    publishDir "${params.outdir}/QC/trimmed", pattern: "*_fastqc.{zip,html}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results_trimmed
+    file("command-logs-*") optional true
 
     script:
     """
     fastqc --casava --threads $task.cpus $reads
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -569,7 +740,9 @@ if (!params.bams){
   process star {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*{out.bam,out.bam.bai,out,ReadsPerGene.out.tab,SJ.out.tab}*" , mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "*Unmapped*", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/", mode: 'copy',
       saveAs: {filename -> 
           if (filename.indexOf(".bw") > 0) "all_bigwig/${name}.bw"
@@ -588,17 +761,19 @@ if (!params.bams){
     file "*Log.out" into star_log
     file "*Unmapped*" optional true
     file "${name}.bw"
+    file("command-logs-*") optional true
 
     script:
     // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
     // TODO: find a better solution to needing to use `chmod`
     out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
     out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v strType=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
     avail_mem_bam_sort = star_mem ? "--limitBAMsortRAM ${star_mem.toBytes() - 2000000000}" : ''
+    save_unmapped_reads = params.save_unmapped ? '--outReadsUnmapped Fastx' : ''
     """
     ${pre_script_run_resource_status}
 
@@ -630,7 +805,7 @@ if (!params.bams){
       --twopassMode Basic \
       --alignEndsType $endsType \
       --alignIntronMax 1000000 \
-      --outReadsUnmapped Fastx \
+      $save_unmapped_reads \
       --quantMode GeneCounts \
       --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
@@ -638,8 +813,12 @@ if (!params.bams){
     $xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
-    
+
     ${post_script_run_resource_status}
+    rm -r ${file(index).name.minus('.gz').minus('.tar')}   # not simpleName or twice baseName because index has dot's in name:  star_2.7.9a_yeast_chr_I.tar.gz
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 }
@@ -653,7 +832,8 @@ if (!params.test) {
   process stringtie {
     tag "$name"
     label 'mega_memory'
-    publishDir "${params.outdir}/star_mapped/${name}", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
@@ -662,12 +842,16 @@ if (!params.test) {
     output:
     file "${name}.gtf" into stringtie_gtf
     file "${name}_for_DGE.gtf" into stringtie_dge_gtf
+    file("command-logs-*") optional true
 
     script: 
     rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
     """
     stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
     stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -677,7 +861,8 @@ if (!params.test) {
 
   process prep_de {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/count_matrix", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/count_matrix", pattern: "{sample_lst.txt,*gene_count_matrix.csv,*transcript_count_matrix.csv}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(gtf) from stringtie_dge_gtf.collect()
@@ -686,6 +871,7 @@ if (!params.test) {
     file "sample_lst.txt"
     file "*gene_count_matrix.csv"
     file "*transcript_count_matrix.csv"
+    file("command-logs-*") optional true
 
     script: 
     """
@@ -694,6 +880,9 @@ if (!params.test) {
     paste -d ' ' samples.txt gtfs.txt > sample_lst.txt
     prepDE.py -i sample_lst.txt  -l $params.readlength \
               -g ${run_prefix}_gene_count_matrix.csv -t ${run_prefix}_transcript_count_matrix.csv
+
+    # save .command.* logs
+    ${params.savescript}
     """
   } 
 
@@ -703,7 +892,8 @@ if (!params.test) {
 
   process stringtie_merge {
     label 'mid_memory'
-    publishDir "${params.outdir}/star_mapped/stringtie_merge", mode: 'copy'
+    publishDir "${params.outdir}/star_mapped/stringtie_merge", pattern: "{gffcmp.annotated.corrected.gtf,gffcmp.*}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file('*.gtf') from stringtie_gtf.collect()
@@ -712,6 +902,7 @@ if (!params.test) {
     output:
     file "gffcmp.annotated.corrected.gtf" into merged_gtf
     file "gffcmp.*" into gffcmp
+    file("command-logs-*") optional true
 
     script:
     """
@@ -720,6 +911,9 @@ if (!params.test) {
     gffcompare -R -V -r $gtf stringtie_merged.gtf
     correct_gene_names.R
     gffread -E gffcmp.annotated.corrected.gff -T -o gffcmp.annotated.corrected.gtf
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 
@@ -768,7 +962,8 @@ if (!params.test) {
     process rmats {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -779,6 +974,8 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into rmats_out
+      file "tmp/*_read_outcomes_by_bam.txt"
+      file("command-logs-*") optional true
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
@@ -825,6 +1022,9 @@ if (!params.test) {
       echo rmats_id        ${rmats_id} >> \$rmats_config
       
       LU_postprocessing.R
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
 
@@ -840,7 +1040,8 @@ if (!params.test) {
     process paired_rmats {
       tag "$name1 $name2"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
@@ -851,6 +1052,8 @@ if (!params.test) {
 
       output:
       file "*.{txt,csv}" into paired_rmats_out
+      file "tmp/*_read_outcomes_by_bam.txt"
+      file("command-logs-*") optional true
 
       script:
       libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
@@ -886,6 +1089,9 @@ if (!params.test) {
       echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
       
       LU_postprocessing.R
+
+      # save .command.* logs
+      ${params.savescript}
       """
     }
   }
@@ -898,7 +1104,8 @@ if (!params.test) {
 if (!params.bams) {
   process multiqc {
     label 'mega_memory'
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+    publishDir "${params.outdir}/MultiQC", pattern: "{*multiqc_report.html,*_data/*,trimmomatic}", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     when:
     !params.skipMultiQC
@@ -908,15 +1115,21 @@ if (!params.bams) {
     file (fastqc:'fastqc/*') from fastqc_results_trimmed.collect().ifEmpty([])
     file ('alignment/*') from alignment_logs.collect().ifEmpty([])
     file (multiqc_config) from multiqc_config
+    file ('trimmomatic/*') from trimmomatic_logs.collect()
 
     output:
     file "*multiqc_report.html" into multiqc_report
     file "*_data/*"
+    file ('trimmomatic')
+    file("command-logs-*") optional true
 
     script:
     """
-    multiqc . --config $multiqc_config -m fastqc -m star
+    multiqc . --config $multiqc_config -m fastqc -m star -m trimmomatic
     cp multiqc_report.html ${run_prefix}_multiqc_report.html
+
+    # save .command.* logs
+    ${params.savescript}
     """
   }
 }
@@ -927,9 +1140,11 @@ if (!params.bams) {
 process collect_tool_versions_env1 {
     // TODO: This collects tool versions for only one base enviroment/container - 'gcr.io/nextflow-250616/splicing-pipelines-nf:gawk'
     // need to get tool versions from other enviroment/container
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     output:
     file("tool_versions.txt") into ch_tool_versions
+    file("command-logs-*") optional true
 
     script:
     """
@@ -942,27 +1157,57 @@ process collect_tool_versions_env1 {
     conda list -n splicing-pipelines-nf | grep multiqc | tail -n 1 >> tool_versions.txt
     conda list -n splicing-pipelines-nf | grep gffread | tail -n 1 >> tool_versions.txt
     echo -e "stringtie" ' \t\t\t\t ' \$(stringtie --version) >> tool_versions.txt
+
+    # save .command.* logs
+    ${params.savescript}
     """
 }
 
 process collect_tool_versions_env2 {
     echo true
-    publishDir "${params.outdir}", mode: 'copy'
-    
+    publishDir "${params.outdir}/tool-versions/env2/", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(tool_versions) from ch_tool_versions
 
     output:
     file("tool_versions.txt") into ch_all_tool_versions
+    file("command-logs-*") optional true
 
     script:
     """
     conda list -n rmats4 | grep rmats | tail -n 1 >> tool_versions.txt
+
+    # save .command.* logs
+    ${params.savescript}
     """
 }
 
 // define helper function
 def download_from(db) {
   download_from.toLowerCase().contains(db)
+}
+
+
+// Completion notification
+
+workflow.onComplete {
+
+    c_green = "\033[0;32m";
+    c_purple = "\033[0;35m";
+    c_red = "\033[0;31m";
+    c_reset = "\033[0m";
+
+    if (workflow.success) {
+        log.info "-${c_purple}[splicing-pipelines-nf]${c_green} Pipeline completed successfully${c_reset}-"
+        if (params.cleanup) {
+          log.info "-${c_purple}[splicing-pipelines-nf]${c_green} Cleanup: Working directory cleared from intermediate files generated with current run: '${workflow.workDir}'  ${c_reset}-"
+        }
+    } else { // To be shown requires errorStrategy = 'finish'
+        log.info "-${c_purple}[splicing-pipelines-nf]${c_red} Pipeline completed with errors${c_reset}-"
+        if (params.cleanup) {
+          log.info "-${c_purple}[splicing-pipelines-nf]${c_red} Cleanup: Working directory was not cleared from intermediate files due to pipeline errors. You can re-use them with -resume option.  ${c_reset}-"
+        }
+    }
 }

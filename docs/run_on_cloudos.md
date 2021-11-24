@@ -29,7 +29,7 @@ If you want to start a new analysis, select `new analysis` in upper right corner
 
 Enter all parameters as shown below. [LU BA add note about which parameter is different between cloud and sumner]. There are defaults on CloudOS just like on Sumner, but it is often good to specify each parameter you want. 
 
-If analyzing TCGA, GTEX, or SRA, you will need to specify the `download_from` parameter. Each of these three inputs have slightly different processes that are run. For example, TCGA will download the bams and perform bamtofastq step. [For more information](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf)
+If analyzing TCGA, GTEX, SRA (SRA Toolkit) or FTP (SRA FTP), you will need to specify the `download_from` parameter by either passing `TCGA`, `GTEX`, `SRA` or `FTP` respectively. Each of these inputs have slightly different processes that are run. For example, TCGA will download the bams and perform bamtofastq step. [For more information](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf)
 
 ![run_splicing_pip](https://raw.githubusercontent.com/lifebit-ai/images/master/jax_splicing/run_splicing_pip.gif)
 

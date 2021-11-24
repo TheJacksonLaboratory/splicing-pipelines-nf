@@ -1,14 +1,15 @@
 name: splicing-pipelines-nf CI
 # This workflow is triggered on pushes and PRs to the repository.
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
-  test:
+  docker:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        nxf_ver: ['19.04.0', '']
-        max_retries: [1, 10]
+        nxf_ver: ['20.01.0', '']
+        test_type: ['ultra_quick_test', 'sra_test']
     steps:
       - uses: actions/checkout@v1
       - name: Install Nextflow
@@ -18,4 +19,27 @@ jobs:
           sudo mv nextflow /usr/local/bin/
       - name: Basic workflow tests
         run: |
-          nextflow run ${GITHUB_WORKSPACE} --max_retries ${{ matrix.max_retries }} -profile base,ultra_quick_test,docker
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},docker
+          echo "Results tree view:" ; tree -a results
+  singularity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        singularity_version: ['3.6.4']
+        nxf_ver: ['20.01.0', '']
+        test_type: ['ultra_quick_test', 'sra_test']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: eWaterCycle/setup-singularity@v6
+        with:
+          singularity-version: ${{ matrix.singularity_version }}
+      - name: Install Nextflow
+        run: |
+          export NXF_VER=${{ matrix.nxf_ver }}
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+      - name: Basic workflow tests
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile base,${{ matrix.test_type }},singularity --echo true
+          echo "Results tree view:" ; tree -a results
