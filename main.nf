@@ -476,7 +476,7 @@ if ( download_from('gen3-drs')) {
       each file(genome_fasta) from ch_genome_fasta
       
       output:
-      set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      set stdout, file("*.bam"), val(false) into bamtofastq
       file("command-logs-*") optional true
       
       script:
@@ -501,6 +501,8 @@ if ( download_from('gen3-drs')) {
 
       # save .command.* logs
       ${params.savescript}
+
+      printf "\$sample_name"
       """
   }
 } 
