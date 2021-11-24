@@ -1,13 +1,24 @@
 # Changelog
 
-## v 1.1 - Pipeline improvements
+### v2.0 - Pipeline improvements
 
-### Fixes:
- - Added missing trimmomatic logs to the multiqc report
- - Implemented correct support for input strandness in star process when `--stranded` is `second-strand` (was hardcoded to `strType=2` and only supported `first-strand` or `false` before)
+#### Improvements:
+ - Adds saving of all the process .command* log files to results/process-logs folder (#251)
+ - Adds pipeline workdir `--cleanup` option to clear all intermediate files on pipeline successful completion (true by default, false for CloudOS) (#238, #284, [089d6e3](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/pull/245/commits/3b71e038b186bb2bc92debacb02aede7b5dae917))
+ - Adds pipeline `--error_strategy` parameter to be able to specify pipeline error strategy directly from command line (doesn't work if specified in config linked by `-c` or `-config` nextflow params) (#267)
+ - Parametrizes google executor parameters so that pipeline can now be run on different CloudOS environments (#281)
+ - Adds a new `--download_from` option `FTP` mode to download SRA samples from [EBI FTP](https://ftp.sra.ebi.ac.uk/vol1/fastq/) (#283)
+- Adds new parameter `--save_unmapped` that makes saving of STAR unmapped files optional (false by default) (#284)
 
-### Updates:
- - Updated the following tools:
+#### Fixes:
+ - Adds missing trimmomatic logs to the multiqc report (#244)
+ - Implemented correct support for input strandness in star process when `--stranded` is `second-strand` (was hardcoded to `strType=2` and only supported `first-strand` or `false` before) (#264)
+ - Issue that stringti_merged results folder as well as some other folders are missing all or some files (#263)
+ - Fix pipeline crash when `params.stranded` was set to `false` (#276)
+ - Fixes old parameters in google.config that were undesirably overwriting nextflow.config parameters on CloudOS (#281, [217e202](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/pull/245/commits/217e202cab3264c9d2d4cafe80b2476a2d837a85))
+ 
+#### Updates:
+ - Updates the following tools: (#248)
    - **STAR** `2.7.3` -> `2.7.9a` NOTE: Requires a new index! (updated in test profile)
    - **Samtools** `1.10` -> `1.13`
    - **StringTie** `2.1.3b` -> `2.1.7`
@@ -20,15 +31,11 @@
    - sra-tools `2.10.8` -> `2.11.0`
    - pigz `2.3.4` -> `2.6.0`
    - gdc-client `1.5.0` -> `1.6.1`
- - Moved all containers to https://hub.docker.com/u/anczukowlab
+ - Moves all containers to https://hub.docker.com/u/anczukowlab
 
-### Maintenance:
- - Consideably reduced number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
- - Added CI test for sra-downloading pipeline pathway (only supported with docker profile for now)
+#### Maintenance:
+ - Consideably reduces number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
+ - Adds CI test for sra-downloading pipeline pathway (only supported with docker profile for now) (#253)
 
-### Enhancements:
- - Added saving of all the process .command* log files to results/process-logs folder
- - Added pipeline workdir `--cleanup` option to clear all intermediate files on pipeline successful completion
- - Added pipeline `--error_strategy` parameter to be able to specify pipeline error strategy directly from command line (doesn't work if specified in config linked by `-c` or `-config` nextflow params)
-
+ 
 ## v 1.0 - Initial pipeline release
