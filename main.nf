@@ -281,7 +281,7 @@ if (params.download_from) {
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
-        .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
+        .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
         .set { ch_gtex_gen3_ids }
   }
   if(download_from('ftp')){
@@ -471,7 +471,7 @@ if ( download_from('gen3-drs')) {
       publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
-      set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
+      set val(md5sum), val(file_name), val(obj_id), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
       each file(genome_fasta) from ch_genome_fasta
       
