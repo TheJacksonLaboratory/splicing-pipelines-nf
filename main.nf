@@ -468,7 +468,7 @@ if ( download_from('gen3-drs')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
       set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
@@ -476,7 +476,7 @@ if ( download_from('gen3-drs')) {
       each file(genome_fasta) from ch_genome_fasta
       
       output:
-      set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      set stdout, file("*.bam"), val(false) into bamtofastq
       file("command-logs-*") optional true
       
       script:
@@ -489,7 +489,7 @@ if ( download_from('gen3-drs')) {
       if [[ \$signed_url == *".bam"* ]]; then
           wget -O \${sample_name}.bam \$(echo \$signed_url)
           file_md5sum=\$(md5sum \${sample_name}.bam)
-          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then echo "md5 sum verification failed" > md5sum_check.log; exit 1; else echo "file is good" > md5sum_check.log; fi
       fi
       
       if [[ \$signed_url == *".cram"* ]]; then
@@ -501,6 +501,8 @@ if ( download_from('gen3-drs')) {
 
       # save .command.* logs
       ${params.savescript}
+
+      printf "\$sample_name"
       """
   }
 } 
