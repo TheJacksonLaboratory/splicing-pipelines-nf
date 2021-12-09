@@ -471,7 +471,7 @@ if ( download_from('gen3-drs')) {
       publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
-      set val(md5sum), val(file_name), val(obj_id), val(obj_id), val(file_size) from ch_gtex_gen3_ids
+      set val(md5sum), val(file_name), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
       each file(genome_fasta) from ch_genome_fasta
       
