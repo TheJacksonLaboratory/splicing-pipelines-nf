@@ -103,13 +103,13 @@ Input files:
                                 (default: no rmats_pairs specified)
     --run_name                  User specified name used as prefix for output files
                                 (defaut: no prefix, only date and time)
-    --download_from             Database to download FASTQ/BAMs from (available = 'TCGA', 'GEN3-DRS', 'SRA', 'FTP')
+    --download_from             Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX', 'SRA', 'FTP')
                                 (string)
                                 false should be used to run local files on the HPC (Sumner).
                                 'TCGA' can also be used to download GDC data including HCMI data.
                                 (default: false)
     --key_file                  For downloading reads, use TCGA authentication token (TCGA) or
-                                credentials.json file in case of 'GEN3-DRS'.
+                                credentials.json file in case of 'GTEX'.
                                 (default: false)
 
 Main arguments:
@@ -246,7 +246,11 @@ Some useful ones include (specified in main.pbs):
 - `-with-trace` eg `-with-trace trace.txt` which gives a [trace report](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#trace-report) for resource consumption by the pipeline
 - `-with-dag` eg `-with-dag flowchart.png` which produces the [DAG visualisation](https://www.nextflow.io/docs/latest/tracing.html?highlight=dag#dag-visualisation) graph showing each of the different processes and the connections between them (the channels)
 
-## Run with data from AnviL Gen3-DRS
+## Run with GTEX data from AnviL Gen3-DRS
+You can run pipeline on GTEX data otained directly from Gen3-DRS if you specify input option:
+```
+--download_from 'GTEX'
+```
 
 You will be needing two things from - https://gen3.theanvil.io/
 
@@ -262,7 +266,7 @@ in2csv manifest.json > manifest.csv
 
 NOTE: Make sure the `manifest.csv` file have five columns, Check from [examples](../examples/gen3/)
 
-Downloaded `credentials.json` file can be provided in `--key` param.
+Downloaded `credentials.json` file can be provided in `--key_file` param.
 
 NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when you download.
 
