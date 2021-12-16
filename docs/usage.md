@@ -266,7 +266,8 @@ Downloaded `credentials.json` file can be provided in `--key` param.
 
 NOTE: Make sure `credentials.json` is a latest one. They have expiry dates when you download.
 
-If you running with AnviL Gen3-DRS files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format.
+If you running with AnviL Gen3-DRS to download CRAM files you also need to provide a Genome fasta file with `--genome_fasta`, which will be used to convert CRAM files to BAM format. If you are donwloading bam files, you
+can skip this parameter.
 
 For a minimal params list check [gen3_drs.config](../conf/examples/GEN3_DRS_config.md)
 
