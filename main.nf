@@ -268,7 +268,7 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(download_from('gtex') || download_from('sra') || download_from('tcga') ){
+  if( download_from('sra') || download_from('tcga') ){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -372,10 +372,10 @@ if ( download_from('sra')) {
 
 
 /*--------------------------------------------------
-  Download FASTQs from GTEx or SRA
+  Download FASTQs from SRA
 ---------------------------------------------------*/
 
-if ( download_from('gtex') || download_from('sra') ) {
+if ( download_from('sra') ) {
   process get_accession {
     publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
 
