@@ -355,9 +355,10 @@ if (params.rmats_pairs) {
 }
 
 if ( download_from('gen3-drs')) {
-    if(!params.genome_fasta){
-    exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
-    }
+    // The fasta obligatory requirement below is removed, because for the foreseeable future GTEX transcriptomic data will be only accessed as bam files, which do not require a fasta file, as CRAM files.
+    //if(!params.genome_fasta){
+    //exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
+    //}
     Channel
         .fromPath(params.genome_fasta)
         .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
