@@ -37,13 +37,13 @@ def helpMessage() {
                                     (default: no rmats_pairs specified)
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GEN3-DRS', 'SRA', 'FTP')
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX', 'SRA', 'FTP')
                                     (string)
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or
-                                    credentials.json file in case of 'GEN3-DRS'.
+                                    credentials.json file in case of 'GTEX'.
                                     (default: false)
 
     Main arguments:
@@ -276,7 +276,7 @@ if (params.download_from) {
         .map { sample -> sample[0].trim() }
         .set { accession_ids }
   }
-  if(download_from('gen3-drs')){
+  if(download_from('gtex')){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -354,7 +354,7 @@ if (params.rmats_pairs) {
     .set { samples}
 }
 
-if ( download_from('gen3-drs')) {
+if ( download_from('gtex')) {
     if(!params.genome_fasta){
     exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
     }
@@ -464,7 +464,7 @@ if ( download_from('ftp') ) {
   Download BAMs from GTEx using GEN3_DRS 
 ---------------------------------------------------*/
 
-if ( download_from('gen3-drs')) {
+if ( download_from('gtex')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
@@ -559,7 +559,7 @@ if (download_from('tcga')) {
   Bedtools to extract FASTQ from BAM
 ---------------------------------------------------*/
 
-if (download_from('tcga') || download_from('gen3-drs')) {
+if (download_from('tcga') || download_from('gtex')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
