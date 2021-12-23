@@ -277,12 +277,18 @@ if (params.download_from) {
         .set { accession_ids }
   }
   if(download_from('gen3-drs')){
+    // TODO - Reads parameter optional. If not provided use all data in manifest
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
         .splitCsv(skip:1)
-        .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
-        .set { ch_gtex_gen3_ids }
+        .map { file_name -> [file_name] }
+        .set { ch_gtex_gen3_reads }
+
+      Channel
+        .fromPath(params.manifest)
+        .ifEmpty { exit 1, "Cannot find manifest file : ${params.manifest}" }
+        .set { ch_gtex_gen3_manifest }
   }
   if(download_from('ftp')){
     Channel
@@ -465,6 +471,27 @@ if ( download_from('ftp') ) {
 ---------------------------------------------------*/
 
 if ( download_from('gen3-drs')) {
+  process in2csv {
+    label 'tiny_memory'
+    publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest
+
+    output:
+    file("*.csv") into ch_gtex_gen3_manifest_csv
+
+    script:
+    """
+    filename=$(basename $manifest .json)
+    in2csv $manifest > \${filename}.csv
+    """
+  }
+  ch_gtex_gen3_manifest_csv.
+    .splitCsv(skip:1)
+    .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
+    .set { ch_gtex_gen3_ids }
+
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
