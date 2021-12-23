@@ -42,6 +42,8 @@ def helpMessage() {
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
+      --manifest                    Manifest file to download data from GTEX. (string)
+                                    (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
                                     key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
                                     (default: false)
