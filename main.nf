@@ -480,7 +480,7 @@ if ( download_from('gen3-drs')) {
 
     script:
     """
-    filename=$(basename $manifest .json)
+    filename=\$(basename $manifest .json)
     in2csv $manifest > \${filename}.csv
     """
   }
@@ -506,7 +506,7 @@ if ( download_from('gen3-drs')) {
     """
   }
 
-  ch_gtex_gen3_filtered_manifest_csv.
+  ch_gtex_gen3_filtered_manifest_csv
     .splitCsv(skip:1)
     .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
     .set { ch_gtex_gen3_ids }
