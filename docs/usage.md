@@ -216,11 +216,11 @@ Other:
                                 (default: false)
     --error_strategy            Mode of pipeline handling failed processes.
                                 Possible values: 'terminate', 'finish', 'ignore', 'retry'.
-                                Check nextflow documentation for detailed descriptions of each mode:
+                                Check nextflow documnetation for detailed descriptions of each mode:
                                 https://www.nextflow.io/docs/latest/process.html#process-page-error-strategy
                                 Set this parameter in the main.pbs, on the command line, or see NF_splicing_pipeline.config
                                 example (does not work like normal config param)
-                                This does not overwrite CloudOS config, which is set to:
+                                This does not overwrited CloudOS config, which is set to:
                                 'errorStrategy = { task.exitStatus in [3,9,10,14,143,137,104,134,139] ? 'retry': 'ignore'}
                                 (default (non-cloudos): 'finish')
     --cleanup                   This option will enable nextflow work folder cleanup upon pipeline successfull
