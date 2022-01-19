@@ -42,6 +42,8 @@ def helpMessage() {
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
+      --manifest                    Manifest file to download data from GTEX. (string)
+                                    (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
                                     key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
                                     (default: false)
@@ -277,12 +279,12 @@ if (params.download_from) {
         .set { accession_ids }
   }
   if(download_from('gen3-drs')){
-      Channel
-        .fromPath(params.reads)
-        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
-        .splitCsv(skip:1)
-        .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
-        .set { ch_gtex_gen3_ids }
+    ch_gtex_gen3_reads = params.reads ? Channel.fromPath(params.reads) : "null"
+
+    Channel
+      .fromPath(params.manifest)
+      .ifEmpty { exit 1, "Cannot find manifest file : ${params.manifest}" }
+      .set { ch_gtex_gen3_manifest }
   }
   if(download_from('ftp')){
     Channel
@@ -362,6 +364,7 @@ if ( download_from('gen3-drs')) {
         .fromPath(params.genome_fasta)
         .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
         .set {ch_genome_fasta}
+  filter_manifest_py = Channel.fromPath("${projectDir}/bin/filter_manifest.py",  type: 'file', followLinks: false)
 }
 
 if ( download_from('sra')) {
@@ -465,6 +468,49 @@ if ( download_from('ftp') ) {
 ---------------------------------------------------*/
 
 if ( download_from('gen3-drs')) {
+  process in2csv {
+    label 'tiny_memory'
+    publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest
+
+    output:
+    file("*.csv") into ch_gtex_gen3_manifest_csv
+
+    script:
+    """
+    filename=\$(basename $manifest .json)
+    in2csv $manifest > \${filename}.csv
+    """
+  }
+
+  process filter_manifest {
+    label "tiny_memory"
+    publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}", pattern: "*.txt"
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest_csv
+    file(reads) from ch_gtex_gen3_reads
+    each file("filter_manifest.py") from filter_manifest_py
+
+    output:
+    file("*.txt")
+    file("filtered_manifest.csv") into ch_gtex_gen3_filtered_manifest_csv
+
+    script:
+    optional_reads = params.reads ? "$reads": "PASS"
+    """
+    filter_manifest.py $manifest $optional_reads
+    """
+  }
+
+  ch_gtex_gen3_filtered_manifest_csv
+    .splitCsv(skip:1)
+    .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
+    .set { ch_gtex_gen3_ids }
+
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
