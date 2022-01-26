@@ -359,10 +359,9 @@ if ( download_from('gen3-drs')) {
     //if(!params.genome_fasta){
     //exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
     //}
-    Channel
-        .fromPath(params.genome_fasta)
-        .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
-        .set {ch_genome_fasta}
+
+    ch_genome_fasta = params.genome_fasta ? Channel.value(file(params.genome_fasta)) : "null"
+
 }
 
 if ( download_from('sra')) {
