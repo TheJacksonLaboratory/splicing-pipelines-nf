@@ -367,7 +367,6 @@ if ( download_from('gen3-drs')) {
         .fromPath(params.genome_fasta)
         .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
         .set {ch_genome_fasta}
-  filter_manifest_py = Channel.fromPath("${projectDir}/bin/filter_manifest.py",  type: 'file', followLinks: false)
 }
 
 if ( download_from('sra')) {
@@ -496,7 +495,6 @@ if ( download_from('gen3-drs')) {
     input:
     file(manifest) from ch_gtex_gen3_manifest_csv
     file(reads) from ch_gtex_gen3_reads
-    each file("filter_manifest.py") from filter_manifest_py
 
     output:
     file("*.txt")
