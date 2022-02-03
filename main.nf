@@ -488,7 +488,7 @@ if ( download_from('gen3-drs')) {
 
   process filter_manifest {
     label "tiny_memory"
-    publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
+    publishDir "${params.outdir}/manifest
     publishDir "${params.outdir}", pattern: "*.txt"
 
     input:
