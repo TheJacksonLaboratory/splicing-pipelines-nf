@@ -472,7 +472,6 @@ if ( download_from('ftp') ) {
 if ( download_from('gen3-drs')) {
   process in2csv {
     label 'tiny_memory'
-    publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(manifest) from ch_gtex_gen3_manifest
