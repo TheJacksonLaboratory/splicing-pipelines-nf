@@ -18,7 +18,10 @@ def __main__():
     if reads != "PASS":
         # process metadata
         reads_df = pd.read_csv(reads, index_col=None, header=0, delimiter=",")
-        manifest_df = manifest_df[manifest_df['file_name'].isin(reads_df['file_name'])]
+        manifest_df = manifest_df[manifest_df['file_name'].isin(reads_df['file_name'].to_list())]
+
+        print("Number of samples in filtered manifest:")
+        print(len(manifest_df))
 
         if manifest_df.empty:
             sys.exit(404, "Manifest file is empty after filtering.")
