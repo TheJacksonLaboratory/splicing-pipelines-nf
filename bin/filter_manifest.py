@@ -26,11 +26,6 @@ def __main__():
         if manifest_df.empty:
             sys.exit(404, "Manifest file is empty after filtering.")
         
-        if len(reads_df[~reads_df['file_name'].isin(manifest_df['file_name'])])>0:
-            print("The following file_name IDs where not found in manifest:")
-            print(reads_df[~reads_df['file_name'].isin(manifest_df['file_name'])])
-            reads_df[~reads_df['file_name'].isin(manifest_df['file_name'])].to_csv("not_found_GTEX_samples.txt", index=False)
-
     # save final manifest file
     manifest_df.to_csv("filtered_manifest.csv", sep=",", index=False) 
 
