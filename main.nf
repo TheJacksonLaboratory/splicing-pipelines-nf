@@ -37,13 +37,13 @@ def helpMessage() {
                                     (default: no rmats_pairs specified)
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS',
-                                    'SRA', 'FTP') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX', 'SRA', 'FTP')
+                                    (string)
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
-      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
-                                    key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or
+                                    credentials.json file in case of 'GTEX'.
                                     (default: false)
 
     Main arguments:
@@ -268,7 +268,7 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(download_from('gtex') || download_from('sra') || download_from('tcga') ){
+  if( download_from('sra') || download_from('tcga') ){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -276,7 +276,7 @@ if (params.download_from) {
         .map { sample -> sample[0].trim() }
         .set { accession_ids }
   }
-  if(download_from('gen3-drs')){
+  if(download_from('gtex')){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -354,7 +354,7 @@ if (params.rmats_pairs) {
     .set { samples}
 }
 
-if ( download_from('gen3-drs')) {
+if ( download_from('gtex')) {
     // The fasta obligatory requirement below is removed, because for the foreseeable future GTEX transcriptomic data will be only accessed as bam files, which do not require a fasta file, as CRAM files.
     //if(!params.genome_fasta){
     //exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
@@ -372,10 +372,10 @@ if ( download_from('sra')) {
 
 
 /*--------------------------------------------------
-  Download FASTQs from GTEx or SRA
+  Download FASTQs from SRA
 ---------------------------------------------------*/
 
-if ( download_from('gtex') || download_from('sra') ) {
+if ( download_from('sra') ) {
   process get_accession {
     publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
 
@@ -464,7 +464,7 @@ if ( download_from('ftp') ) {
   Download BAMs from GTEx using GEN3_DRS 
 ---------------------------------------------------*/
 
-if ( download_from('gen3-drs')) {
+if ( download_from('gtex')) {
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
@@ -559,7 +559,7 @@ if (download_from('tcga')) {
   Bedtools to extract FASTQ from BAM
 ---------------------------------------------------*/
 
-if (download_from('tcga') || download_from('gen3-drs')) {
+if (download_from('tcga') || download_from('gtex')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'
