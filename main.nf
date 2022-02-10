@@ -496,7 +496,7 @@ if ( download_from('gen3-drs')) {
     file(reads) from ch_gtex_gen3_reads
 
     output:
-    file("*.txt")
+    file("*.txt") optional true
     file("filtered_manifest.csv") into ch_gtex_gen3_filtered_manifest_csv
 
     script:
