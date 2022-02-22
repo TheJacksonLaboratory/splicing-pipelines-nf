@@ -6,7 +6,7 @@ You can run pipeline on GTEX data otained directly from Gen3-DRS if you specify 
 
 You will be needing two things from - https://gen3.theanvil.io/
 
-1. manifest file
+1. [manifest file](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/dev-v2.1/examples/GTEX/manifest.json)
 2. credentials file
 
 Original downloaded `manifest.json` will be converted into `manifest.csv` with pipeline using: https://csvkit.readthedocs.io/en/latest/ 
