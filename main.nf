@@ -24,7 +24,10 @@ def helpMessage() {
 
     Input files:
       --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files
-                                    for each read or read pair (path).
+                                    for each read or read pair (path). 
+				    When using the --download_from GTEX option the reads file must be a simple csv file listing
+				    bam file names to be processed in the analysis. The input manifest will be downsampled
+				    to only contain information about these files.
                                     This file is used if starting at beginning of pipeline. It can be file paths,
                                     s3 links or ftp link.
                                     (default: no reads.csv)
@@ -41,6 +44,8 @@ def helpMessage() {
                                     (string)
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
+                                    (default: false)
+      --manifest                    Manifest file to download data from GTEX. (string)
                                     (default: false)
       --key_file                    For downloading reads, use TCGA authentication token (TCGA) or
                                     credentials.json file in case of 'GTEX'.
@@ -277,12 +282,12 @@ if (params.download_from) {
         .set { accession_ids }
   }
   if(download_from('gtex')){
-      Channel
-        .fromPath(params.reads)
-        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
-        .splitCsv(skip:1)
-        .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
-        .set { ch_gtex_gen3_ids }
+    ch_gtex_gen3_reads = params.reads ? Channel.fromPath(params.reads) : "null"
+
+    Channel
+      .fromPath(params.manifest)
+      .ifEmpty { exit 1, "Cannot find manifest file : ${params.manifest}" }
+      .set { ch_gtex_gen3_manifest }
   }
   if(download_from('ftp')){
     Channel
@@ -464,7 +469,49 @@ if ( download_from('ftp') ) {
   Download BAMs from GTEx using GEN3_DRS 
 ---------------------------------------------------*/
 
+
 if ( download_from('gtex')) {
+  process in2csv {
+    label 'tiny_memory'
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest
+
+    output:
+    file("*.csv") into ch_gtex_gen3_manifest_csv
+
+    script:
+    """
+    filename=\$(basename $manifest .json)
+    in2csv $manifest > \${filename}.csv
+    """
+  }
+
+  process filter_manifest {
+    label "tiny_memory"
+    publishDir "${params.outdir}/manifest"
+    publishDir "${params.outdir}", pattern: "*.txt"
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest_csv
+    file(reads) from ch_gtex_gen3_reads
+
+    output:
+    file("*.txt") optional true
+    file("filtered_manifest.csv") into ch_gtex_gen3_filtered_manifest_csv
+
+    script:
+    optional_reads = params.reads ? "$reads": "PASS"
+    """
+    filter_manifest.py $manifest $optional_reads
+    """
+  }
+
+  ch_gtex_gen3_filtered_manifest_csv
+    .splitCsv(skip:1)
+    .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
+    .set { ch_gtex_gen3_ids }
+
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
