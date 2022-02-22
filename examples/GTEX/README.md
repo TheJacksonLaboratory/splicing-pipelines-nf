@@ -11,7 +11,7 @@ You will be needing two things from - https://gen3.theanvil.io/
 
 Original downloaded `manifest.json` will be converted into `manifest.csv` with pipeline using: https://csvkit.readthedocs.io/en/latest/ 
 
-The manifest.csv will be subset using the `reads.csv` file provided in `--reads` param. (This allows you to download a complete manifest and later select the samples of interest.)
+The manifest.csv will be subset using the `reads.csv` file provided in `--reads` param. (This allows you to download a complete manifest and later select the samples of interest.) For example: [gtex.reads](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/dev-v2.1/examples/GTEX/reads.csv)
 
 Downloaded `credentials.json` file can be provided in `--key_file` param.
 NOTE: Make sure `credentials.json` is a latest one. They have expiration dates when you download.
