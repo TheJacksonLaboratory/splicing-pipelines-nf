@@ -1,0 +1,14 @@
+[
+  {
+    "md5sum":"x1x111xxx1xxxxx1xx1x1x11xxx11111",
+    "file_name": "GTEX-XXXXX-XXXX-XX-XXXXX.Aligned.sortedByCoord.out.patched.md.bam",
+    "object_id":"dg.ANV0/yyyyyyyy-yyyy-yyyy-yyyyyyyyyyyy",
+    "file_size":123321365
+  },
+  {
+    "md5sum":"x2x222xxx2xxxxx2xx2x2x22xxx22222",
+    "file_name": "GTEX-XXXXX-XXXX-XX-XXXXZ.Aligned.sortedByCoord.out.patched.md.bam",
+    "object_id":"dg.ANV0/yyyyyyyy-yyyy-yyyy-yyyyyyyyyzzz",
+    "file_size":123321369
+  }
+]
