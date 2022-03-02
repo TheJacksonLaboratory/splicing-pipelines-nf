@@ -742,6 +742,7 @@ if (!params.test) {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", mode: 'copy'
+      echo true
 
       when:
       !params.skiprMATS
@@ -773,30 +774,14 @@ if (!params.test) {
         b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
       }
       """
-      echo $b1_bams > b1.txt
-      $b2_cmd
-      rmats.py \
-        --b1 b1.txt $b2_flag \
-        --gtf $gtf \
-        --od ./ \
-        --tmp tmp \
-        --libType $libType \
-        -t $mode \
-        --nthread $task.cpus \
-        --readLength ${params.readlength} \
-        --mil ${params.mil} \
-        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
-      rmats_config="config_for_rmats_and_postprocessing.txt"
-      echo b1 b1.txt > \$rmats_config
-      $b2_config_cmd
-      echo rmats_gtf       ${gtf} >> \$rmats_config
-      echo ref_gtf         ${gtf} >> \$rmats_config
-      echo fasta           ${params.assembly_name} >> \$rmats_config
-      echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
-      echo readlen         ${params.readlength} >> \$rmats_config
-      echo rmats_id        ${rmats_id} >> \$rmats_config
-      
-      LU_postprocessing.R
+      # Command to print the used and available disk size
+      echo "Disk space utilisation:"
+      df -h
+
+      # Command that creates fake files to ensure output files with the suffix "*.{txt,csv}"  are generated 
+      # and the process does not fail with output file not found error
+      touch fake_file.txt
+      touch fake_file.csv
       """
     }
 
@@ -813,6 +798,7 @@ if (!params.test) {
       tag "$name1 $name2"
       label 'high_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", mode: 'copy'
+      echo true
 
       when:
       !params.skiprMATS
@@ -832,32 +818,14 @@ if (!params.test) {
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
       """
-      ls $bam1 > b1.txt
-      ls $bam2 > b2.txt
-      rmats.py \
-        --b1 b1.txt \
-        --b2 b2.txt \
-        --gtf $gtf \
-        --od ./ \
-        --tmp tmp \
-        --libType $libType \
-        -t $mode \
-        --nthread $task.cpus \
-        --readLength ${params.readlength} \
-        --mil ${params.mil} \
-        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
-      rmats_config="config_for_rmats_and_postprocessing.txt"
-      echo b1 b1.txt > \$rmats_config
-      echo b2 b2.txt >> \$rmats_config
-      echo rmats_gtf $gtf >> \$rmats_config
-      echo rmats_gtf       ${gtf} >> \$rmats_config
-      echo ref_gtf         ${gtf} >> \$rmats_config
-      echo fasta           ${params.assembly_name} >> \$rmats_config
-      echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
-      echo readlen         ${params.readlength} >> \$rmats_config
-      echo rmats_id        ${name1}_vs_${name2} >> \$rmats_config
-      
-      LU_postprocessing.R
+      # Command to print the used and available disk size
+      echo "Disk space utilisation:"
+      df -h
+
+      # Command that creates fake files to ensure output files with the suffix "*.{txt,csv}"  are generated 
+      # and the process does not fail with output file not found error
+      touch fake_file.txt
+      touch fake_file.csv
       """
     }
   }
