@@ -167,6 +167,7 @@ log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "rMATS memory                : ${params.rmats_memory}
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
 log.info "Overhang                    : ${overhang}"
