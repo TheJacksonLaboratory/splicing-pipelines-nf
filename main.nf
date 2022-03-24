@@ -111,7 +111,10 @@ def helpMessage() {
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
-
+      --rmats_memory                Only specific to google-cloud executor. Sets base RAM requirement for rmats process.
+                                    (default: 120.GB)
+      --stringtie_merge_memory      Only specific to google-cloud executor. Sets base RAM requirement for stringtie_merge process.
+                                    (default: 30.GB)
     See here for more info: https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/usage.md
     """.stripIndent()
 }
@@ -167,6 +170,7 @@ log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
+log.info "stringtie merge memory      : ${params.stringtie_merge_memory}"
 log.info "rMATS memory                : ${params.rmats_memory}"
 log.info "Adapter                     : ${download_from('tcga') ? 'Will be set for each sample based based on whether the sample is paired or single-end' : adapter_file}"
 log.info "Read Length                 : ${params.readlength}"
