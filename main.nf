@@ -919,7 +919,8 @@ if (!params.test) {
   }
 
   // Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
-  gtf_to_combine.combine(merged_gtf).flatten().into({ gtf_rmats1; gtf_rmats2 })
+  gtf_to_combine.combine(merged_gtf).flatten().into({ gtf_rmats1; gtf_rmats2; gtf_rmats3 })
+  gtf_rmats3.subscribe({ println("mitch:gtf_rmats3: $it\n") })
 
   /*--------------------------------------------------
     rMATS to detect alternative splicing events
@@ -931,8 +932,11 @@ if (!params.test) {
       .map { name, bam, bai -> [name, bam] }
       .into { bam1; bam2; bam3 }
 
+    bam3.subscribe({ println("mitch:bam3: $it\n") })
+
     // Group BAMs for each rMATS execution
-    samples.into({ samples1; samples2 })
+    samples.into({ samples1; samples2; samples3 })
+    samples3.subscribe({ println("mitch:samples3: $it\n") })
 
     samples1.map { row ->
       def samples_rmats_id = []
@@ -986,11 +990,11 @@ if (!params.test) {
     }).into({ bams1; bams1_log })
     bams1_log.subscribe({ println("mitch:bams1: $it\n") })
 
-    gtf_rmats1.cross(bams1).into({ gtf_bams_cross; gtf_bams_cross_log })
-    gtf_bams_cross_log.subscribe({ println("mitch:gtf_bams_cross: $it\n") })
+    gtf_rmats1.combine(bams1).into({ gtf_bams_combo; gtf_bams_combo_log })
+    gtf_bams_combo_log.subscribe({ println("mitch:gtf_bams_combo: $it\n") })
 
-    gtf_bams_cross.map({ gtf, comparison, sample, bams ->
-      return tuple(comparison, sample, gtf, bams)
+    gtf_bams_combo.map({ gtf, comparison, sample, bams ->
+      return tuple(comparison, gtf.toString(), sample, gtf, bams)
     }).into({ gtf_bams; gtf_bams_log })
     gtf_bams_log.subscribe({ println("mitch:gtf_bams: $it\n") })
 
@@ -1005,10 +1009,10 @@ if (!params.test) {
       !params.skiprMATS
 
       input:
-      tuple val(rmats_id), val(sample_id), path(gtf), path(bam) from gtf_bams
+      tuple val(rmats_id), val(gtf_key), val(sample_id), path(gtf), path(bam) from gtf_bams
 
       output:
-      tuple val(rmats_id), val(gtf.toString()), path("*.rmats") into rmats1_out
+      tuple val(gtf_key), val(rmats_id), path("*.rmats") into rmats1_out
       path("tmp/*_read_outcomes_by_bam.txt")
       path("command-logs-*") optional true
 
@@ -1024,6 +1028,7 @@ if (!params.test) {
 
       """
       echo "DEBUG:rmats_id:${rmats_id}" >> debug.log
+      echo "DEBUG:gtf_key:${gtf_key}" >> debug.log
       echo "DEBUG:sample_id:${sample_id}" >> debug.log
       echo "DEBUG:gtf:${gtf}" >> debug.log
       echo "DEBUG:bam:${bam}" >> debug.log
@@ -1069,49 +1074,54 @@ if (!params.test) {
       """
     }
 
-    rmats1_out.groupTuple(by: [0, 1]).into({ rmats_grp; rmats_grp_log })
+    rmats1_out.into({ rmats1_raw; rmats1_raw_log })
+    rmats1_raw_log.subscribe({ println("mitch:rmats1_raw: $it\n") })
+
+    rmats1_raw.groupTuple(by: [0, 1]).into({ rmats_grp; rmats_grp_log })
     rmats_grp_log.subscribe({ println("mitch:rmats_grp: $it\n") })
 
     gtf_rmats2.map({
       println("mitch:gtf_rmats2: $it\n")
       return tuple(it.toString(), it)
-    }.into({ gtf_rmats_keyed; gtf_rmats_keyed_log })
-    gtf_rmats_keyed_log.subscribe({ println("mitch:gtf_rmats_keyed: $it\n")
+    }).into({ gtf_rmats_keyed; gtf_rmats_keyed_log })
+    gtf_rmats_keyed_log.subscribe({ println("mitch:gtf_rmats_keyed: $it\n") })
 
-    gtf_rmats_keyed.cross(rmats_grp).into({ gtf_rmats; gtf_rmats_log })
-    gtf_rmats_log.subscribe({ println("mitch:gtf_rmats: $it\n")
+    gtf_rmats_keyed.join(rmats_grp).into({ gtf_rmats_join; gtf_rmats_join_log })
+    gtf_rmats_join_log.subscribe({ println("mitch:gtf_rmats_join: $it\n") })
 
-    rmats_grp.map({ return it[2] }).into({ rmats_prep; rmats_prep_log })
-    rmats_prep_log.subscribe({ println("mitch:rmats_prep: $it\n") })
+    gtf_rmats_join.map({ gtf_key, gtf_path, comparison, rmats_arr ->
+      return tuple(comparison, gtf_path, rmats_arr) 
+    }).into({ gtf_rmats_prep; gtf_rmats_prep_log })
+    gtf_rmats_prep_log.subscribe({ println("mitch:gtf_rmats_prep: $it\n") })
 
     samples2.map { row ->
-        def samples_rmats_id = []
-        def rmats_id = row[0]
-        def b1_samples = row[1]
-        def b2_samples = row[2]
-        b1_samples.each { sample ->
-          samples_rmats_id.add([sample, 'b1', rmats_id])
-        }
-        b2_samples.each { sample ->
-          samples_rmats_id.add([sample, 'b2', rmats_id])
-        }
-        samples_rmats_id
+      def samples_rmats_id = []
+      def rmats_id = row[0]
+      def b1_samples = row[1]
+      def b2_samples = row[2]
+      b1_samples.each { sample ->
+        samples_rmats_id.add([sample, 'b1', rmats_id])
       }
-      .flatMap()
-      .combine(bam2, by:0)
-      .map { sample_id, b, rmats_id, bam -> [ rmats_id + b, rmats_id, bam] }
-      .groupTuple()
-      .map { b, rmats_id, bams -> [rmats_id[0], [b, bams]] }
-      .groupTuple()
-      .map { rmats_id, bams ->
-        def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
-        def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
-        def rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
-        rmats_id_bams
+      b2_samples.each { sample ->
+        samples_rmats_id.add([sample, 'b2', rmats_id])
       }
-      .into({ bams2; bams2_log })
-      bams2_log.subscribe({ println("mitch:bams2: $it\n") })
-/*
+      samples_rmats_id
+    }
+    .flatMap()
+    .combine(bam2, by:0)
+    .map { sample_id, b, rmats_id, bam -> [ rmats_id + b, rmats_id, bam ] }
+    .groupTuple()
+    .map { b, rmats_id, bams -> [rmats_id[0], [b, bams]] }
+    .groupTuple()
+    .map { rmats_id, bams ->
+      def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
+      def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
+      def rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
+      rmats_id_bams
+    }
+    .into({ bams2; bams2_log })
+    bams2_log.subscribe({ println("mitch:bams2: $it\n") })
+
     process rmats2 {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
@@ -1124,8 +1134,7 @@ if (!params.test) {
 
       input:
       set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams2
-      path(rmats_prep_files) from rmats_prep
-      each file(gtf) from gtf_rmats2
+      tuple val(comparison), path(gtf), path(rmats_prep_files) from gtf_rmats_prep
 
       output:
       file "*.{txt,csv}" into rmats_out
@@ -1156,13 +1165,14 @@ if (!params.test) {
       """
       echo "DEBUG:rmats_id:${rmats_id}" >> debug.log
       echo "DEBUG:bams:${bams}" >> debug.log
-      echo "DEBUG:rmats_prep_files:${rmats_prep_files}" >> debug.log
+      echo "DEBUG:comparison:${comparison}" >> debug.log
+      echo "DEBUG:gtf:${gtf}" >> debug.log
+      echo "DEBUG:rmats_prep_filees:${rmats_prep_files}" >> debug.log
       echo "DEBUG:b1_bams:${b1_bams}" >> debug.log
       echo "DEBUG:b2_bams:${b2_bams}" >> debug.log
       echo "DEBUG:b1_only:${b1_only}" >> debug.log
       echo "DEBUG:b2_cmd:${b2_cmd}" >> debug.log
       echo "DEBUG:b2_flag:${b2_flag}" >> debug.log
-      echo "DEBUG:gtf:${gtf}" >> debug.log
       echo "DEBUG:libType:${libType}" >> debug.log
       echo "DEBUG:mode:${mode}" >> debug.log
       echo "DEBUG:task.cpus:${task.cpus}" >> debug.log
@@ -1205,7 +1215,6 @@ if (!params.test) {
       ${params.savescript}
       """
     }
-*/
 
   } else {
 
