@@ -1,27 +1,44 @@
 #!/bin/bash
-#SBATCH -o splicing.%j.out
-#SBATCH -e splicing.%j.err
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=$USER@jax.org
-#SBATCH --mem=20000
-#SBATCH --cpus-per-task=4
+#SBATCH -J splicing
 #SBATCH -p compute
-#SBATCH -q batch
-#SBATCH -t 3-00:00:00 
+#SBATCH -q long
+#SBATCH -t 14-00:00:00
+#SBATCH -c 2
+#SBATCH --mem 8g
+#SBATCH -o %x.%j.out
+#SBATCH -e %x.%j.err
+
+project_dir=/projects/researchit/kostim/tickets/anczukow/splicing/splicing-pipelines-nf
+
+[ -d "$project_dir" 2>/dev/null ] || {
+  echo "ERROR:project_dir '$project_dir' specified in main.pbs is not a directory" >&2
+  echo "  please edit main.pbs and set project_dir to where you installed splicing-pipelines-nf" >&2
+  exit 11
+}
+
+[ -f "$project_dir/main.nf" ] || {
+  echo "ERROR:project_dir '$project_dir' specified in main.pbs does not contain main.nf" >&2
+  echo "  please edit main.pbs and set project_dir to where you installed splicing-pipelines-nf" >&2
+  exit 13
+}
+
+[ $# -eq 1 ] || {
+  echo "Usage: sbatch main.pbs <configuration.txt>" >&2
+  exit 21
+}
+configuration_txt="$1"
 
 cd $SLURM_SUBMIT_DIR
-date;hostname;pwd
-
-module load singularity
+date;id;hostname;pwd
 
 curl -fsSL get.nextflow.io | bash
 
-./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
-	--outdir ${SLURM_SUBMIT_DIR} \
-	-config NF_splicing_pipeline.config \
-	-profile sumner -resume \
-        -with-report report.html \
-        -with-trace trace.txt \
-        -with-timeline timeline.html \
-        -with-dag DAG.png
+./nextflow run $project_dir/main.nf \
+  -config "$configuration_txt" \
+  -profile sumner \
+  -resume \
+  ## -with-report report.html \
+  ## -with-trace trace.txt \
+  ## -with-timeline timeline.html \
+  ## -with-dag DAG.png
 
