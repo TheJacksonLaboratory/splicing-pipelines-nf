@@ -1122,6 +1122,13 @@ if (!params.test) {
     .into({ bams2; bams2_log })
     bams2_log.subscribe({ println("mitch:bams2: $it\n") })
 
+    bams2.combine(gtf_rmats_prep).map({
+      comparison, bams1_list, bams2_list, bams1_only, comparison2, gtf, rmats_list ->
+      return tuple(comparison, gtf, bams1_only, bams1_list, bams2_list, rmats_list)
+    }).into({ gtf_bam_rmats; gtf_bam_rmats_log })
+
+    gtf_bam_rmats_log.subscribe({ println("mitch:gtf_bam_rmats: $it\n") })
+
     process rmats2 {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
@@ -1133,12 +1140,10 @@ if (!params.test) {
       !params.skiprMATS
 
       input:
-      set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams2
-      tuple val(comparison), path(gtf), path(rmats_prep_files) from gtf_rmats_prep
-
+      tuple val(rmats_id), path(gtf), val(b1_only), path(bams), path(b2_bams), path(rmats_prep_files) from gtf_bam_rmats
+ 
       output:
       file "*.{txt,csv}" into rmats_out
-      file "tmp/*_read_outcomes_by_bam.txt"
       file("command-logs-*") optional true
 
       script:
@@ -1165,7 +1170,6 @@ if (!params.test) {
       """
       echo "DEBUG:rmats_id:${rmats_id}" >> debug.log
       echo "DEBUG:bams:${bams}" >> debug.log
-      echo "DEBUG:comparison:${comparison}" >> debug.log
       echo "DEBUG:gtf:${gtf}" >> debug.log
       echo "DEBUG:rmats_prep_filees:${rmats_prep_files}" >> debug.log
       echo "DEBUG:b1_bams:${b1_bams}" >> debug.log
