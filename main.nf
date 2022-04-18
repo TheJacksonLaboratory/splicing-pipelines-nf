@@ -920,7 +920,7 @@ if (!params.test) {
 
   // Combine GTFs into a single channel so that rMATS runs twice (once for each GTF)
   gtf_to_combine.combine(merged_gtf).flatten().into({ gtf_rmats1; gtf_rmats2; gtf_rmats3 })
-  gtf_rmats3.subscribe({ println("mitch:gtf_rmats3: $it\n") })
+  gtf_rmats3.subscribe({ println("gtf_rmats3: $it\n") })
 
   /*--------------------------------------------------
     rMATS to detect alternative splicing events
@@ -932,11 +932,11 @@ if (!params.test) {
       .map { name, bam, bai -> [name, bam] }
       .into { bam1; bam2; bam3 }
 
-    bam3.subscribe({ println("mitch:bam3: $it\n") })
+    bam3.subscribe({ println("bam3: $it\n") })
 
     // Group BAMs for each rMATS execution
     samples.into({ samples1; samples2; samples3 })
-    samples3.subscribe({ println("mitch:samples3: $it\n") })
+    samples3.subscribe({ println("samples3: $it\n") })
 
     samples1.map { row ->
       def samples_rmats_id = []
@@ -963,7 +963,7 @@ if (!params.test) {
       def rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
       rmats_id_bams
     }).into({ bams1a; bams1a_log })
-    bams1a_log.subscribe({ println("mitch:bams1a: $it\n") })
+    bams1a_log.subscribe({ println("bams1a: $it\n") })
 
     bams1a.flatMap({ comparison, bams1, bams2, tf ->
       def o = []
@@ -988,20 +988,19 @@ if (!params.test) {
       }
       return o
     }).into({ bams1; bams1_log })
-    bams1_log.subscribe({ println("mitch:bams1: $it\n") })
+    bams1_log.subscribe({ println("bams1: $it\n") })
 
     gtf_rmats1.combine(bams1).into({ gtf_bams_combo; gtf_bams_combo_log })
-    gtf_bams_combo_log.subscribe({ println("mitch:gtf_bams_combo: $it\n") })
+    gtf_bams_combo_log.subscribe({ println("gtf_bams_combo: $it\n") })
 
     gtf_bams_combo.map({ gtf, comparison, sample, bams ->
       return tuple(comparison, gtf.toString(), sample, gtf, bams)
     }).into({ gtf_bams; gtf_bams_log })
-    gtf_bams_log.subscribe({ println("mitch:gtf_bams: $it\n") })
+    gtf_bams_log.subscribe({ println("gtf_bams: $it\n") })
 
     process rmats1 {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/1/${rmats_id}_${gtf.simpleName}/debug", pattern: 'debug.log', mode: 'copy'
       publishDir "${params.outdir}/rMATS_out/1/${rmats_id}_${gtf.simpleName}", pattern: "{*.rmats,*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
@@ -1027,21 +1026,6 @@ if (!params.test) {
       allow_clipping = params.soft_clipping ? '--allow-clipping' : ''
 
       """
-      echo "DEBUG:rmats_id:${rmats_id}" >> debug.log
-      echo "DEBUG:gtf_key:${gtf_key}" >> debug.log
-      echo "DEBUG:sample_id:${sample_id}" >> debug.log
-      echo "DEBUG:gtf:${gtf}" >> debug.log
-      echo "DEBUG:bam:${bam}" >> debug.log
-      echo "DEBUG:libType:${libType}" >> debug.log
-      echo "DEBUG:mode:${mode}" >> debug.log
-      echo "DEBUG:variable_read_length_flag:${variable_read_length_flag}" >> debug.log
-      echo "DEBUG:statoff:${statoff}" >> debug.log
-      echo "DEBUG:paired_stats:${paired_stats}" >> debug.log
-      echo "DEBUG:novelSS:${novelSS}" >> debug.log
-      echo "DEBUG:allow_clipping:${allow_clipping}" >> debug.log
-      echo "DEBUG:task.cpus:${task.cpus}" >> debug.log
-      ls -alrt >> debug.log
-
       echo $bam > b1.txt
 
       rmats.py \
@@ -1075,24 +1059,24 @@ if (!params.test) {
     }
 
     rmats1_out.into({ rmats1_raw; rmats1_raw_log })
-    rmats1_raw_log.subscribe({ println("mitch:rmats1_raw: $it\n") })
+    rmats1_raw_log.subscribe({ println("rmats1_raw: $it\n") })
 
     rmats1_raw.groupTuple(by: [0, 1]).into({ rmats_grp; rmats_grp_log })
-    rmats_grp_log.subscribe({ println("mitch:rmats_grp: $it\n") })
+    rmats_grp_log.subscribe({ println("rmats_grp: $it\n") })
 
     gtf_rmats2.map({
-      println("mitch:gtf_rmats2: $it\n")
+      println("gtf_rmats2: $it\n")
       return tuple(it.toString(), it)
     }).into({ gtf_rmats_keyed; gtf_rmats_keyed_log })
-    gtf_rmats_keyed_log.subscribe({ println("mitch:gtf_rmats_keyed: $it\n") })
+    gtf_rmats_keyed_log.subscribe({ println("gtf_rmats_keyed: $it\n") })
 
     gtf_rmats_keyed.join(rmats_grp).into({ gtf_rmats_join; gtf_rmats_join_log })
-    gtf_rmats_join_log.subscribe({ println("mitch:gtf_rmats_join: $it\n") })
+    gtf_rmats_join_log.subscribe({ println("gtf_rmats_join: $it\n") })
 
     gtf_rmats_join.map({ gtf_key, gtf_path, comparison, rmats_arr ->
       return tuple(comparison, gtf_path, rmats_arr) 
     }).into({ gtf_rmats_prep; gtf_rmats_prep_log })
-    gtf_rmats_prep_log.subscribe({ println("mitch:gtf_rmats_prep: $it\n") })
+    gtf_rmats_prep_log.subscribe({ println("gtf_rmats_prep: $it\n") })
 
     samples2.map { row ->
       def samples_rmats_id = []
@@ -1120,19 +1104,18 @@ if (!params.test) {
       rmats_id_bams
     }
     .into({ bams2; bams2_log })
-    bams2_log.subscribe({ println("mitch:bams2: $it\n") })
+    bams2_log.subscribe({ println("bams2: $it\n") })
 
     bams2.combine(gtf_rmats_prep).map({
       comparison, bams1_list, bams2_list, bams1_only, comparison2, gtf, rmats_list ->
       return tuple(comparison, gtf, bams1_only, bams1_list, bams2_list, rmats_list)
     }).into({ gtf_bam_rmats; gtf_bam_rmats_log })
 
-    gtf_bam_rmats_log.subscribe({ println("mitch:gtf_bam_rmats: $it\n") })
+    gtf_bam_rmats_log.subscribe({ println("gtf_bam_rmats: $it\n") })
 
     process rmats2 {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/2/${rmats_id}_${gtf.simpleName}/debug", pattern: 'debug.log', mode: 'copy'
       publishDir "${params.outdir}/rMATS_out/2/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
@@ -1168,24 +1151,6 @@ if (!params.test) {
         b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
       }
       """
-      echo "DEBUG:rmats_id:${rmats_id}" >> debug.log
-      echo "DEBUG:bams:${bams}" >> debug.log
-      echo "DEBUG:gtf:${gtf}" >> debug.log
-      echo "DEBUG:rmats_prep_filees:${rmats_prep_files}" >> debug.log
-      echo "DEBUG:b1_bams:${b1_bams}" >> debug.log
-      echo "DEBUG:b2_bams:${b2_bams}" >> debug.log
-      echo "DEBUG:b1_only:${b1_only}" >> debug.log
-      echo "DEBUG:b2_cmd:${b2_cmd}" >> debug.log
-      echo "DEBUG:b2_flag:${b2_flag}" >> debug.log
-      echo "DEBUG:libType:${libType}" >> debug.log
-      echo "DEBUG:mode:${mode}" >> debug.log
-      echo "DEBUG:task.cpus:${task.cpus}" >> debug.log
-      echo "DEBUG:variable_read_length_flag:${variable_read_length_flag}" >> debug.log
-      echo "DEBUG:statoff:${statoff}" >> debug.log
-      echo "DEBUG:paired_stats:${paired_stats}" >> debug.log
-      echo "DEBUG:novelSS:${novelSS}" >> debug.log
-      echo "DEBUG:allow_clipping:${allow_clipping}" >> debug.log
-      ls -alrt >> debug.log
 
       echo $b1_bams > b1.txt
       $b2_cmd
