@@ -1,0 +1,54 @@
+Bootstrap: docker
+From: nfcore/base:1.9
+
+%files
+  ./tagXSstrandedData.awk /usr/local/bin/tagXSstrandedData.awk
+
+%post
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  conda install -y fastqc=0.11.9 trimmomatic=0.39 star=2.7.9a samtools=1.13 \
+    deeptools=3.5.1 multiqc=1.11 bioconductor-rtracklayer=1.52.0
+  conda clean -ay
+  chmod ugo+x /usr/local/bin/tagXSstrandedData.awk
+
+  cd /
+  wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-2.1.7.Linux_x86_64.tar.gz -O stringtie.tar.gz
+  tar -xvzf stringtie.tar.gz
+  rm stringtie.tar.gz
+  mv stringtie-2.1.7.Linux_x86_64 stringtie
+  ln -s $PWD/stringtie/stringtie /usr/local/bin/stringtie
+  ln -s $PWD/stringtie/prepDE.py /usr/local/bin/prepDE.py
+
+  wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.12.7.Linux_x86_64.tar.gz -O gffread.tar.gz
+  tar -xvzf gffread.tar.gz
+  rm gffread.tar.gz
+  mv gffread-0.12.7.Linux_x86_64 gffread
+  ln -s $PWD/gffread/gffread /usr/local/bin/gffread
+
+  wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.12.6.Linux_x86_64.tar.gz -O gffcompare.tar.gz
+  tar -xvzf gffcompare.tar.gz
+  rm gffcompare.tar.gz
+  mv gffcompare-0.12.6.Linux_x86_64 gffcompare
+  ln -s $PWD/gffcompare/trmap /usr/local/bin/trmap
+  ln -s $PWD/gffcompare/gffcompare /usr/local/bin/gffcompare
+
+%runscript
+  echo -n "stringtie: "
+  stringtie --version
+  echo -n "gffread: "
+  gffread --version
+  gffcompare --version
+  python --version
+  echo
+  echo "pip installed packages:"
+  pip list
+  echo
+  echo "conda installed packages:"
+  conda list
+
+%labels
+  Author mitch.kostich@jax.org
+  Version v0.01a
+

@@ -1,0 +1,29 @@
+Bootstrap: docker
+From: nfcore/base:1.9
+
+%post
+  conda config --add channels anaconda
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  conda install -y sra-tools=2.11.0 pigz=2.6.0 gdc-client=1.6.1 samtools=1.13 bedtools=2.30.0
+  conda clean -ay
+
+%runscript
+  python --version
+  echo 'sra-tools: version 2.11.0'
+  pigz --version
+  echo -n 'gdc-client: ' && gdc-client --version
+  samtools --version | grep '^samtools'
+  bedtools --version
+  echo
+  echo 'pip installed packages:'
+  pip list
+  echo
+  echo 'conda installed packages:'
+  conda list
+
+%labels
+  Author mitch.kostich@jax.org
+  Version v0.01a
+

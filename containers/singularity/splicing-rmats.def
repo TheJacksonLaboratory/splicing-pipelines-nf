@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: continuumio/miniconda3:4.8.2
+
+%post
+  apt-get update -y --allow-releaseinfo-change
+  apt-get install -y procps
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  conda install -y rmats=4.1.1 \
+    bioconductor-bsgenome.hsapiens.ucsc.hg38=1.4.1 \
+    bioconductor-bsgenome.mmusculus.ucsc.mm10=1.4.0
+  conda clean -ay
+
+%runscript
+  python --version
+  echo -n 'rmats: '
+  rmats.py --version
+  echo 'pip installed packages:'
+  pip list
+  echo 'conda installed packages:'
+  conda list
+
+%labels
+  Author mitch.kostich@jax.org
+  Version v0.01a
+

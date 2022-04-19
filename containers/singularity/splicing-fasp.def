@@ -1,0 +1,34 @@
+Bootstrap: docker
+From: continuumio/miniconda3:4.8.2
+
+%post
+  apt-get update --allow-releaseinfo-change
+  apt-get install -y procps
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  conda update -y setuptools
+  conda install -y google-api-python-client google-cloud-speech oauth2client sevenbridges-python samtools=1.13
+  conda clean -ay
+  cd /
+  git clone https://github.com/lifebit-ai/fasp-scripts --branch gen3-drs-gtex-download
+  cd /fasp-scripts
+  python setup.py install
+  chmod ugo+x /fasp-scripts/fasp/scripts/*
+
+%environment
+  export PATH=/fasp-scripts/fasp/scripts:$PATH
+
+%runscript
+  python --version
+  samtools --version | grep '^samtools'
+  echo
+  echo 'pip installed packages:'
+  pip list
+  echo
+  echo 'conda installed packages:'
+  conda list
+
+%labels 
+  Author mitch.kostich@jax.org
+  Version v0.01a
+
