@@ -37,8 +37,8 @@ curl -fsSL get.nextflow.io | bash
   -config "$configuration_txt" \
   -profile sumner \
   -resume \
-  ## -with-report report.html \
-  ## -with-trace trace.txt \
-  ## -with-timeline timeline.html \
-  ## -with-dag DAG.png
+  -with-report report.html \
+  -with-trace trace.txt \
+  -with-timeline timeline.html \
+  -with-dag DAG.png
 
