@@ -1184,6 +1184,7 @@ if (!params.test) {
       ${params.savescript}
       """
     }
+    rmats_out.subscribe({ println("rmats_out: $it\n") })
 
   } else {
 
@@ -1251,6 +1252,7 @@ if (!params.test) {
       ${params.savescript}
       """
     }
+    paired_rmats_out.subscribe({ println("paired_rmats_out: $it\n") })
   }
 }
 
