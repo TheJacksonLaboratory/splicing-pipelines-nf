@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -J splicing
 #SBATCH -p compute
-#SBATCH -q long
-#SBATCH -t 14-00:00:00
+#SBATCH -q batch
+#SBATCH -t 72:00:00
 #SBATCH -c 2
 #SBATCH --mem 8g
 #SBATCH -o %x.%j.out
