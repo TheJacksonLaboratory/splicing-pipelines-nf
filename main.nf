@@ -1302,20 +1302,20 @@ process collect_tool_versions_env1 {
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     output:
-    file("tool_versions.txt") into ch_tool_versions
+    file("tool_versions_env1.txt") into ch_tool_versions
     file("command-logs-*") optional true
 
     script:
     """
-    touch tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep fastqc | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep trimmomatic | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep star | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep samtools | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep deeptools | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep multiqc | tail -n 1 >> tool_versions.txt
-    conda list -n splicing-pipelines-nf | grep gffread | tail -n 1 >> tool_versions.txt
-    echo -e "stringtie" ' \t\t\t\t ' \$(stringtie --version) >> tool_versions.txt
+    touch tool_versions_env1.txt
+    fastqc --version >> tool_versions_env1.txt
+    echo "trimmomatic \$(trimmomatic -version)" >> tool_versions_env1.txt 
+    echo "STAR \$(STAR --version)" >> tool_versions_env1.txt
+    samtools --version | head -1 >> tool_versions_env1.txt
+    deeptools --version >> tool_versions_env1.txt
+    multiqc --version >> tool_versions_env1.txt
+    echo "gffread \$(gffread --version)" >> tool_versions_env1.txt
+    echo "stringtie \$(stringtie --version)" >> tool_versions_env1.txt
 
     # save .command.* logs
     ${params.savescript}
@@ -1324,19 +1324,20 @@ process collect_tool_versions_env1 {
 
 process collect_tool_versions_env2 {
     echo true
-    publishDir "${params.outdir}/tool-versions/env2/", pattern: "[!command-logs-]*", mode: 'copy'
+    publishDir "${params.outdir}/tool-versions/env2/", pattern: 'tool_versions.txt', mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
     input:
     file(tool_versions) from ch_tool_versions
 
     output:
-    file("tool_versions.txt") into ch_all_tool_versions
+    file('tool_versions.txt') into ch_all_tool_versions
     file("command-logs-*") optional true
 
     script:
     """
-    conda list -n rmats4 | grep rmats | tail -n 1 >> tool_versions.txt
+    cp tool_versions_env1.txt tool_versions.txt
+    echo "rmats \$(rmats.py --version)" >> tool_versions.txt
 
     # save .command.* logs
     ${params.savescript}
