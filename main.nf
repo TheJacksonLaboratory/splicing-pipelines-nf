@@ -258,7 +258,7 @@ log.info "Max time                    : ${params.max_time}"
 log.info "Mega time                   : ${params.mega_time}"
 log.info "Google Cloud disk-space     : ${params.gc_disk_size}"
 log.info "Debug                       : ${params.debug}"
-log.info "Error strategy              : ${config.process.errorStrategy}"
+log.info "Error strategy              : ${params.error_strategy}"
 log.info "Workdir cleanup             : ${params.cleanup}"
 log.info ""
 log.info "\n"
@@ -740,7 +740,7 @@ if (!params.bams){
 
   process star {
     tag "$name"
-    label 'mega_memory'
+    label 'high_memory'
     publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
     publishDir "${params.outdir}/star_mapped/${name}", pattern: "*{out.bam,out.bam.bai,out,ReadsPerGene.out.tab,SJ.out.tab}*" , mode: 'copy'
     publishDir "${params.outdir}/star_mapped/${name}", pattern: "*Unmapped*", mode: 'copy'
@@ -832,7 +832,7 @@ if (!params.test) {
 
   process stringtie {
     tag "$name"
-    label 'mega_memory'
+    label 'high_memory'
     publishDir "${params.outdir}/star_mapped/${name}", pattern: "[!command-logs-]*", mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/${name}", pattern: "command-logs-*", mode: 'copy'
 
@@ -1115,7 +1115,7 @@ if (!params.test) {
 
     process rmats2 {
       tag "$rmats_id ${gtf.simpleName}"
-      label 'high_memory'
+      label 'mega_memory'
       publishDir "${params.outdir}/rMATS_out/2/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
@@ -1197,7 +1197,7 @@ if (!params.test) {
 
     process paired_rmats {
       tag "$name1 $name2"
-      label 'high_memory'
+      label 'mega_memory'
       publishDir "${params.outdir}/rMATS_out/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${name1}_vs_${name2}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
@@ -1262,7 +1262,7 @@ if (!params.test) {
 
 if (!params.bams) {
   process multiqc {
-    label 'mega_memory'
+    label 'high_memory'
     publishDir "${params.outdir}/MultiQC", pattern: "{*multiqc_report.html,*_data/*,trimmomatic}", mode: 'copy'
     publishDir "${params.outdir}/process-logs/${task.process}/", pattern: "command-logs-*", mode: 'copy'
 
