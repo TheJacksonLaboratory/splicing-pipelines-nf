@@ -31,9 +31,11 @@ configuration_txt="$1"
 cd $SLURM_SUBMIT_DIR
 date;id;hostname;pwd
 
+export NXF_DEFAULT_DSL=1
+
 curl -fsSL get.nextflow.io | bash
 
-./nextflow run $project_dir/main.nf \
+nextflow run $project_dir/main.nf \
   -config "$configuration_txt" \
   -profile sumner \
   -resume \
