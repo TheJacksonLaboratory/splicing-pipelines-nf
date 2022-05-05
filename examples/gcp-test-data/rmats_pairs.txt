@@ -1,0 +1,1 @@
+comparison1 sample1a,sample1b sample2a,sample2b

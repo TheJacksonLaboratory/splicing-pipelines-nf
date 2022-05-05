@@ -1,0 +1,5 @@
+sample_id,fastq1,fastq2
+sample2a,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924644_1.fastq.gz,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924644_2.fastq.gz
+sample2b,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924645_1.fastq.gz,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924645_2.fastq.gz
+sample2c,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924646_1.fastq.gz,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924646_2.fastq.gz
+sample2d,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924647_1.fastq.gz,gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924647_2.fastq.gz
