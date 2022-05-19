@@ -1,0 +1,9 @@
+name: csvkit
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - anaconda
+dependencies:
+  - python=3.8
+  - csvkit=1.0.5

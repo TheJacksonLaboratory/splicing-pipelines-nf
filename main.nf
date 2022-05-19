@@ -24,7 +24,10 @@ def helpMessage() {
 
     Input files:
       --reads                       Path to reads.csv file, which specifies the sample_id and path to FASTQ files
-                                    for each read or read pair (path).
+                                    for each read or read pair (path). 
+				    When using the --download_from GTEX option the reads file must be a simple csv file listing
+				    bam file names to be processed in the analysis. The input manifest will be downsampled
+				    to only contain information about these files.
                                     This file is used if starting at beginning of pipeline. It can be file paths,
                                     s3 links or ftp link.
                                     (default: no reads.csv)
@@ -37,13 +40,15 @@ def helpMessage() {
                                     (default: no rmats_pairs specified)
       --run_name                    User specified name used as prefix for output files
                                     (defaut: no prefix, only date and time)
-      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX' or 'GEN3-DRS',
-                                    'SRA', 'FTP') (string)
+      --download_from               Database to download FASTQ/BAMs from (available = 'TCGA', 'GTEX', 'SRA', 'FTP')
+                                    (string)
                                     false should be used to run local files on the HPC (Sumner).
                                     'TCGA' can also be used to download GDC data including HCMI data.
                                     (default: false)
-      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or dbGAP repository
-                                    key (GTEx, path) or credentials.json file in case of 'GEN3-DRS'
+      --manifest                    Manifest file to download data from GTEX. (string)
+                                    (default: false)
+      --key_file                    For downloading reads, use TCGA authentication token (TCGA) or
+                                    credentials.json file in case of 'GTEX'.
                                     (default: false)
 
     Main arguments:
@@ -268,7 +273,7 @@ log.info "\n"
 ---------------------------------------------------*/
 
 if (params.download_from) {
-  if(download_from('gtex') || download_from('sra') || download_from('tcga') ){
+  if( download_from('sra') || download_from('tcga') ){
       Channel
         .fromPath(params.reads)
         .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
@@ -276,13 +281,13 @@ if (params.download_from) {
         .map { sample -> sample[0].trim() }
         .set { accession_ids }
   }
-  if(download_from('gen3-drs')){
-      Channel
-        .fromPath(params.reads)
-        .ifEmpty { exit 1, "Cannot find CSV reads file : ${params.reads}" }
-        .splitCsv(skip:1)
-        .map { subj_id, file_name, md5sum, obj_id, file_size -> [subj_id, file_name, md5sum, obj_id, file_size] }
-        .set { ch_gtex_gen3_ids }
+  if(download_from('gtex')){
+    ch_gtex_gen3_reads = params.reads ? Channel.fromPath(params.reads) : "null"
+
+    Channel
+      .fromPath(params.manifest)
+      .ifEmpty { exit 1, "Cannot find manifest file : ${params.manifest}" }
+      .set { ch_gtex_gen3_manifest }
   }
   if(download_from('ftp')){
     Channel
@@ -354,14 +359,14 @@ if (params.rmats_pairs) {
     .set { samples}
 }
 
-if ( download_from('gen3-drs')) {
-    if(!params.genome_fasta){
-    exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
-    }
-    Channel
-        .fromPath(params.genome_fasta)
-        .ifEmpty { exit 1, "${params.genome_fasta} is not present" }
-        .set {ch_genome_fasta}
+if ( download_from('gtex')) {
+    // The fasta obligatory requirement below is removed, because for the foreseeable future GTEX transcriptomic data will be only accessed as bam files, which do not require a fasta file, as CRAM files.
+    //if(!params.genome_fasta){
+    //exit 1, "A genome fasta file must be provided in order to convert CRAM files in GEN3-DRS download step."
+    //}
+
+    ch_genome_fasta = params.genome_fasta ? Channel.value(file(params.genome_fasta)) : "null"
+
 }
 
 if ( download_from('sra')) {
@@ -372,10 +377,10 @@ if ( download_from('sra')) {
 
 
 /*--------------------------------------------------
-  Download FASTQs from GTEx or SRA
+  Download FASTQs from SRA
 ---------------------------------------------------*/
 
-if ( download_from('gtex') || download_from('sra') ) {
+if ( download_from('sra') ) {
   process get_accession {
     publishDir "${params.outdir}/process-logs/${task.process}/${accession}/", pattern: "command-logs-*", mode: 'copy'
 
@@ -464,19 +469,61 @@ if ( download_from('ftp') ) {
   Download BAMs from GTEx using GEN3_DRS 
 ---------------------------------------------------*/
 
-if ( download_from('gen3-drs')) {
+
+if ( download_from('gtex')) {
+  process in2csv {
+    label 'tiny_memory'
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest
+
+    output:
+    file("*.csv") into ch_gtex_gen3_manifest_csv
+
+    script:
+    """
+    filename=\$(basename $manifest .json)
+    in2csv $manifest > \${filename}.csv
+    """
+  }
+
+  process filter_manifest {
+    label "tiny_memory"
+    publishDir "${params.outdir}/manifest"
+    publishDir "${params.outdir}", pattern: "*.txt"
+
+    input:
+    file(manifest) from ch_gtex_gen3_manifest_csv
+    file(reads) from ch_gtex_gen3_reads
+
+    output:
+    file("*.txt") optional true
+    file("filtered_manifest.csv") into ch_gtex_gen3_filtered_manifest_csv
+
+    script:
+    optional_reads = params.reads ? "$reads": "PASS"
+    """
+    filter_manifest.py $manifest $optional_reads
+    """
+  }
+
+  ch_gtex_gen3_filtered_manifest_csv
+    .splitCsv(skip:1)
+    .map { md5sum, file_name, obj_id, file_size -> [md5sum, file_name, obj_id, file_size] }
+    .set { ch_gtex_gen3_ids }
+
   process gen3_drs_fasp {
       tag "${file_name}"
       label 'low_memory'
-      publishDir "${params.outdir}/process-logs/${task.process}/${file_name.baseName}", pattern: "command-logs-*", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${file(file_name).baseName}", pattern: "command-logs-*", mode: 'copy'
 
       input:
-      set val(subj_id), val(file_name), val(md5sum), val(obj_id), val(file_size) from ch_gtex_gen3_ids
+      set val(md5sum), val(file_name), val(obj_id), val(file_size) from ch_gtex_gen3_ids
       each file(key_file) from key_file
       each file(genome_fasta) from ch_genome_fasta
       
       output:
-      set env(sample_name), file("*.bam"), val(false) into bamtofastq
+      set stdout, file("*.bam"), val(false) into bamtofastq
       file("command-logs-*") optional true
       
       script:
@@ -489,7 +536,7 @@ if ( download_from('gen3-drs')) {
       if [[ \$signed_url == *".bam"* ]]; then
           wget -O \${sample_name}.bam \$(echo \$signed_url)
           file_md5sum=\$(md5sum \${sample_name}.bam)
-          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then exit 1; else echo "file is good"; fi
+          if [[ ! "\$file_md5sum" =~ ${md5sum} ]]; then echo "md5 sum verification failed" > md5sum_check.log; exit 1; else echo "file is good" > md5sum_check.log; fi
       fi
       
       if [[ \$signed_url == *".cram"* ]]; then
@@ -501,6 +548,8 @@ if ( download_from('gen3-drs')) {
 
       # save .command.* logs
       ${params.savescript}
+
+      printf "\$sample_name"
       """
   }
 } 
@@ -557,7 +606,7 @@ if (download_from('tcga')) {
   Bedtools to extract FASTQ from BAM
 ---------------------------------------------------*/
 
-if (download_from('tcga') || download_from('gen3-drs')) {
+if (download_from('tcga') || download_from('gtex')) {
   process bamtofastq {
     tag "${name}"
     label 'mid_memory'

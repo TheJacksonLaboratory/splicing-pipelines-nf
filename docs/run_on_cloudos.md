@@ -98,3 +98,4 @@ Note, if you had to resume your job, the above method will not work **sad face**
 ### Helpful Tips
 [Import the Pipeline](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/import_pipeline) 
 [Information on how to run TCGA](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/docs/Running_TCGA.md)
+[Information on how to run GTEX](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/dev-v2.1/examples/GTEX/README.md)
