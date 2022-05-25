@@ -339,7 +339,7 @@ b2_file <- config[config$parameter=="b2", "value"]
 b1_list <- t(read.table(b1_file, sep=","))
 b2_list <- t(read.table(b2_file, sep=","))
 
-bam_list_df <- merge(b1_list, b2_list, by="row.names", suffixes = c("_b1", "_b2"))
+bam_list_df <- merge(b1_list, b2_list, by="row.names", all= T, sort = F, suffixes = c("_b1", "_b2"))
 bam_list_df <- bam_list_df[,-1]
 colnames(bam_list_df) <- lapply(colnames(bam_list_df), function(x){
   new_val <- strsplit(x, "_")[[1]][2]
