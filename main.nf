@@ -150,6 +150,8 @@ def helpMessage() {
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
+      --stringtie_merge_memory      Only specific to google-cloud executor. Sets base RAM requirement for stringtie_merge process.
+                                    (default: 30.GB)
       --debug                       This option will enable echo of script execution into STDOUT with some additional
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
@@ -252,6 +254,7 @@ log.info "Mismatch                    : ${params.mismatch}"
 log.info "filterScore                 : ${params.filterScore}"
 log.info "sjdbOverhangMin             : ${params.sjdbOverhangMin}"
 log.info "STAR memory                 : ${params.star_memory ? star_memory : 'Not provided, Using STAR task max memory'}"
+log.info "stringtie merge memory      : ${params.stringtie_merge_memory}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
