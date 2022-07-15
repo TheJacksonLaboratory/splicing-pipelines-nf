@@ -125,6 +125,19 @@ def helpMessage() {
                                     (default: 50)
       --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
                                     (default: 500)
+      --rmats_merge_memory          Sets base RAM requirement for stringtie_merge process.
+                                    (default: 120.GB)
+      --rmats_merge_cpu             Sets base CPU requirement for stringtie_merge process.
+                                    (default: 30)
+      --rmats_merge_machine_type    Only specific to google-cloud executor. Request a specific machine type for rmats.
+
+    Stringtie:
+      --stringtie_merge_memory      Sets base RAM requirement for stringtie_merge process.
+                                    (default: 30.GB)
+      --stringtie_merge_cpu         Sets base CPU requirement for stringtie_merge process.
+                                    (default: 8)
+      --stringtie_merge_machine_type Only specific to google-cloud executor. Request a specific machine type 
+                                     for stringtie_merge.
 
     Other:
       --test                        For running trim test (bool)
@@ -150,8 +163,6 @@ def helpMessage() {
                                     (default: 20.h)
       --gc_disk_size                Only specific to google-cloud executor. Adds disk-space for few aggregative processes.
                                     (default: "200 GB" based on 100 samples. Simply add 2 x Number of Samples)
-      --stringtie_merge_memory      Only specific to google-cloud executor. Sets base RAM requirement for stringtie_merge process.
-                                    (default: 30.GB)
       --debug                       This option will enable echo of script execution into STDOUT with some additional
                                     resource information (such as machine type, memory, cpu and disk space)
                                     (default: false)
