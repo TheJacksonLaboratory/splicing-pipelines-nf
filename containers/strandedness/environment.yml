@@ -9,3 +9,4 @@ dependencies:
   - kallisto=0.48.0
   - samtools=1.15.1
   - bedtools=2.30.0
+  - bedops=2.4.41
