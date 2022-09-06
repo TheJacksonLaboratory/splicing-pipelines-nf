@@ -330,7 +330,7 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine; gtf_strandedness }
 if (!params.bams) {
   Channel
     .fromPath(star_index)
@@ -698,7 +698,7 @@ if (!params.bams){
     set val(name), file(reads), val(singleEnd), file(adapter) from raw_reads_trimmomatic_adapter
 
     output:
-    set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star)
+    set val(name), file(output_filename), val(singleEnd) into (trimmed_reads_fastqc, trimmed_reads_star, trimmed_reads_downsample)
     file ("logs/${name}_trimmomatic.log") into trimmomatic_logs
     file("command-logs-*") optional true
 
@@ -755,6 +755,50 @@ if (!params.bams){
     ${params.savescript}
     """
   }
+
+    /*--------------------------------------------------
+    Strandedness detection function
+  ---------------------------------------------------*/
+
+process downsample {
+  tag "$name"
+  label 'low_memory'
+
+  input:
+  set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
+
+  output:
+  set val(name), file("downsample_*"), val(singleEnd) into downsampled_reads
+
+  script:
+  """
+  if [ "$singleEnd" == "true" ]; then
+    head -n 2000 $reads > downsample_$reads
+  else
+    head -n 2000 ${reads[0]} > downsample_${reads[0]}
+    head -n 2000 ${reads[1]} > downsample_${reads[1]}
+  fi
+  """
+}
+
+process infer_strandedness {
+  tag "$name"
+  label 'low_memory'
+
+  input:
+  set val(name), file(reads), val(singleEnd) from downsampled_reads
+  each file(gtf) from gtf_strandedness
+
+  output:
+
+  script:
+  """
+  kallisto index -i ${reads}.index $reads
+  kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto --single -l 200 -s 50 $reads
+
+  gtf2bed < $gtf > ${gtf}.bed
+  """
+}
 
   /*--------------------------------------------------
     STAR to align trimmed reads
