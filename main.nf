@@ -773,10 +773,10 @@ process downsample {
   script:
   """
   if [ "$singleEnd" == "true" ]; then
-    head -n 2000 $reads > downsample_$reads
+    head -n 8000 $reads > downsample_$reads
   else
-    head -n 2000 ${reads[0]} > downsample_${reads[0]}
-    head -n 2000 ${reads[1]} > downsample_${reads[1]}
+    head -n 8000 ${reads[0]} > downsample_${reads[0]}
+    head -n 8000 ${reads[1]} > downsample_${reads[1]}
   fi
   """
 }
@@ -793,10 +793,23 @@ process infer_strandedness {
 
   script:
   """
+  # create index from read data
   kallisto index -i ${reads}.index $reads
-  kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto --single -l 200 -s 50 $reads
 
+  # obtain bam file from reads with kallisto
+  if [ "$singleEnd" == "true" ]; then
+    options="--single -l 200 -s 50"
+  else
+    options=""
+  fi
+
+  kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto \$options $reads
+
+  # convert GTF to BED12 
   gtf2bed < $gtf > ${gtf}.bed
+
+  # infer strandedness
+  infer_experiment.py -r ${gtf}.bed -i kallisto/*.bam -s 500
   """
 }
 
