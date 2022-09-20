@@ -64,7 +64,7 @@ def helpMessage() {
                                     For PE, set to false.
                                     (default: false)
       --stranded                    Specifies that the input is stranded ('first-strand', 'second-strand',
-                                    false (aka unstranded))
+                                    false (aka unstranded) or 'infer')
                                     'first-strand' refers to RF/fr-firststrand in this pipeline.
                                     (default: 'first-strand')
       --readlength                  Read length - Note that all reads will be cropped to this length(int)
@@ -127,6 +127,8 @@ def helpMessage() {
                                     (default: 500)
 
     Other:
+      --downsample                  Number of lines to downsample read file to determine strandedness
+                                    (default: 20000)
       --test                        For running trim test (bool)
                                     To run the first half of the pipeline (through STAR), set test = true.
                                     (default: false)
@@ -233,7 +235,8 @@ log.info "Single-end                  : ${download_from('tcga') ? 'Will be check
 log.info "GTF                         : ${params.gtf}"
 log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
-if (params.stranded) {log.info "strType                     : ${params.strType[params.stranded].strType}"}
+if (params.stranded && params.stranded != 'infer') {log.info "strType                     : ${params.strType[params.stranded].strType}"}
+if (params.stranded == 'infer') {log.info "Downsample                   : ${params.downsample}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
@@ -756,61 +759,69 @@ if (!params.bams){
     """
   }
 
-    /*--------------------------------------------------
+  /*--------------------------------------------------
     Strandedness detection function
   ---------------------------------------------------*/
 
-process downsample {
-  tag "$name"
-  label 'low_memory'
+if (params.stranded == "infer") {
+  process downsample {
+    tag "$name"
+    label 'low_memory'
 
-  input:
-  set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
+    input:
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
 
-  output:
-  set val(name), file("downsample_*"), val(singleEnd) into downsampled_reads
+    output:
+    set val(name), file("downsample_*"), val(singleEnd) into downsampled_reads
 
-  script:
-  """
-  if [ "$singleEnd" == "true" ]; then
-    head -n 8000 $reads > downsample_$reads
-  else
-    head -n 8000 ${reads[0]} > downsample_${reads[0]}
-    head -n 8000 ${reads[1]} > downsample_${reads[1]}
-  fi
-  """
-}
+    script:
+    """
+    if [ "$singleEnd" == "true" ]; then
+      head -n ${params.downsample} $reads > downsample_$reads
+    else
+      head -n ${params.downsample} ${reads[0]} > downsample_${reads[0]}
+      head -n ${params.downsample} ${reads[1]} > downsample_${reads[1]}
+    fi
+    """
+  }
 
-process infer_strandedness {
-  tag "$name"
-  label 'low_memory'
+  process infer_strandedness {
+    tag "$name"
+    label 'low_memory'
+    publishDir "${params.outdir}/strandedness/${name}", mode: 'copy'
 
-  input:
-  set val(name), file(reads), val(singleEnd) from downsampled_reads
-  each file(gtf) from gtf_strandedness
+    input:
+    set val(name), file(reads), val(singleEnd) from downsampled_reads
+    each file(gtf) from gtf_strandedness
 
-  output:
+    output:
+    file("infer_strandedness.txt") into strandedness_output
 
-  script:
-  """
-  # create index from read data
-  kallisto index -i ${reads}.index $reads
+    script:
+    """
+    # create index from read data
+    kallisto index -i ${reads}.index $reads
 
-  # obtain bam file from reads with kallisto
-  if [ "$singleEnd" == "true" ]; then
-    options="--single -l 200 -s 50"
-  else
-    options=""
-  fi
+    # obtain bam file from reads with kallisto
+    if [ "$singleEnd" == "true" ]; then
+      options="--single -l 200 -s 50"
+    else
+      options=""
+    fi
 
-  kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto \$options $reads
+    { # try
+      kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto \$options $reads
+    } || { # catch
+      true
+    }
 
-  # convert GTF to BED12 
-  gtf2bed < $gtf > ${gtf}.bed
+    # convert GTF to BED12 
+    gtf2bed < $gtf > ${gtf}.bed
 
-  # infer strandedness
-  infer_experiment.py -r ${gtf}.bed -i kallisto/*.bam -s 500
-  """
+    # infer strandedness
+    infer_experiment.py -r ${gtf}.bed -i kallisto/*.bam -s 500 > infer_strandedness.txt
+    """
+  }
 }
 
   /*--------------------------------------------------
