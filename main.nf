@@ -820,6 +820,14 @@ if (params.stranded == "infer") {
 
     # infer strandedness
     infer_experiment.py -r ${gtf}.bed -i kallisto/*.bam -s 500 > infer_strandedness.txt
+
+    isInFile=\$(cat infer_strandedness.txt | grep -c "Unknown Data type")
+
+    if [ \$isInFile -eq 0 ]; then
+      parse_strandedness.py infer_strandedness.txt
+    else
+      echo "Unknown Data type"
+    fi
     """
   }
 }
