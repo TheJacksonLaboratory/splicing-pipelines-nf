@@ -1,7 +1,26 @@
 # Changelog
 
-### v2.0 - Pipeline improvements
+## Current Pipeline improvements
+#### Improvements:
+ - Removes network and subnetwork parameters because CloudOS now sets this automatically (#315).
 
+#### Fixes:
+
+#### Updates:
+
+#### Maintenance:
+
+## v2.1 - Pipeline improvements
+#### Improvements:
+
+#### Fixes:
+
+#### Updates:
+
+#### Maintenance:
+
+
+## v2.0 - Pipeline improvements
 #### Improvements:
  - Adds saving of all the process .command* log files to results/process-logs folder (#251)
  - Adds pipeline workdir `--cleanup` option to clear all intermediate files on pipeline successful completion (true by default, false for CloudOS) (#238, #284, [089d6e3](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/pull/245/commits/3b71e038b186bb2bc92debacb02aede7b5dae917))
@@ -34,7 +53,7 @@
  - Moves all containers to https://hub.docker.com/u/anczukowlab
 
 #### Maintenance:
- - Consideably reduces number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
+ - Considerably reduces number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
  - Adds CI test for sra-downloading pipeline pathway (only supported with docker profile for now) (#253)
 
  
