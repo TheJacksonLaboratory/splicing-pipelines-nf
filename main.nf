@@ -837,7 +837,7 @@ if (params.stranded == "infer") {
 
 } else {
 
-  ch_strandedness = Channel.from(params.stranded)
+  ch_strandedness = trimmed_reads_downsample.map { sample_id, fastq, se -> [sample_id, file(fastq), se,  params.stranded] }.map{sample_id, fastq, se, strand -> strand}
 
 }
 
