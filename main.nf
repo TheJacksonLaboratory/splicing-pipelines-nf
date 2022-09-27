@@ -237,6 +237,7 @@ log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 if (params.stranded && params.stranded != 'infer') {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 if (params.stranded == 'infer') {log.info "Downsample                   : ${params.downsample}"}
+if (params.stranded == 'infer'){log.info "Threshold:                   : ${params.threshold}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
@@ -824,13 +825,24 @@ if (params.stranded == "infer") {
     isInFile=\$(cat infer_strandedness.txt | grep -c "Unknown Data type")
 
     if [ \$isInFile -eq 0 ]; then
-      parse_strandedness.py infer_strandedness.txt
+      parse_strandedness.py infer_strandedness.txt ${params.threshold}
     else
       echo "Unknown Data type"
+      echo -n "false" > infer_strandedness.txt
     fi
     """
   }
+
+  ch_strandedness = strandedness_output.map{ it.text }
+
+} else {
+
+  ch_strandedness = Channel.from(params.stranded)
+
 }
+
+ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_strandedness_rmats ; ch_strandedness_paired_rmats ; ch_print}
+ch_print.view()
 
   /*--------------------------------------------------
     STAR to align trimmed reads
@@ -877,6 +889,7 @@ if (params.stranded == "infer") {
     set val(name), file(reads), val(singleEnd) from trimmed_reads_star
     each file(index) from star_index
     each file(gtf) from gtf_star
+    val(strand) from ch_strandedness_star
 
     output:
     set val(name), file("${name}.Aligned.sortedByCoord.out.bam"), file("${name}.Aligned.sortedByCoord.out.bam.bai") into (indexed_bam, indexed_bam_rmats)
@@ -891,9 +904,9 @@ if (params.stranded == "infer") {
     script:
     // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
     // TODO: find a better solution to needing to use `chmod`
-    out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
-    out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    //out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
+    //out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
+    //xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
     endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
@@ -901,6 +914,21 @@ if (params.stranded == "infer") {
     save_unmapped_reads = params.save_unmapped ? '--outReadsUnmapped Fastx' : ''
     """
     ${pre_script_run_resource_status}
+
+    # Check strandedness
+    if [ "$strand" == "false" ]; then
+      out_filter_intron_motifs="--outFilterIntronMotifs RemoveNoncanonicalUnannotated"
+      out_sam_strand_field="--outSAMstrandField intronMotif"
+      xs_tag_cmd=""
+    else
+      out_filter_intron_motifs=""
+      out_sam_strand_field=""
+      if [ "$strand" == "first-strand" ]; then
+        xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+      else
+        xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=1 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+      fi
+    fi
 
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -932,10 +960,10 @@ if (params.stranded == "infer") {
       --alignIntronMax 1000000 \
       $save_unmapped_reads \
       --quantMode GeneCounts \
-      --outWigType None $out_filter_intron_motifs $out_sam_strand_field
+      --outWigType None \$out_filter_intron_motifs \$out_sam_strand_field
 
     chmod a+rw $name*
-    $xs_tag_cmd
+    \$xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
 
@@ -963,6 +991,7 @@ if (!params.test) {
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
     each file(gtf) from gtf_stringtie
+    each val(strand) from ch_strandedness_stringstar
 
     output:
     file "${name}.gtf" into stringtie_gtf
@@ -970,10 +999,21 @@ if (!params.test) {
     file("command-logs-*") optional true
 
     script: 
-    rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
+    //rf = params.stranded ? params.stranded == 'first-strand' ? '--rf' : '--fr' : ''
     """
-    stringtie $bam -G $gtf -o ${name}.gtf $rf -a 8 -p $task.cpus
-    stringtie $bam -G $gtf -o ${name}_for_DGE.gtf $rf -a 8 -e -p $task.cpus
+    # Check strandedness
+    if [ "$strand" == "false" ]; then
+      rf=""
+    else
+      if [ "$strand" == "first-strand" ]; then
+        rf="--rf"
+      else
+        rf="--fr"
+      fi
+    fi
+
+    stringtie $bam -G $gtf -o ${name}.gtf \$rf -a 8 -p $task.cpus
+    stringtie $bam -G $gtf -o ${name}_for_DGE.gtf \$rf -a 8 -e -p $task.cpus
 
     # save .command.* logs
     ${params.savescript}
@@ -1096,6 +1136,7 @@ if (!params.test) {
       input:
       set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams
       each file(gtf) from gtf_rmats
+      each val(strand) from ch_strandedness_rmats
 
       output:
       file "*.{txt,csv}" into rmats_out
@@ -1103,7 +1144,7 @@ if (!params.test) {
       file("command-logs-*") optional true
 
       script:
-      libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
+      //libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
       mode = params.singleEnd ? 'single' : 'paired'
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
@@ -1123,6 +1164,17 @@ if (!params.test) {
         b2_config_cmd = "echo b2 b2.txt >> \$rmats_config"
       }
       """
+      # Check strandedness
+      if [ "$strand" == "false" ]; then
+        libType="fr-unstranded"
+      else
+        if [ "$strand" == "first-strand" ]; then
+          libType="fr-firststrand"
+        else
+          libType="fr-secondstrand"
+        fi
+      fi
+
       echo $b1_bams > b1.txt
       $b2_cmd
       rmats.py \
@@ -1130,7 +1182,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
-        --libType $libType \
+        --libType \$libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
@@ -1174,6 +1226,7 @@ if (!params.test) {
       input:
       set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
       each file (gtf) from gtf_rmats
+      each val(strand) from ch_strandedness_paired_rmats
 
       output:
       file "*.{txt,csv}" into paired_rmats_out
@@ -1181,13 +1234,24 @@ if (!params.test) {
       file("command-logs-*") optional true
 
       script:
-      libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
+      //libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
       mode = params.singleEnd ? 'single' : 'paired'
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
       statoff = params.statoff ? '--statoff' : ''
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
       """
+      # Check strandedness
+      if [ "$strand" == "false" ]; then
+        libType="fr-unstranded"
+      else
+        if [ "$strand" == "first-strand" ]; then
+          libType="fr-firststrand"
+        else
+          libType="fr-secondstrand"
+        fi
+      fi
+
       ls $bam1 > b1.txt
       ls $bam2 > b2.txt
       rmats.py \

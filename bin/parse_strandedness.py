@@ -7,6 +7,7 @@ import sys
 def __main__():
     
     manifest = sys.argv[1]
+    threshold = float(sys.argv[2])
     print("Input strandedness file:", manifest)
 
     fraction1 = 0
@@ -22,13 +23,19 @@ def __main__():
             else:
                 pass
 
-    if 1 - 0.2 < (fraction1 / fraction2) < 1.2:
+    if 1 - threshold < (fraction1 / fraction2) < 1 + threshold:
         print("Unstranded Data type")
+        with open("infer_strandedness.txt", w) as fh:
+            fh.write("false")
     else:
         if fraction1 > fraction2:
             print("first-strand")
+            with open("infer_strandedness.txt", w) as fh:
+                fh.write("first-strand")
         else:
             print("second-strand")
+            with open("infer_strandedness.txt", w) as fh:
+                fh.write("second-strand")
 
 
 if __name__=="__main__": __main__()
