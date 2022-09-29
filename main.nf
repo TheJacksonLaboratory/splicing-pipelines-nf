@@ -801,7 +801,7 @@ if (params.stranded == "infer") {
     script:
     """
     # create index from read data
-    kallisto index -i ${reads}.index $reads
+    kallisto index --make-unique -i kallisto.index $reads
 
     # obtain bam file from reads with kallisto
     if [ "$singleEnd" == "true" ]; then
@@ -811,7 +811,7 @@ if (params.stranded == "infer") {
     fi
 
     { # try
-      kallisto quant -i ${reads}.index --gtf $gtf --genomebam -o kallisto \$options $reads
+      kallisto quant -i kallisto.index --gtf $gtf --genomebam -o kallisto \$options $reads
     } || { # catch
       true
     }
@@ -837,7 +837,7 @@ if (params.stranded == "infer") {
 
 } else {
 
-  ch_strandedness = trimmed_reads_downsample.map { sample_id, fastq, se -> [sample_id, file(fastq), se,  params.stranded] }.map{sample_id, fastq, se, strand -> strand}
+  ch_strandedness = trimmed_reads_downsample.map { sample_id, fastq, se -> [sample_id, fastq, se,  params.stranded] }.map{sample_id, fastq, se, strand -> strand}
 
 }
 
