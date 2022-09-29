@@ -992,7 +992,7 @@ if (!params.test) {
     input:
     set val(name), file(bam), file(bam_index) from indexed_bam
     each file(gtf) from gtf_stringtie
-    each val(strand) from ch_strandedness_stringstar
+    val(strand) from ch_strandedness_stringstar
 
     output:
     file "${name}.gtf" into stringtie_gtf
@@ -1137,7 +1137,7 @@ if (!params.test) {
       input:
       set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams
       each file(gtf) from gtf_rmats
-      each val(strand) from ch_strandedness_rmats
+      val(strand) from ch_strandedness_rmats
 
       output:
       file "*.{txt,csv}" into rmats_out
@@ -1227,7 +1227,7 @@ if (!params.test) {
       input:
       set val(name1), file(bam1), val(name2), file(bam2) from paired_samples
       each file (gtf) from gtf_rmats
-      each val(strand) from ch_strandedness_paired_rmats
+      val(strand) from ch_strandedness_paired_rmats
 
       output:
       file "*.{txt,csv}" into paired_rmats_out
