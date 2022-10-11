@@ -811,21 +811,9 @@ if (params.stranded == "infer") {
       salmon quant -i salmon.index --libType A -o out/salmon -1 ${reads[0]} -2 ${reads[1]} -p $task.cpus
     fi
 
+    lib=$(grep "library type" out/salmon/logs/salmon_quant.log | awk '{print \$NF}')
 
-    # convert GTF to BED12 
-    gtf2bed < $gtf > ${gtf}.bed
-
-    # infer strandedness
-    infer_experiment.py -r ${gtf}.bed -i kallisto/*.bam -s 500 > infer_strandedness.txt
-
-    isInFile=\$(cat infer_strandedness.txt | grep -c "Unknown Data type")
-
-    if [ \$isInFile -eq 0 ]; then
-      parse_strandedness.py infer_strandedness.txt ${params.threshold}
-    else
-      echo "Unknown Data type"
-      echo -n "false" > infer_strandedness.txt
-    fi
+    echo -e \$lib >> library_type_all_samples.txt
     """
   }
 
