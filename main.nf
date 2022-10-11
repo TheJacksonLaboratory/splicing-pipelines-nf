@@ -801,7 +801,7 @@ if (params.stranded == "infer") {
     script:
     """
     # create index from read data
-    kallisto index --make-unique -i kallisto.index $reads
+    kallisto index --make-unique -i kallisto.index $gtf
 
     # obtain bam file from reads with kallisto
     if [ "$singleEnd" == "true" ]; then
