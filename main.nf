@@ -811,7 +811,7 @@ if (params.stranded == "infer") {
       salmon quant -i salmon.index --libType A -o out/salmon -1 ${reads[0]} -2 ${reads[1]} -p $task.cpus
     fi
 
-    lib=$(grep "library type" out/salmon/logs/salmon_quant.log | awk '{print \$NF}')
+    lib=\$(grep "library type" out/salmon/logs/salmon_quant.log | awk '{print \$NF}')
 
     echo -e \$lib >> library_type_all_samples.txt
     """
