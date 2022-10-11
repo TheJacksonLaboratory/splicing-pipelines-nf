@@ -800,21 +800,17 @@ if (params.stranded == "infer") {
 
     script:
     """
-    # create index from read data
-    kallisto index --make-unique -i kallisto.index $reads
+    # create index from GTF data
+    salmon index -i salmon.index -t $gtf -k 31 -p $task.cpus
 
-    # obtain bam file from reads with kallisto
+    # obtain bam file from reads with Salmon
     if [ "$singleEnd" == "true" ]; then
-      options="--single -l 200 -s 50"
+      salmon quant -i salmon.index --libType A -o out/salmon -r $reads -p $task.cpus
+
     else
-      options=""
+      salmon quant -i salmon.index --libType A -o out/salmon -1 ${reads[0]} -2 ${reads[1]} -p $task.cpus
     fi
 
-    { # try
-      kallisto quant -i kallisto.index --gtf $gtf --genomebam -o kallisto \$options $reads
-    } || { # catch
-      true
-    }
 
     # convert GTF to BED12 
     gtf2bed < $gtf > ${gtf}.bed
