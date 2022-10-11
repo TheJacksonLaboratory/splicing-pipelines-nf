@@ -339,7 +339,7 @@ if (!params.bams) {
   Channel
     .fromPath(star_index)
     .ifEmpty { exit 1, "STAR index not found: ${star_index}" }
-    .set { star_index }
+    .into { star_index ; star_index_strandedness }
 }
 Channel
   .fromPath(key_file)
@@ -794,26 +794,27 @@ if (params.stranded == "infer") {
     input:
     set val(name), file(reads), val(singleEnd) from downsampled_reads
     each file(gtf) from gtf_strandedness
+    each file(index) from star_index_strandedness
 
     output:
     file("infer_strandedness.txt") into strandedness_output
 
     script:
     """
-    # create index from GTF data
-    salmon index -i salmon.index -t $gtf -k 31 -p $task.cpus
-
-    # obtain bam file from reads with Salmon
-    if [ "$singleEnd" == "true" ]; then
-      salmon quant -i salmon.index --libType A -o out/salmon -r $reads -p $task.cpus
-
-    else
-      salmon quant -i salmon.index --libType A -o out/salmon -1 ${reads[0]} -2 ${reads[1]} -p $task.cpus
+    # Decompress STAR index if compressed
+    if [[ $index == *.tar.gz ]]; then
+      tar -xvzf $index
     fi
 
-    lib=\$(grep "library type" out/salmon/logs/salmon_quant.log | awk '{print \$NF}')
+    # create index from GTF data
+    STAR --genomeDir ${index.toString().minus('.tar.gz')} --runThreadN $task.cpus \
+      --readFilesIn $reads --readFilesCommand zcat \
+      --outFileNamePrefix star/strand --outSAMtype BAM  SortedByCoordinate \
+      --twopassMode Basic \
+      --quantMode TranscriptomeSAM GeneCounts \
+      --outSAMunmapped Within  --outFilterType BySJout  --outSAMattributes NH HI AS NM MD
 
-    echo -e \$lib >> library_type_all_samples.txt
+    parse_strandedness.py star/strandReadsPerGene.out.tab
     """
   }
 

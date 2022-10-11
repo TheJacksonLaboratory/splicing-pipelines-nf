@@ -3,38 +3,36 @@
 
 import os
 import sys
+import csv
 
 def __main__():
     
     manifest = sys.argv[1]
-    threshold = float(sys.argv[2])
     print("Input strandedness file:", manifest)
 
-    fraction1 = 0
-    fraction2 = 0
+    count_2 = 0
+    count_3 = 0
+    count_4 = 0
 
     with open(manifest) as manifest_fh:
-        for line in manifest_fh:
-            line = line.split(':')
-            if line[0]=='Fraction of reads explained by "1++,1--,2+-,2-+"':
-                fraction1 = float(line[1].strip())
-            elif line[0]=='Fraction of reads explained by "1+-,1-+,2++,2--"':
-                fraction2 = float(line[1].strip())
-            else:
-                pass
+        data = csv.reader(manifest_fh, delimiter='\t')
+        for line in data:
+            count_2 += int(line[1])
+            count_3 += int(line[2])
+            count_4 += int(line[3])
 
-    if 1 - threshold < (fraction1 / fraction2) < 1 + threshold:
+    if count_4 > 200:
         print("Unstranded Data type")
-        with open("infer_strandedness.txt", w) as fh:
+        with open("infer_strandedness.txt", 'w') as fh:
             fh.write("false")
     else:
-        if fraction1 > fraction2:
+        if count_3 > count_4:
             print("first-strand")
-            with open("infer_strandedness.txt", w) as fh:
+            with open("infer_strandedness.txt", 'w') as fh:
                 fh.write("first-strand")
         else:
             print("second-strand")
-            with open("infer_strandedness.txt", w) as fh:
+            with open("infer_strandedness.txt", 'w') as fh:
                 fh.write("second-strand")
 
 
