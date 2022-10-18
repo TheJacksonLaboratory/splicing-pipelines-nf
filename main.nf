@@ -820,7 +820,9 @@ if (params.stranded == "infer") {
     fi
 
     lib=\$(grep "library type" slamon/strandedness/logs/salmon_quant.log | awk '{print \$NF}')
-    echo -e \$lib >> infer_strandedness.txt
+    echo -e \$lib >> salmon_strandedness.txt
+
+    parse_strandedness.py salmon_strandedness.txt
     """
   }
 
