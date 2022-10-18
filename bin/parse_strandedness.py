@@ -10,13 +10,11 @@ def __main__():
     manifest = sys.argv[1]
     print("Input strandedness file:", manifest)
 
-    if os.stat(manifest).st_size == 0:
-        with open("infer_strandedness.txt", 'w') as fh:
-            fh.write("false")
-    else:
-        with open(manifest) as manifest_fh:
-            data = csv.reader(manifest_fh, delimiter='\t')
-            for line in data:
+
+    with open(manifest) as manifest_fh:
+        data = csv.reader(manifest_fh, delimiter='\t')
+        for line in data:
+            try:
                 if line[0] == 'IU' or line[0] == 'U':
                     with open("infer_strandedness.txt", 'w') as fh:
                         fh.write("false")
@@ -28,6 +26,9 @@ def __main__():
                         fh.write("second-strand")
                 else:
                     with open("infer_strandedness.txt", 'w') as fh:
+                        fh.write("false")
+            except:
+                with open("infer_strandedness.txt", 'w') as fh:
                         fh.write("false")
 
 if __name__=="__main__": __main__()
