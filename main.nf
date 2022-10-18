@@ -237,7 +237,8 @@ log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 //if (params.stranded && params.stranded != 'infer') {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 if (params.stranded == 'infer') {log.info "Downsample                   : ${params.downsample}"}
-if (params.stranded == 'infer'){log.info "Threshold:                   : ${params.threshold}"}
+if (params.stranded == 'infer') {log.info "Threshold:                   : ${params.threshold}"}
+if (params.stranded == 'infer') {log.info "Salmon index:                : ${params.salmon_index}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
@@ -339,7 +340,7 @@ if (!params.bams) {
   Channel
     .fromPath(star_index)
     .ifEmpty { exit 1, "STAR index not found: ${star_index}" }
-    .into { star_index ; star_index_strandedness }
+    .set { star_index }
 }
 Channel
   .fromPath(key_file)
@@ -765,6 +766,12 @@ if (!params.bams){
   ---------------------------------------------------*/
 
 if (params.stranded == "infer") {
+
+  Channel
+    .fromPath(params.salmon_index)
+    .ifEmpty { exit 1, "salmon index not found: ${params.salmon_index}" }
+    .set { salmon_index_strandedness }
+
   process downsample {
     tag "$name"
     label 'low_memory'
@@ -794,27 +801,26 @@ if (params.stranded == "infer") {
     input:
     set val(name), file(reads), val(singleEnd) from downsampled_reads
     each file(gtf) from gtf_strandedness
-    each file(index) from star_index_strandedness
+    each file(index) from salmon_index_strandedness
 
     output:
     file("infer_strandedness.txt") into strandedness_output
 
     script:
     """
-    # Decompress STAR index if compressed
+    # Decompress SALMON index if compressed
     if [[ $index == *.tar.gz ]]; then
       tar -xvzf $index
     fi
 
-    # create index from GTF data
-    STAR --genomeDir ${index.toString().minus('.tar.gz')} --runThreadN $task.cpus \
-      --readFilesIn $reads --readFilesCommand zcat \
-      --outFileNamePrefix star/strand --outSAMtype BAM  SortedByCoordinate \
-      --twopassMode Basic \
-      --quantMode TranscriptomeSAM GeneCounts \
-      --outSAMunmapped Within  --outFilterType BySJout  --outSAMattributes NH HI AS NM MD
+    if [ "$singleEnd" == "false" ]; then
+      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -1 ${reads[0]} -2 ${reads[1]} -o slamon/strandedness 
+    else
+      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -r ${reads} -o slamon/strandedness
+    fi
 
-    parse_strandedness.py star/strandReadsPerGene.out.tab
+    lib=\$(grep "library type" slamon/strandedness/logs/salmon_quant.log | awk '{print \$NF}')
+    echo -e \$lib >> infer_strandedness.txt
     """
   }
 
