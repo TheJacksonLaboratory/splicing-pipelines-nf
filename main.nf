@@ -916,11 +916,11 @@ ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_str
       out_filter_intron_motifs=""
       out_sam_strand_field=""
       if [ "$strand" == "first-strand" ]; then
-        #xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
-        xs_tag_cmd=""
+        xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+        #xs_tag_cmd=""
       else
-        #xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=1 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
-        xs_tag_cmd=""
+        xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=1 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+        #xs_tag_cmd=""
       fi
     fi
 
