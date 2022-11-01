@@ -896,9 +896,23 @@ ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_str
     script:
     // TODO: check when to use `--outWigType wiggle` - for paired-end stranded stranded only?
     // TODO: find a better solution to needing to use `chmod`
-    //out_filter_intron_motifs = params.stranded ? '' : '--outFilterIntronMotifs RemoveNoncanonicalUnannotated'
-    //out_sam_strand_field = params.stranded ? '' : '--outSAMstrandField intronMotif'
-    //xs_tag_cmd = params.stranded ? "samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=${params.strType[params.stranded].strType} -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam" : ''
+    
+    if(strand == "false") {
+      out_filter_intron_motifs="--outFilterIntronMotifs RemoveNoncanonicalUnannotated"
+      out_sam_strand_field="--outSAMstrandField intronMotif"
+      xs_tag_cmd=""
+    }
+    if(strand == "first-strand") {
+      out_filter_intron_motifs=""
+      out_sam_strand_field=""
+      xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+    }
+    if(strand == "second-strand") {
+      out_filter_intron_motifs=""
+      out_sam_strand_field=""
+      xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=1 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
+    }
+    
     endsType = params.soft_clipping ? 'Local' : 'EndToEnd'
     // Set maximum available memory to be used by STAR to sort BAM files
     star_mem = params.star_memory ? params.star_memory : task.memory
@@ -906,23 +920,6 @@ ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_str
     save_unmapped_reads = params.save_unmapped ? '--outReadsUnmapped Fastx' : ''
     """
     ${pre_script_run_resource_status}
-
-    # Check strandedness
-    if [ "$strand" == "false" ]; then
-      out_filter_intron_motifs="--outFilterIntronMotifs RemoveNoncanonicalUnannotated"
-      out_sam_strand_field="--outSAMstrandField intronMotif"
-      xs_tag_cmd=""
-    else
-      out_filter_intron_motifs=""
-      out_sam_strand_field=""
-      if [ "$strand" == "first-strand" ]; then
-        #xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=2 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
-        xs_tag_cmd=""
-      else
-        #xs_tag_cmd="samtools view -h ${name}.Aligned.sortedByCoord.out.bam | gawk -v q=1 -f /usr/local/bin/tagXSstrandedData.awk | samtools view -bS - > Aligned.XS.bam && mv Aligned.XS.bam ${name}.Aligned.sortedByCoord.out.bam"
-        xs_tag_cmd=""
-      fi
-    fi
 
     # Decompress STAR index if compressed
     if [[ $index == *.tar.gz ]]; then
@@ -954,10 +951,10 @@ ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_str
       --alignIntronMax 1000000 \
       $save_unmapped_reads \
       --quantMode GeneCounts \
-      --outWigType None \$out_filter_intron_motifs \$out_sam_strand_field
+      --outWigType None $out_filter_intron_motifs $out_sam_strand_field
 
     chmod a+rw $name*
-    \$xs_tag_cmd
+    $xs_tag_cmd
     samtools index ${name}.Aligned.sortedByCoord.out.bam
     bamCoverage -b ${name}.Aligned.sortedByCoord.out.bam -o ${name}.bw 
 
