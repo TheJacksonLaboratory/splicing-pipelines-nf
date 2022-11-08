@@ -3,10 +3,14 @@
 ## Current Pipeline improvements
 #### Improvements:
  - Removes network and subnetwork parameters because CloudOS now sets this automatically (#315).
+ - Allows for better control of Lifebit memory resourses (#317).
 
 #### Fixes:
+- Fixed a bug in the post processing that changed the order of the Bamlist (#322)
+- Sets the main.pbs to DSL1 for Sumner (NF changed default language) (#326).
 
 #### Updates:
+ - **rMATs** `4.1.1` -> `4.1.2` (#316)
 
 #### Maintenance:
 
