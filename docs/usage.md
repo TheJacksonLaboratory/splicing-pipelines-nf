@@ -91,6 +91,9 @@ Both of these should be specified without quotes
 Input files:
     --reads                     Path to reads.csv file, which specifies the sample_id and path to FASTQ files
                                 for each read or read pair (path).
+                When using the --download_from GTEX option the reads file must be a simple csv file listing
+                bam file names to be processed in the analysis. The input manifest will be downsampled
+                to only contain information about these files.
                                 This file is used if starting at beginning of pipeline. It can be file paths,
                                 s3 links or ftp link.
                                 (default: no reads.csv)
@@ -107,6 +110,8 @@ Input files:
                                 (string)
                                 false should be used to run local files on the HPC (Sumner).
                                 'TCGA' can also be used to download GDC data including HCMI data.
+                                (default: false)
+    --manifest                  Manifest file to download data from GTEX. (string)
                                 (default: false)
     --key_file                  For downloading reads, use TCGA authentication token (TCGA) or
                                 credentials.json file in case of 'GTEX'.
@@ -186,6 +191,19 @@ rMATS:
                                 (default: 50)
     --mel                       Maximum Exon Length. Only impacts --novelSS behavior (int)
                                 (default: 500)
+    --rmats_merge_memory          Sets base RAM requirement for stringtie_merge process.
+                                (default: 120.GB)
+    --rmats_merge_cpu             Sets base CPU requirement for stringtie_merge process.
+                                (default: 30)
+    --rmats_merge_machine_type    Only specific to google-cloud executor. Request a specific machine type for rmats.
+
+Stringtie:
+    --stringtie_merge_memory      Sets base RAM requirement for stringtie_merge process.
+                                (default: 30.GB)
+    --stringtie_merge_cpu         Sets base CPU requirement for stringtie_merge process.
+                                (default: 8)
+    --stringtie_merge_machine_type Only specific to google-cloud executor. Request a specific machine type 
+                                    for stringtie_merge.
 
 Other:
     --test                      For running trim test (bool)

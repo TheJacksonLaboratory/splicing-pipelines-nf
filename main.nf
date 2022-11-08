@@ -125,6 +125,19 @@ def helpMessage() {
                                     (default: 50)
       --mel                         Maximum Exon Length. Only impacts --novelSS behavior (int)
                                     (default: 500)
+      --rmats_merge_memory          Sets base RAM requirement for stringtie_merge process.
+                                    (default: 120.GB)
+      --rmats_merge_cpu             Sets base CPU requirement for stringtie_merge process.
+                                    (default: 30)
+      --rmats_merge_machine_type    Only specific to google-cloud executor. Request a specific machine type for rmats.
+
+    Stringtie:
+      --stringtie_merge_memory      Sets base RAM requirement for stringtie_merge process.
+                                    (default: 30.GB)
+      --stringtie_merge_cpu         Sets base CPU requirement for stringtie_merge process.
+                                    (default: 8)
+      --stringtie_merge_machine_type Only specific to google-cloud executor. Request a specific machine type 
+                                     for stringtie_merge.
 
     Other:
       --test                        For running trim test (bool)
@@ -252,6 +265,7 @@ log.info "Mismatch                    : ${params.mismatch}"
 log.info "filterScore                 : ${params.filterScore}"
 log.info "sjdbOverhangMin             : ${params.sjdbOverhangMin}"
 log.info "STAR memory                 : ${params.star_memory ? star_memory : 'Not provided, Using STAR task max memory'}"
+log.info "stringtie merge memory      : ${params.stringtie_merge_memory}"
 log.info "Test                        : ${params.test}"
 log.info "Download from               : ${params.download_from ? params.download_from : 'FASTQs directly provided'}"
 log.info "Key file                    : ${params.key_file ? params.key_file : 'Not provided'}"
