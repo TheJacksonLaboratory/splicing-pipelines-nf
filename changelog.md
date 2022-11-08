@@ -11,13 +11,25 @@
 #### Maintenance:
 
 ## v2.1 - Pipeline improvements
+
 #### Improvements:
+- removed fasta file requirement from `Gen3-DRS` option (#297)
+- The `google-lifesciences` has been defined as the executor when google profile is used. (#305)
+- `GTEX`downlod option has been removed due to being obsolete (#299)
+- `Gen3-DRS` was renamed to `GTEX` as it's now the only way to download GTEX file (#299)
+- Added a new `--manifest` parameter with the input being the .json manifest file downloaded from GTEX (#304)
+- Added `--reads` parameter which receives a CSV file with samples for which the analysis will be limited to when using `GTEX` (#304)
+
 
 #### Fixes:
+- Fix pipeline crach when using `Gen3-DRS` input due to `env(...)`format being used in process output (#294)
+- Changed `gtex`input to support new manifest file format (#296)
 
 #### Updates:
+- None performed
 
 #### Maintenance:
+- None added
 
 
 ## v2.0 - Pipeline improvements
