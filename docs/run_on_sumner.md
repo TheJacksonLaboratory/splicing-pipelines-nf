@@ -76,7 +76,7 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters) and [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/03c977a4a5b386a1ea31c8aae78592432e38f3a2/nextflow.config). 
 
-To create your own custom config (to specify your input parameters) you can copy and edit this [example config](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/d5ef6327fd3773484ecd1f0cdd593531e47cff39/NF_splicing_pipeline.config) file. 
+To create your own custom config (to specify your input parameters) you can copy and edit this [example config](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/NF_splicing_pipeline.config) file. 
 
 **VERY IMPORTANT NOTES***
 
