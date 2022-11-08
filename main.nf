@@ -814,9 +814,9 @@ if (params.stranded == "infer") {
     fi
 
     if [ "$singleEnd" == "false" ]; then
-      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -1 ${reads[0]} -2 ${reads[1]} -o slamon/strandedness 
+      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -1 ${reads[0]} -2 ${reads[1]} -o slamon/strandedness --minAssignedFrags 1
     else
-      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -r ${reads} -o slamon/strandedness
+      salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -r ${reads} -o slamon/strandedness --minAssignedFrags 1
     fi
 
     lib=\$(grep "library type" slamon/strandedness/logs/salmon_quant.log | awk '{print \$NF}')
