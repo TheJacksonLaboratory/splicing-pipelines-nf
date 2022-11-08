@@ -14,7 +14,7 @@ date;hostname;pwd
 
 module load singularity
 
-export NXF_DEFAULT_DSL=1
+export NXF_VER=20.04.1
 
 curl -fsSL get.nextflow.io | bash
 
