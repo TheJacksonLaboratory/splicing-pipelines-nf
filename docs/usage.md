@@ -91,9 +91,9 @@ Both of these should be specified without quotes
 Input files:
     --reads                     Path to reads.csv file, which specifies the sample_id and path to FASTQ files
                                 for each read or read pair (path).
-                When using the --download_from GTEX option the reads file must be a simple csv file listing
-                bam file names to be processed in the analysis. The input manifest will be downsampled
-                to only contain information about these files.
+                                When using the --download_from GTEX option the reads file must be a simple csv file listing
+                                bam file names to be processed in the analysis. The input manifest will be downsampled
+                                to only contain information about these files.
                                 This file is used if starting at beginning of pipeline. It can be file paths,
                                 s3 links or ftp link.
                                 (default: no reads.csv)
