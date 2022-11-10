@@ -333,7 +333,7 @@ Channel
 Channel
   .fromPath(params.gtf)
   .ifEmpty { exit 1, "Cannot find GTF file: ${params.gtf}" }
-  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine; gtf_strandedness }
+  .into { gtf_star ; gtf_stringtie; gtf_stringtie_merge; gtf_to_combine }
 if (!params.bams) {
   Channel
     .fromPath(star_index)
@@ -777,7 +777,6 @@ if (params.stranded == "infer") {
 
     input:
     set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
-    each file(gtf) from gtf_strandedness
     each file(index) from salmon_index_strandedness
 
     output:
