@@ -13,6 +13,7 @@ Table of contents
   - [3.1 - Running with Docker or Singularity](#31---running-with-docker-or-singularity)
   - [3.2 - Submitting run to CloudOS](#32---submitting-run-to-cloudos)
   - [3.3 - Execution examples](#33---execution-examples)
+- [4 - Additional information](#4---additional-information) 
 
 ## 1 - Pipeline description
 
