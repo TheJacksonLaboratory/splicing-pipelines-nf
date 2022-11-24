@@ -14,6 +14,8 @@ Table of contents
   - [3.2 - Submitting run to CloudOS](#32---submitting-run-to-cloudos)
   - [3.3 - Execution examples](#33---execution-examples)
 - [4 - Additional information](#4---additional-information) 
+  - [4.1 - Quick Start on Sumner](#41---Quick-start-on-Sumner)
+  - [4.2 - Additional documentation](#42---Additional-documentation)
 
 ## 1 - Pipeline description
 
@@ -820,7 +822,7 @@ results
 
 ## 4 - Additional information
 
-### Quick start on Sumner (JAX's HPC)
+### 4.1 - Quick start on Sumner
 
 #### Download latest changes to pipeline 
 
@@ -869,7 +871,7 @@ tail splicing.[jobnumber].out
 nextflow run main.nf --help
 ```
 
-### Additional Documentation
+### 4.2 - Additional documentation
 
 Documentation about the pipeline, found in the [`docs/`](docs) directory:
 
