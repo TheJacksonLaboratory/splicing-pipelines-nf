@@ -237,6 +237,7 @@ log.info "STAR index                  : ${star_index}"
 log.info "Stranded                    : ${params.stranded}"
 //if (params.stranded && params.stranded != 'infer') {log.info "strType                     : ${params.strType[params.stranded].strType}"}
 if (params.stranded == 'infer') {log.info "Salmon index                : ${params.salmon_index}"}
+if (params.stranded == 'infer') {log.info "Downsample proportion       : ${params.downsample}"}
 log.info "Soft_clipping               : ${params.soft_clipping}"
 log.info "Save unmapped               : ${params.save_unmapped}"
 log.info "rMATS pairs file            : ${params.rmats_pairs ? params.rmats_pairs : 'Not provided'}"
@@ -770,13 +771,34 @@ if (params.stranded == "infer") {
     .ifEmpty { exit 1, "salmon index not found: ${params.salmon_index}" }
     .set { salmon_index_strandedness }
 
+  process downsample {
+    tag "$name"
+    label 'low_memory'
+
+    input:
+    set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
+
+    output:
+    set val(name), file("downsample_*"), val(singleEnd) into downsampled_reads
+
+    script:
+    """
+    if [ "$singleEnd" == "true" ]; then
+      zcat $reads | seqkit sample -p ${params.downsample} -o downsample_$reads
+    else
+      zcat ${reads[0]} | seqkit sample -p ${params.downsample} -o downsample_${reads[0]}
+      zcat ${reads[1]} | seqkit sample -p ${params.downsample} -o downsample_${reads[1]}
+    fi
+    """
+  }
+
   process infer_strandedness {
     tag "$name"
     label 'low_memory'
     publishDir "${params.outdir}/strandedness/${name}", mode: 'copy'
 
     input:
-    set val(name), file(reads), val(singleEnd) from trimmed_reads_downsample
+    set val(name), file(reads), val(singleEnd) from downsampled_reads
     each file(index) from salmon_index_strandedness
 
     output:
