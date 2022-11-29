@@ -819,7 +819,7 @@ if (params.stranded == "infer") {
       salmon quant --threads $task.cpus -i ${index.toString().minus('.tar.gz')} -l A -r ${reads} -o salmon/strandedness --minAssignedFrags 1
     fi
 
-    lib=\$(grep "library type" slamon/strandedness/logs/salmon_quant.log | awk '{print \$NF}')
+    lib=\$(grep "library type" salmon/strandedness/logs/salmon_quant.log | awk '{print \$NF}')
     echo -e \$lib >> salmon_strandedness.txt
 
     parse_strandedness.py salmon_strandedness.txt
