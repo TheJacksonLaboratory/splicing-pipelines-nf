@@ -7,7 +7,7 @@ dependencies:
   - fastqc=0.11.9
   - trimmomatic=0.39
   - star=2.7.9a
-  - samtools=1.13
+  - samtools=1.16.1
   - deeptools=3.5.1
   - multiqc=1.11
   - bioconductor-rtracklayer=1.52.0
