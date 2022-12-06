@@ -114,6 +114,8 @@ GTEX-XXXXX-XXXX-XX-XXXXX.Aligned.sortedByCoord.out.patched.md.bam
 - `get_ftp_accession`: Download FASTQ files from FTP
 - `in2csv`: When using GTEx, convert json manifest file to CSV format
 - `filter_manifest`: When using GTEx, filter input manifest, now in CSV format, to contain only the input samples
+- `downsample`: Downsample read files for strandedness inference. Set by default to 0.1% of the total number of reads
+- `infer_strandedness`: With Salmon aligner, infer strandedness of a read set given a provided index (forward-stranded, reversed-stranded or unstranded). When inference cannot be automatically detected by Salmon, it is set to "unstranded" 
 - `gen3_drs_fasp`: Download BAM files from GTEx
 - `get_tcga_bams`: Download BAM files from TCGA
 - `bamtofastq`: Bedtools to extract FASTQ from BAM
