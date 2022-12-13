@@ -834,7 +834,7 @@ if (params.stranded == "infer") {
 
 }
 
-ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_strandedness_rmats ; ch_strandedness_paired_rmats }
+ch_strandedness.into{ ch_strandedness_star ; ch_strandedness_stringstar ; ch_strandedness_rmats ; ch_strandedness_rmats_2 ; ch_strandedness_paired_rmats }
 
   /*--------------------------------------------------
     STAR to align trimmed reads
@@ -1084,10 +1084,13 @@ if (!params.test) {
 
     indexed_bam_rmats
       .map { name, bam, bai -> [name, bam] }
-      .set { bam }
+      .into { bam1; bam2 }
+
+    samples
+      .into({ samples1; samples2 })
     
     // Group BAMs for each rMATS execution
-    samples
+    samples1
       .map { row -> 
         def samples_rmats_id = []
         def rmats_id = row[0]
@@ -1102,7 +1105,7 @@ if (!params.test) {
         samples_rmats_id
       }
       .flatMap()
-      .combine(bam, by:0)
+      .combine(bam1, by:0)
       .map { sample_id, b, rmats_id, bam -> [ rmats_id + b, rmats_id, bam] }
       .groupTuple()
       .map { b, rmats_id, bams -> [rmats_id[0], [b, bams]] }
@@ -1113,28 +1116,62 @@ if (!params.test) {
         rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
         rmats_id_bams
       }
-      .set { bams }
+      .into({ bams1a; bams1a_log })
+    bams1a_log.subscribe({ println("bams1a: $it\n") })
 
-    process rmats {
+    bams1a.flatMap({ comparison, bams1, bams2, tf ->
+      def o = []
+      def bam_suffix = '.Aligned.sortedByCoord.out.bam'
+      for(b : bams1) {
+        def path_arr = b.toString().split('/')
+        def fname = path_arr[path_arr.size() - 1]
+        def i = fname.lastIndexOf(bam_suffix)
+        if(i <= 0) exit(11, "bam_suffix '${bam_suffix}' not in '${b}'")
+        def sample = fname.substring(0, i)
+        def oi = [ comparison, sample, b ]
+        o.add(oi)
+      }
+      for(b : bams2) {
+        def path_arr = b.toString().split('/')
+        def fname = path_arr[path_arr.size() - 1]
+        def i = fname.lastIndexOf(bam_suffix)
+        if(i <= 0) exit(13, "bam_suffix '${bam_suffix}' not in '${b}'")
+        def sample = fname.substring(0, i)
+        def oi = [ comparison, sample, b ]
+        o.add(oi)
+      }
+      return o
+    }).into({ bams1; bams1_log })
+    bams1_log.subscribe({ println("bams1: $it\n") })
+
+    gtf_rmats1.combine(bams1).into({ gtf_bams_combo; gtf_bams_combo_log })
+    gtf_bams_combo_log.subscribe({ println("gtf_bams_combo: $it\n") })
+
+    gtf_bams_combo.map({ gtf, comparison, sample, bams ->
+      return tuple(comparison, gtf.toString(), sample, gtf, bams)
+    }).into({ gtf_bams; gtf_bams_log })
+    gtf_bams_log.subscribe({ println("gtf_bams: $it\n") })
+
+    process rmats1 {
       tag "$rmats_id ${gtf.simpleName}"
       label 'high_memory'
-      publishDir "${params.outdir}/rMATS_out/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
+      publishDir "${params.outdir}/rMATS_out/1/${rmats_id}_${gtf.simpleName}", pattern: "{*.rmats,*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
       publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
 
       when:
       !params.skiprMATS
 
       input:
-      set val(rmats_id), file(bams), file(b2_bams), val(b1_only) from bams
-      each file(gtf) from gtf_rmats
+      stuple val(rmats_id), val(gtf_key), val(sample_id), path(gtf), path(bam) from gtf_bams
       val(strand) from ch_strandedness_rmats
 
       output:
-      file "*.{txt,csv}" into rmats_out
+      tuple val(gtf_key), val(rmats_id), path("*.rmats") into rmats1_out
       file "tmp/*_read_outcomes_by_bam.txt"
       file("command-logs-*") optional true
 
       script:
+      
       //libType = params.stranded ? params.stranded == 'first-strand' ? 'fr-firststrand' : 'fr-secondstrand' : 'fr-unstranded'
       mode = params.singleEnd ? 'single' : 'paired'
       variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
@@ -1142,6 +1179,132 @@ if (!params.test) {
       paired_stats = params.paired_stats ? '--paired-stats' : ''
       novelSS = params.novelSS ? '--novelSS' : ''   
       allow_clipping = params.soft_clipping ? '--allow-clipping' : ''
+
+      """
+      # Check strandedness
+      if [ "$strand" == "false" ]; then
+        libType="fr-unstranded"
+      else
+        if [ "$strand" == "first-strand" ]; then
+          libType="fr-firststrand"
+        else
+          libType="fr-secondstrand"
+        fi
+      fi
+
+      echo $bam > b1.txt
+
+      rmats.py \
+        --b1 b1.txt \
+        --gtf $gtf \
+        --od ./ \
+        --tmp tmp \
+        --libType \$libType \
+        -t $mode \
+        --nthread $task.cpus \
+        --readLength ${params.readlength} \
+        --mil ${params.mil} \
+        --mel ${params.mel} \
+        $variable_read_length_flag $statoff $paired_stats \
+        $novelSS $allow_clipping --task prep
+      
+      python3 /opt/conda/rMATS/cp_with_prefix.py '${sample_id}.' ./ tmp/*.rmats
+      
+      rmats_config="config_for_rmats_and_postprocessing.txt"
+      echo b1              b1.txt > \$rmats_config
+      echo rmats_gtf       ${gtf} >> \$rmats_config
+      echo ref_gtf         ${gtf} >> \$rmats_config
+      echo fasta           ${params.assembly_name} >> \$rmats_config
+      echo reads           ${params.singleEnd ? 'single' : 'paired'} >> \$rmats_config
+      echo readlen         ${params.readlength} >> \$rmats_config
+      echo rmats_id        ${rmats_id} >> \$rmats_config
+      # save .command.* logs
+      ${params.savescript}
+      """
+    }
+
+    rmats1_out.into({ rmats1_raw; rmats1_raw_log })
+    rmats1_raw_log.subscribe({ println("rmats1_raw: $it\n") })
+
+    rmats1_raw.groupTuple(by: [0, 1]).into({ rmats_grp; rmats_grp_log })
+    rmats_grp_log.subscribe({ println("rmats_grp: $it\n") })
+
+    gtf_rmats2.map({
+      println("gtf_rmats2: $it\n")
+      return tuple(it.toString(), it)
+    }).into({ gtf_rmats_keyed; gtf_rmats_keyed_log })
+    gtf_rmats_keyed_log.subscribe({ println("gtf_rmats_keyed: $it\n") })
+
+    gtf_rmats_keyed.join(rmats_grp).into({ gtf_rmats_join; gtf_rmats_join_log })
+    gtf_rmats_join_log.subscribe({ println("gtf_rmats_join: $it\n") })
+
+    gtf_rmats_join.map({ gtf_key, gtf_path, comparison, rmats_arr ->
+      return tuple(comparison, gtf_path, rmats_arr) 
+    }).into({ gtf_rmats_prep; gtf_rmats_prep_log })
+    gtf_rmats_prep_log.subscribe({ println("gtf_rmats_prep: $it\n") })
+
+    samples2.map { row ->
+      def samples_rmats_id = []
+      def rmats_id = row[0]
+      def b1_samples = row[1]
+      def b2_samples = row[2]
+      b1_samples.each { sample ->
+        samples_rmats_id.add([sample, 'b1', rmats_id])
+      }
+      b2_samples.each { sample ->
+        samples_rmats_id.add([sample, 'b2', rmats_id])
+      }
+      samples_rmats_id
+    }
+    .flatMap()
+    .combine(bam2, by:0)
+    .map { sample_id, b, rmats_id, bam -> [ rmats_id + b, rmats_id, bam ] }
+    .groupTuple()
+    .map { b, rmats_id, bams -> [rmats_id[0], [b, bams]] }
+    .groupTuple()
+    .map { rmats_id, bams ->
+      def b1_bams = bams[0][0].toString().endsWith('b1') ? bams[0] : bams[1]
+      def b2_bams = bams[0][0].toString().endsWith('b2') ? bams[0] : bams[1]
+      def rmats_id_bams = b2_bams == null ? [ rmats_id, b1_bams[1], "no b2", true ] : [ rmats_id, b1_bams[1] , b2_bams[1], false ]
+      rmats_id_bams
+    }
+    .into({ bams2; bams2_log })
+    bams2_log.subscribe({ println("bams2: $it\n") })
+
+    bams2.combine(gtf_rmats_prep).map({
+      comparison, bams1_list, bams2_list, bams1_only, comparison2, gtf, rmats_list ->
+      return tuple(comparison, gtf, bams1_only, bams1_list, bams2_list, rmats_list)
+    }).into({ gtf_bam_rmats; gtf_bam_rmats_log })
+
+    gtf_bam_rmats_log.subscribe({ println("gtf_bam_rmats: $it\n") })
+
+    process rmats2 {
+      tag "$rmats_id ${gtf.simpleName}"
+      label 'mega_memory'
+      publishDir "${params.outdir}/rMATS_out/2/${rmats_id}_${gtf.simpleName}", pattern: "{*.txt,*.csv,tmp/*_read_outcomes_by_bam.txt}", mode: 'copy'
+      publishDir "${params.outdir}/process-logs/${task.process}/${rmats_id}_${gtf.simpleName}", pattern: "command-logs-*", mode: 'copy'
+
+      when:
+      !params.skiprMATS
+
+      input:
+      tuple val(rmats_id), path(gtf), val(b1_only), path(bams), path(b2_bams), path(rmats_prep_files) from gtf_bam_rmats
+      val(strand) from ch_strandedness_rmats_2
+
+
+      output:
+      file "*.{txt,csv}" into rmats_out
+      file("command-logs-*") optional true
+
+      script:
+
+      mode = params.singleEnd ? 'single' : 'paired'
+      variable_read_length_flag = variable_read_length ? '--variable-read-length' : ''
+      statoff = params.statoff ? '--statoff' : ''
+      paired_stats = params.paired_stats ? '--paired-stats' : ''
+      novelSS = params.novelSS ? '--novelSS' : ''
+      allow_clipping = params.soft_clipping ? '--allow-clipping' : ''
+
       if (b1_only) {
         b1_bams = bams.join(",")
         b2_cmd = ''
@@ -1168,17 +1331,20 @@ if (!params.test) {
 
       echo $b1_bams > b1.txt
       $b2_cmd
+
       rmats.py \
         --b1 b1.txt $b2_flag \
         --gtf $gtf \
         --od ./ \
-        --tmp tmp \
+        --tmp ./ \
         --libType \$libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
         --mil ${params.mil} \
-        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS $allow_clipping
+        --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS $allow_clipping \
+        --task post
+      
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1 b1.txt > \$rmats_config
       $b2_config_cmd
@@ -1190,11 +1356,12 @@ if (!params.test) {
       echo rmats_id        ${rmats_id} >> \$rmats_config
       
       LU_postprocessing.R
-
+      
       # save .command.* logs
       ${params.savescript}
       """
     }
+    rmats_out.subscribe({ println("rmats_out: $it\n") })
 
   } else {
 
@@ -1251,13 +1418,15 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
-        --libType $libType \
+        --libType \$libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
         --mil ${params.mil} \
         --mel ${params.mel} $variable_read_length_flag $statoff $paired_stats $novelSS
+      
       rmats_config="config_for_rmats_and_postprocessing.txt"
+      
       echo b1 b1.txt > \$rmats_config
       echo b2 b2.txt >> \$rmats_config
       echo rmats_gtf $gtf >> \$rmats_config
@@ -1274,6 +1443,7 @@ if (!params.test) {
       ${params.savescript}
       """
     }
+    paired_rmats_out.subscribe({ println("paired_rmats_out: $it\n") })
   }
 }
 
