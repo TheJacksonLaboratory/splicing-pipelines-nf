@@ -6,7 +6,6 @@ ARG ENV_NAME="base"
 
 RUN apk add --no-cache bash=5.0.17-r0 procps=3.3.16-r0
 
-
 COPY environment.yml /
 RUN conda env update -n ${ENV_NAME} -f environment.yml && conda clean -a
 
