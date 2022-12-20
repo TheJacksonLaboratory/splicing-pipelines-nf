@@ -7,7 +7,7 @@
 
 #### Fixes:
 - Fixed a bug in the post processing that changed the order of the Bamlist (#322)
-- Sets the main.pbs to DSL1 for Sumner (NF changed default language) (#326).
+- Forces usage of NXF_VER=20.04.1 on Sumner in main.pbs to circumvent that the pipeline is written in DSL = 1 (NF changed default language) (#326).
 
 #### Updates:
  - **rMATs** `4.1.1` -> `4.1.2` (#316)
