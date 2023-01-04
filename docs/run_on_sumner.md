@@ -33,7 +33,7 @@ Create a new run directory within the appropriate dataset directory with the fol
 Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slightly based upon the data, see examples for:
 
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
-- [paired-end](../eexamples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
+- [paired-end](../examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
 
 The 'reads.csv' column names must match the above [single-end] and [paired-end] examples. The `sample_id` can be anything, however each must be unique. The `fastq` column(s) should contain the path to FASTQ files (publicly accessible ftp, s3 and gs links are also accepted). You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
