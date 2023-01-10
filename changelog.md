@@ -1,14 +1,48 @@
 # Changelog
 
-### v2.1 - Strandedness detection
+### v2.2 - Strandedness detection
 
 #### Improvements:
 - Adds a new option for the `--stranded` option named `infer` that kickstarts a new set of processes to detect the strandedness of the read data automatically using salmon (#320)
 - The dockerfile for the `splicing-pipelines-nf` has been updated to use the `continuumio/miniconda3` baselayer and all dependencies to be properly isolated in the given conda environment
 
+## Current Pipeline improvements
+#### Improvements:
+ - Removes network and subnetwork parameters because CloudOS now sets this automatically (#315).
+ - Allows for better control of Lifebit memory resourses (#317).
 
-### v2.0 - Pipeline improvements
+#### Fixes:
+- Fixed a bug in the post processing that changed the order of the Bamlist (#322)
+- Forces usage of NXF_VER=20.04.1 on Sumner in main.pbs to circumvent that the pipeline is written in DSL = 1 (NF changed default language) (#326).
 
+#### Updates:
+ - **rMATs** `4.1.1` -> `4.1.2` (#316)
+
+#### Maintenance:
+
+## v2.1 - Pipeline improvements
+
+#### Improvements:
+- removed fasta file requirement from `Gen3-DRS` option (#297)
+- The `google-lifesciences` has been defined as the executor when google profile is used. (#305)
+- `GTEX`downlod option has been removed due to being obsolete (#299)
+- `Gen3-DRS` was renamed to `GTEX` as it's now the only way to download GTEX file (#299)
+- Added a new `--manifest` parameter with the input being the .json manifest file downloaded from GTEX (#304)
+- Added `--reads` parameter which receives a CSV file with samples for which the analysis will be limited to when using `GTEX` (#304)
+
+
+#### Fixes:
+- Fix pipeline crach when using `Gen3-DRS` input due to `env(...)`format being used in process output (#294)
+- Changed `gtex`input to support new manifest file format (#296)
+
+#### Updates:
+- None performed
+
+#### Maintenance:
+- None added
+
+
+## v2.0 - Pipeline improvements
 #### Improvements:
  - Adds saving of all the process .command* log files to results/process-logs folder (#251)
  - Adds pipeline workdir `--cleanup` option to clear all intermediate files on pipeline successful completion (true by default, false for CloudOS) (#238, #284, [089d6e3](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/pull/245/commits/3b71e038b186bb2bc92debacb02aede7b5dae917))
@@ -41,7 +75,7 @@
  - Moves all containers to https://hub.docker.com/u/anczukowlab
 
 #### Maintenance:
- - Consideably reduces number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
+ - Considerably reduces number of basic redundant CI tests by removing completely the `max_retries` matrix and `push` from `on: [push, pull_request]`
  - Adds CI test for sra-downloading pipeline pathway (only supported with docker profile for now) (#253)
 
  

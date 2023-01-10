@@ -33,7 +33,7 @@ Create a new run directory within the appropriate dataset directory with the fol
 Input reads are specified by the `reads` input parameter, specifying a path to a CSV file. The format of CSV file will vary slightly based upon the data, see examples for:
 
 - [single-end](../examples/testdata/single_end/test_reps.csv) - must contain columns for `sample_id` and `fastq`
-- [paired-end](../examples/human_test/human_test_reps.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
+- [paired-end](../examples/analyses/MYC_MCF10A_0h_vs_MYC_MCF10A_8h/reads.csv) - must contain columns for `sample_id`, `fastq1` and `fastq2`
 
 The 'reads.csv' column names must match the above [single-end] and [paired-end] examples. The `sample_id` can be anything, however each must be unique. The `fastq` column(s) should contain the path to FASTQ files (publicly accessible ftp, s3 and gs links are also accepted). You can create this on your local computer in excel and use WinSCP to move it to Sumner, or use create it using `nano` on the cluster.
 
@@ -76,7 +76,7 @@ Each rMATS comparison must be specified with a comparison name as well as the `s
 
 This config file will be specific to your user and analysis. **You do not need to edit the pipeline code to configure the pipeline**. Descriptions of all possible parameters and their default values can be found [here](usage.md#all-available-parameters) and [here](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/03c977a4a5b386a1ea31c8aae78592432e38f3a2/nextflow.config). 
 
-To create your own custom config (to specify your input parameters) you can copy and edit this [example config](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/d5ef6327fd3773484ecd1f0cdd593531e47cff39/NF_splicing_pipeline.config) file. 
+To create your own custom config (to specify your input parameters) you can copy and edit this [example config](https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/blob/master/NF_splicing_pipeline.config) file. 
 
 **VERY IMPORTANT NOTES***
 

@@ -14,6 +14,8 @@ date;hostname;pwd
 
 module load singularity
 
+export NXF_VER=20.04.1
+
 curl -fsSL get.nextflow.io | bash
 
 ./nextflow run /projects/anczukow-lab/splicing_pipeline/splicing-pipelines-nf/main.nf \
