@@ -1,10 +1,10 @@
-FROM continuumio/miniconda3@sha256:a2e6aa4cd0b6dd696ae9e3e5732943250a977ab3a42b2fe5fb7ef0c19d2d9f16
+FROM continuumio/miniconda3@sha256:145567896379c33c89737aa1ab1389a71aead35b39f512118a13edcf9fe2a42c
 LABEL authors="ines@lifebit.ai" \
       description="Docker image containing all requirements for the splicing-pipelines-nf"
 
 ARG ENV_NAME="base"
 
-RUN apk add --no-cache bash=5.0.17-r0 procps=3.3.16-r0
+RUN apt-get install -y procps
 
 COPY environment.yml /
 RUN conda env update -n ${ENV_NAME} -f environment.yml && conda clean -a
@@ -33,4 +33,4 @@ RUN wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-2.1.7.Linux_x86_64.t
     rm gffcompare.tar.gz && mv gffcompare/gffcompare gffcompare/trmap /usr/local/bin/
 
 # Install gawk to fix https://github.com/TheJacksonLaboratory/splicing-pipelines-nf/issues/120
-RUN apk add --no-cache gawk
+RUN apt-get update && apt-get install -y gawk
