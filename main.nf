@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=1
 /*
  * Copyright (c) 2019, Jackson Labs and the authors.
  *
