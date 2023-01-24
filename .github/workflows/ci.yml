@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nxf_ver: ['20.01.0', '']
+        nxf_ver: ['20.04.0', '']
         test_type: ['ultra_quick_test', 'sra_test', 'strandedness_ultra_quick_test']
     steps:
       - uses: actions/checkout@v1
@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         singularity_version: ['3.7.1']
-        nxf_ver: ['20.01.0', '']
+        nxf_ver: ['20.04.0', '']
         test_type: ['ultra_quick_test', 'sra_test']
     steps:
       - uses: actions/checkout@v3.0.1
