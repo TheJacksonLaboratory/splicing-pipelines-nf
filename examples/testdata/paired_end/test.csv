@@ -1,0 +1,2 @@
+sample_id,fastq1,fastq2
+test1,s3://fast-ngs/cloudos-public-data-ines/downsample_1.fq.gz,s3://fast-ngs/cloudos-public-data-ines/downsample_2.fq.gz

@@ -67,7 +67,35 @@ cd splicing-pipelines-nf
 nextflow run . -profile ultra_quick_test,docker --cleanup
 ```
 
-### 2.2) Quick test with Docker container engine
+```bash
+nextflow run . -profile docker --singleEnd=true --reads="examples/testdata/single_end/tiny_reads.csv" --gtf='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/genes.gtf' --star_index='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/star_2.7.9a_yeast_chr_I.tar.gz' --test=true --readlength=48 --overhang=100 --max_cpus=2 --max_memory='6.GB' --max_time='48.h'
+```
+
+### 2.2) Quick test with Singularity container engine
+
 ```bash
 nextflow run . -profile ultra_quick_test,singularity --cleanup
+```
+
+```bash
+nextflow run . -profile singularity --singleEnd=true --reads="examples/testdata/single_end/tiny_reads.csv" --gtf='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/genes.gtf' --star_index='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/star_2.7.9a_yeast_chr_I.tar.gz' --test=true --readlength=48 --overhang=100 --max_cpus=2 --max_memory='6.GB' --max_time='48.h'
+```
+
+### 2.3) SRA quick test with Docker container engine
+```bash
+nextflow run . -profile sra_test,docker --cleanup
+```
+
+```bash
+nextflow run . -profile docker --singleEnd=true --reads="examples/testdata/sra/sra.csv" --download_from='FTP' --gtf='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/genes.gtf' --star_index='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/star_2.7.9a_yeast_chr_I.tar.gz' --test=true --readlength=500 --overhang=100 --max_cpus=2 --max_memory='6.GB' --max_time='48.h'
+```
+
+### 2.4) SRA quick test with Singularity container engine
+
+```bash
+nextflow run . -profile sra_test,singularity --cleanup
+```
+
+```bash
+nextflow run . -profile docker --singleEnd=true --reads="examples/testdata/sra/sra.csv" --download_from='FTP' --gtf='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/genes.gtf' --star_index='https://lifebit-featured-datasets.s3-eu-west-1.amazonaws.com/projects/jax/splicing-pipelines-nf/star_2.7.9a_yeast_chr_I.tar.gz' --test=true --readlength=500 --overhang=100 --max_cpus=2 --max_memory='6.GB' --max_time='48.h'
 ```

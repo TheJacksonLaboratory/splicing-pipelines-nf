@@ -1,5 +1,11 @@
 # Changelog
 
+### v2.2 - Strandedness detection
+
+#### Improvements:
+- Adds a new option for the `--stranded` option named `infer` that kickstarts a new set of processes to detect the strandedness of the read data automatically using salmon (#320)
+- The dockerfile for the `splicing-pipelines-nf` has been updated to use the `continuumio/miniconda3` baselayer and all dependencies to be properly isolated in the given conda environment
+
 ## Current Pipeline improvements
 #### Improvements:
  - Removes network and subnetwork parameters because CloudOS now sets this automatically (#315).
