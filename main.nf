@@ -1266,7 +1266,7 @@ if (!params.test) {
         --gtf $gtf \
         --od ./ \
         --tmp tmp \
-        --libType $libType \
+        --libType \$libType \
         -t $mode \
         --nthread $task.cpus \
         --readLength ${params.readlength} \
