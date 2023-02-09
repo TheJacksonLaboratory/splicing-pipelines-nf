@@ -1,0 +1,421 @@
+#!/bin/bash
+# NEXTFLOW TASK: fastqc (sample1b)
+set -e
+set -u
+NXF_DEBUG=${NXF_DEBUG:=0}; [[ $NXF_DEBUG > 1 ]] && set -x
+NXF_ENTRY=${1:-nxf_main}
+
+nxf_tree() {
+    local pid=$1
+
+    declare -a ALL_CHILDREN
+    while read P PP;do
+        ALL_CHILDREN[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    pstat() {
+        local x_pid=$1
+        local STATUS=$(2> /dev/null < /proc/$1/status egrep 'Vm|ctxt')
+
+        if [ $? = 0 ]; then
+        local  x_vsz=$(echo "$STATUS" | grep VmSize | awk '{print $2}' || echo -n '0')
+        local  x_rss=$(echo "$STATUS" | grep VmRSS | awk '{print $2}' || echo -n '0')
+        local x_peak=$(echo "$STATUS" | egrep 'VmPeak|VmHWM' | sed 's/^.*:\s*//' | sed 's/[\sa-zA-Z]*$//' | tr '\n' ' ' || echo -n '0 0')
+        local x_pmem=$(awk -v rss=$x_rss -v mem_tot=$mem_tot 'BEGIN {printf "%.0f", rss/mem_tot*100*10}' || echo -n '0')
+        local vol_ctxt=$(echo "$STATUS" | grep '\bvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        local inv_ctxt=$(echo "$STATUS" | grep '\bnonvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        cpu_stat[x_pid]="$x_pid $x_pmem $x_vsz $x_rss $x_peak $vol_ctxt $inv_ctxt"
+        fi
+    }
+
+    pwalk() {
+        pstat $1
+        for i in ${ALL_CHILDREN[$1]:=}; do pwalk $i; done
+    }
+
+    pwalk $1
+}
+
+nxf_stat() {
+    cpu_stat=()
+    nxf_tree $1
+
+    declare -a sum=(0 0 0 0 0 0 0 0)
+    local pid
+    local i
+    for pid in "${!cpu_stat[@]}"; do
+        local row=(${cpu_stat[pid]})
+        [ $NXF_DEBUG = 1 ] && echo "++ stat mem=${row[*]}"
+        for i in "${!row[@]}"; do
+        if [ $i != 0 ]; then
+            sum[i]=$((sum[i]+row[i]))
+        fi
+        done
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat SUM=${sum[*]}"
+
+    for i in {1..7}; do
+        if [ ${sum[i]} -lt ${cpu_peak[i]} ]; then
+            sum[i]=${cpu_peak[i]}
+        else
+            cpu_peak[i]=${sum[i]}
+        fi
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat PEAK=${sum[*]}\n"
+    nxf_stat_ret=(${sum[*]})
+}
+
+nxf_mem_watch() {
+    set -o pipefail
+    local pid=$1
+    local trace_file=.command.trace
+    local count=0;
+    declare -a cpu_stat=(0 0 0 0 0 0 0 0)
+    declare -a cpu_peak=(0 0 0 0 0 0 0 0)
+    local mem_tot=$(< /proc/meminfo grep MemTotal | awk '{print $2}')
+    local timeout
+    local DONE
+    local STOP=''
+
+    [ $NXF_DEBUG = 1 ] && nxf_sleep 0.2 && ps fx
+
+    while true; do
+        nxf_stat $pid
+        if [ $count -lt 10 ]; then timeout=1;
+        elif [ $count -lt 120 ]; then timeout=5;
+        else timeout=30;
+        fi
+        read -t $timeout -r DONE || true
+        [[ $DONE ]] && break
+        if [ ! -e /proc/$pid ]; then
+            [ ! $STOP ] && STOP=$(nxf_date)
+            [ $(($(nxf_date)-STOP)) -gt 10000 ] && break
+        fi
+        count=$((count+1))
+    done
+
+    echo "%mem=${nxf_stat_ret[1]}"      >> $trace_file
+    echo "vmem=${nxf_stat_ret[2]}"      >> $trace_file
+    echo "rss=${nxf_stat_ret[3]}"       >> $trace_file
+    echo "peak_vmem=${nxf_stat_ret[4]}" >> $trace_file
+    echo "peak_rss=${nxf_stat_ret[5]}"  >> $trace_file
+    echo "vol_ctxt=${nxf_stat_ret[6]}"  >> $trace_file
+    echo "inv_ctxt=${nxf_stat_ret[7]}"  >> $trace_file
+}
+
+nxf_write_trace() {
+    echo "nextflow.trace/v2"           > $trace_file
+    echo "realtime=$wall_time"         >> $trace_file
+    echo "%cpu=$ucpu"                  >> $trace_file
+    echo "rchar=${io_stat1[0]}"        >> $trace_file
+    echo "wchar=${io_stat1[1]}"        >> $trace_file
+    echo "syscr=${io_stat1[2]}"        >> $trace_file
+    echo "syscw=${io_stat1[3]}"        >> $trace_file
+    echo "read_bytes=${io_stat1[4]}"   >> $trace_file
+    echo "write_bytes=${io_stat1[5]}"  >> $trace_file
+}
+
+nxf_trace_mac() {
+    local start_millis=$(nxf_date)
+
+    /bin/bash -ue /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.sh
+
+    local end_millis=$(nxf_date)
+    local wall_time=$((end_millis-start_millis))
+    local ucpu=''
+    local io_stat1=('' '' '' '' '' '')
+    nxf_write_trace
+}
+
+nxf_fd() {
+    local FD=11
+    while [ -e /proc/$$/fd/$FD ]; do FD=$((FD+1)); done
+    echo $FD
+}
+
+nxf_trace_linux() {
+    local pid=$$
+    command -v ps &>/dev/null || { >&2 echo "Command 'ps' required by nextflow to collect task metrics cannot be found"; exit 1; }
+    local num_cpus=$(< /proc/cpuinfo grep '^processor' -c)
+    local tot_time0=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time0=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local io_stat0=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local start_millis=$(nxf_date)
+    trap 'kill $mem_proc' ERR
+    
+    /bin/bash -ue /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.sh &
+    local task=$!
+
+    mem_fd=$(nxf_fd)
+    eval "exec $mem_fd> >(nxf_mem_watch $task)"
+    local mem_proc=$!
+
+    wait $task
+
+    local end_millis=$(nxf_date)
+    local tot_time1=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time1=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local ucpu=$(awk -v p1=$cpu_time1 -v p0=$cpu_time0 -v t1=$tot_time1 -v t0=$tot_time0 -v n=$num_cpus 'BEGIN { pct=(p1-p0)/(t1-t0)*100*n; printf("%.0f", pct>0 ? pct : 0) }' )
+
+    local io_stat1=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local i
+    for i in {0..5}; do
+        io_stat1[i]=$((io_stat1[i]-io_stat0[i]))
+    done
+
+    local wall_time=$((end_millis-start_millis))
+    [ $NXF_DEBUG = 1 ] && echo "+++ STATS %CPU=$ucpu TIME=$wall_time I/O=${io_stat1[*]}"
+
+    echo "nextflow.trace/v2"           > $trace_file
+    echo "realtime=$wall_time"         >> $trace_file
+    echo "%cpu=$ucpu"                  >> $trace_file
+    echo "rchar=${io_stat1[0]}"        >> $trace_file
+    echo "wchar=${io_stat1[1]}"        >> $trace_file
+    echo "syscr=${io_stat1[2]}"        >> $trace_file
+    echo "syscw=${io_stat1[3]}"        >> $trace_file
+    echo "read_bytes=${io_stat1[4]}"   >> $trace_file
+    echo "write_bytes=${io_stat1[5]}"  >> $trace_file
+
+    [ -e /proc/$mem_proc ] && eval "echo 'DONE' >&$mem_fd" || true
+    wait $mem_proc 2>/dev/null || true
+    while [ -e /proc/$mem_proc ]; do nxf_sleep 0.1; done
+}
+
+nxf_trace() {
+    local trace_file=.command.trace
+    touch $trace_file
+    if [[ $(uname) = Darwin ]]; then
+        nxf_trace_mac
+    else
+        nxf_trace_linux
+    fi
+}
+# bash helper functions
+nxf_cp_retry() {
+    local max_attempts=1
+    local timeout=10
+    local attempt=0
+    local exitCode=0
+    while (( $attempt < $max_attempts ))
+    do
+      if "$@"
+        then
+          return 0
+      else
+        exitCode=$?
+      fi
+      if [[ $exitCode == 0 ]]
+      then
+        break
+      fi
+      nxf_sleep $timeout
+      attempt=$(( attempt + 1 ))
+      timeout=$(( timeout * 2 ))
+    done
+}
+
+nxf_parallel() {
+    IFS=$'\n'
+    local cmd=("$@")
+    local cpus=$(nproc 2>/dev/null || < /proc/cpuinfo grep '^process' -c)
+    local max=$(if (( cpus>4 )); then echo 4; else echo $cpus; fi)
+    local i=0
+    local pid=()
+    (
+    set +u
+    while ((i<${#cmd[@]})); do
+        local copy=()
+        for x in "${pid[@]}"; do
+          [[ -e /proc/$x ]] && copy+=($x)
+        done
+        pid=("${copy[@]}")
+
+        if ((${#pid[@]}>=$max)); then
+          nxf_sleep 0.2
+        else
+          eval "${cmd[$i]}" &
+          pid+=($!)
+          ((i+=1))
+        fi
+    done
+    for p in "${pid[@]}"; do
+        wait $p
+    done
+    )
+    unset IFS
+}
+
+# google storage helper
+gs_opts=('-q' '-m' '-o' 'GSUtil:parallel_thread_count=1' '-o' 'GSUtil:sliced_object_download_max_components=8')
+
+nxf_gs_download() {
+    local source=$1
+    local target=$2
+    local project=$3
+    local basedir=$(dirname $2)
+    local ret
+    local opts=("${gs_opts[@]}")
+    if [[ $project ]]; then
+      opts+=('-u' "$project")
+    fi
+
+    ## download assuming it's a file download
+    mkdir -p $basedir
+    ret=$(gsutil ${opts[@]} cp "$source" "$target" 2>&1) || {
+        ## if fails check if it was trying to download a directory
+        mkdir $target
+        gsutil ${opts[@]} cp -R "$source/*" "$target" || {
+          rm -rf $target
+          >&2 echo "Unable to download path: $source"
+          exit 1
+        }
+    }
+}
+
+nxf_gs_upload() {
+    local name=$1
+    local target=$2
+    gsutil ${gs_opts[@]} cp -R "$name" "$target/$name"
+}
+
+nxf_sleep() {
+  sleep $1 2>/dev/null || sleep 1;
+}
+
+nxf_date() {
+    local ts=$(date +%s%3N);
+    if [[ ${#ts} == 10 ]]; then echo ${ts}000
+    elif [[ $ts == *%3N ]]; then echo ${ts/\%3N/000}
+    elif [[ $ts == *3N ]]; then echo ${ts/3N/000}
+    elif [[ ${#ts} == 13 ]]; then echo $ts
+    else echo "Unexpected timestamp value: $ts"; exit 1
+    fi
+}
+
+nxf_env() {
+    echo '============= task environment ============='
+    env | sort | sed "s/\(.*\)AWS\(.*\)=\(.\{6\}\).*/\1AWS\2=\3xxxxxxxxxxxxx/"
+    echo '============= task output =================='
+}
+
+nxf_kill() {
+    declare -a children
+    while read P PP;do
+        children[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    kill_all() {
+        [[ $1 != $$ ]] && kill $1 2>/dev/null || true
+        for i in ${children[$1]:=}; do kill_all $i; done
+    }
+
+    kill_all $1
+}
+
+nxf_mktemp() {
+    local base=${1:-/tmp}
+    mkdir -p "$base"
+    if [[ $(uname) = Darwin ]]; then mktemp -d $base/nxf.XXXXXXXXXX
+    else TMPDIR="$base" mktemp -d -t nxf.XXXXXXXXXX
+    fi
+}
+
+nxf_fs_copy() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  cp -fRL $source $target/$basedir
+}
+
+nxf_fs_move() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  mv -f $source $target/$basedir
+}
+
+nxf_fs_rsync() {
+  rsync -rRl $1 $2
+}
+
+on_exit() {
+    exit_status=${nxf_main_ret:=$?}
+    printf $exit_status > /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.exitcode
+    set +u
+    [[ "$tee1" ]] && kill $tee1 2>/dev/null
+    [[ "$tee2" ]] && kill $tee2 2>/dev/null
+    [[ "$ctmp" ]] && rm -rf $ctmp || true
+    exit $exit_status
+}
+
+on_term() {
+    set +e
+    [[ "$pid" ]] && nxf_kill $pid
+}
+
+nxf_launch() {
+    /bin/bash /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.run nxf_trace
+}
+
+nxf_stage() {
+    true
+    # stage input files
+    echo start | gsutil -q cp  -c - gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.begin
+    downloads=(true)
+    downloads+=("nxf_gs_download gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924637_1.fastq.gz SRR12924637_1.fastq.gz ")
+    downloads+=("nxf_gs_download gs://jax-cloudos-olgaanczukow-project-data/test_data/fastq/SRR12924637_2.fastq.gz SRR12924637_2.fastq.gz ")
+    downloads+=("nxf_gs_download gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.sh .command.sh ")
+    nxf_parallel "${downloads[@]}"
+    mkdir -p /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/nextflow-bin
+    gsutil -m -q cp -P -r gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/tmp/12/7033046b8e2c18ccb0cec6a86593fd/* /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/nextflow-bin
+}
+
+nxf_unstage() {
+    true
+    gsutil -m -q cp -R .command.out gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.out || true
+    gsutil -m -q cp -R .command.err gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.err || true
+    gsutil -m -q cp -R .command.trace gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.command.trace || true
+    gsutil -m -q cp -R .exitcode gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/.exitcode || true
+    [[ ${nxf_main_ret:=0} != 0 ]] && return
+    uploads=()
+    IFS=$'\n'
+    for name in $(eval "ls -1d *_fastqc.{zip,html} command-logs-*" | sort | uniq); do
+        uploads+=("nxf_gs_upload '$name' gs://jax-cloudos-olgaanczukow-project-data/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc")
+    done
+    unset IFS
+    nxf_parallel "${uploads[@]}"
+}
+
+nxf_main() {
+    trap on_exit EXIT
+    trap on_term TERM INT USR2
+    trap '' USR1
+
+    [[ "${NXF_CHDIR:-}" ]] && cd "$NXF_CHDIR"
+    NXF_SCRATCH=/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc
+    [[ $NXF_DEBUG > 0 ]] && nxf_env
+    set +u
+    set -u
+    chmod +x /test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/nextflow-bin/* || true
+    export PATH=/test_data/splicing-work-dir/output/c4/b7bc01ef6fc89b8c0716b92f61c3dc/nextflow-bin:$PATH
+    [[ $NXF_SCRATCH ]] && cd $NXF_SCRATCH
+
+    set +e
+    ctmp=$(set +u; nxf_mktemp /dev/shm 2>/dev/null || nxf_mktemp $TMPDIR)
+    local cout=$ctmp/.command.out; mkfifo $cout
+    local cerr=$ctmp/.command.err; mkfifo $cerr
+    tee .command.out < $cout &
+    tee1=$!
+    tee .command.err < $cerr >&2 &
+    tee2=$!
+    ( nxf_launch ) >$cout 2>$cerr &
+    pid=$!
+    wait $pid || nxf_main_ret=$?
+    wait $tee1 $tee2
+}
+
+$NXF_ENTRY

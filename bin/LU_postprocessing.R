@@ -20,9 +20,14 @@ genome_version <- strsplit(ref_genome, "[.]")[[1]][1]
 
 if(genome_version == "GRCh38"){
   print("Loading human genome, hg38")
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+     install.packages("BiocManager")
+  BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+
   library(BSgenome.Hsapiens.UCSC.hg38)
   genome <- BSgenome.Hsapiens.UCSC.hg38
 }
+
 if(genome_version == "GRCm38"){
   print("Loading mouse genome, mm10")
   library(BSgenome.Mmusculus.UCSC.mm10)
@@ -31,7 +36,16 @@ if(genome_version == "GRCm38"){
 if(!(genome_version %in% c("GRCh38",  "GRCm38"))){
   print("ERROR! Need to install new genome library. Check BSgenome library")
 }
+if (!requireNamespace("BiocManager", quietly = TRUE))
+#chooseCRANmirror()
+#source("https://bioconductor.org/biocLite.R")
+    install.packages("BiocManager", repos = "http://cran.us.r-project.org")
+BiocManager::install("GenomicRanges", ask = FALSE)
+BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", ask = FALSE)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(GenomicRanges)
 
+genome <- BSgenome.Hsapiens.UCSC.hg38
 
 # load in JCEC files for each event type 
 CA <- read.table("SE.MATS.JCEC.txt", header=TRUE, sep="\t")

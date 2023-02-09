@@ -1,4 +1,7 @@
 #!/usr/bin/env nextflow
+
+nextflow.enable.dsl=1
+
 /*
  * Copyright (c) 2019, Jackson Labs and the authors.
  *
@@ -1027,7 +1030,8 @@ if (!params.test) {
 
       """
       echo $bam > b1.txt
-
+      
+#echo "Script executed from: ${PWD}"
       rmats.py \
         --b1 b1.txt \
         --gtf $gtf \
@@ -1042,7 +1046,7 @@ if (!params.test) {
         $variable_read_length_flag $statoff $paired_stats \
         $novelSS $allow_clipping --task prep
 
-      python3 /opt/conda/rMATS/cp_with_prefix.py '${sample_id}.' ./ tmp/*.rmats
+      python3 /opt/conda/envs/rmats4/rMATS/cp_with_prefix.py '${sample_id}.' ./ tmp/*.rmats
 
       rmats_config="config_for_rmats_and_postprocessing.txt"
       echo b1              b1.txt > \$rmats_config

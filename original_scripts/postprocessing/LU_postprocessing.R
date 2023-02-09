@@ -24,8 +24,10 @@ if(genome_version == "GRCh38"){
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
   BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+  BiocManager::install("GenomicRanges")
 
   library(BSgenome.Hsapiens.UCSC.hg38)
+  library(GenomicRanges)
   genome <- BSgenome.Hsapiens.UCSC.hg38
 }
 if(genome_version == "GRCm38"){
