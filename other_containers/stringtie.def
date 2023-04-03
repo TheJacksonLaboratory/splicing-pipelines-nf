@@ -1,0 +1,4 @@
+bootstrap: docker
+from: nanozoo/stringtie:2.1.7--420b0db
+
+

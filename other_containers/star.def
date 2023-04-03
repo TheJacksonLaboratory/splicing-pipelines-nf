@@ -1,0 +1,4 @@
+bootstrap: docker
+from: alexdobin/star:2.7.10a_alpha_220506
+
+
