@@ -1,0 +1,4 @@
+bootstrap: docker
+from: staphb/samtools:latest
+
+

@@ -1,0 +1,4 @@
+bootstrap: docker
+from: xinglab/rmats:v4.1.2
+
+

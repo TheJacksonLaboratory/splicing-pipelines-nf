@@ -1,0 +1,4 @@
+bootstrap: docker
+from: staphb/trimmomatic:0.39
+
+
