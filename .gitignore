@@ -12,3 +12,5 @@ test_single_end
 human_test
 *cred*
 *credentials*
+hpc_final/work*
+hpc_final/.nextflow*
