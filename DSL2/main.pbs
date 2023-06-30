@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -o splicing.%j.out
+#SBATCH -e splicing.%j.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=$USER@jax.org
+#SBATCH --mem=20000
+#SBATCH --cpus-per-task=4
+#SBATCH -p compute
+#SBATCH -q batch
+#SBATCH -t 3-00:00:00 
+
+cd $SLURM_SUBMIT_DIR
+date;hostname;pwd
+
+module load singularity
+
+export NXF_VER=22.10.5
+
+curl -fsSL get.nextflow.io | bash
+
+./nextflow run /projects/anczukow-lab/gudurg/git_gayathrig/splicing-pipelines-nf/DSL2/main.nf \
+	--outdir ${SLURM_SUBMIT_DIR} \
+	-config /projects/anczukow-lab/gudurg/git_gayathrig/splicing-pipelines-nf/DSL2/main.config \
+	-profile slurm
