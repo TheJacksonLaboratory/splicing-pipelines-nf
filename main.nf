@@ -112,10 +112,10 @@ def helpMessage() {
                                     (default: false)
       --star_memory                 Max memory to be used by STAR to sort BAM files.
                                     (default: Available task memory)
-      --star_memory      Sets base RAM requirement for stringtie_merge process.
+      --star_memory_hpc      Sets base RAM requirement for stringtie_merge process.
                                     (default: 120.GB)
       --star_cpu         Sets base CPU requirement for stringtie_merge process.
-                                    (default: 24)
+                                    (default: 30)
 
     rMATS:
       --statoff                     Skip the statistical analysis (bool)
