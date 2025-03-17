@@ -1,5 +1,5 @@
 # splicing-pipelines-nf
-Anczukow-lab repository for the Nextflow splicing pipeline with `rMATS 4.1.0` (tag = v1.0) and `rMATS 4.1.2` (master).
+Anczukow-lab repository for the Nextflow splicing pipeline with `rMATS 4.1.0` (tag = v1.0), `rMATS 4.1.1` (v2.0 and 2.1), and `rMATS 4.1.2` (master).
 
 ## Introduction
 
